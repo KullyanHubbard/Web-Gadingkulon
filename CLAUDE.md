@@ -46,7 +46,8 @@ NIA-WEB/
 │       ├── features/         # kode per-domain (lihat §4)
 │       │   ├── auth/
 │       │   ├── penduduk/
-│       │   └── infografis/
+│       │   ├── infografis/       # agregat untuk pengurus (di balik login)
+│       │   └── statistik-publik/ # agregat halaman depan (tanpa login)
 │       ├── hooks/            # hook generik lintas fitur (useDebounce, …)
 │       ├── lib/              # klien & util lintas fitur (api-client, utils, query-client)
 │       ├── mocks/            # data & util dummy untuk mode mock
@@ -272,10 +273,14 @@ Kontrak endpoint agar cocok dengan `http*Api` frontend:
 | GET    | `/penduduk`                       | daftar (paginasi: `page`, `pageSize`, `search`) |
 | GET    | `/penduduk/nik/{nik}`             | detail per NIK                          |
 | GET    | `/kartu-keluarga/{noKK}`          | KK + anggota                            |
-| GET    | `/infografis`                     | agregat statistik                       |
+| GET    | `/infografis`                     | agregat statistik (ADMIN)               |
+| GET    | `/publik/statistik`               | agregat halaman depan — **tanpa auth**, hanya cacah per RW |
 
 **Wajib ditegakkan backend** (guard frontend hanya UX):
 
+- `/publik/statistik` **hanya boleh mengembalikan cacah**. Tidak ada NIK, nama,
+  atau alamat — endpoint ini terbuka untuk siapa saja, jadi apa pun yang
+  ditambahkan ke sana otomatis menjadi konsumsi publik.
 - USER hanya boleh mengakses NIK miliknya + anggota `noKK` yang sama —
   divalidasi dari **klaim JWT, bukan parameter request**.
 - PIN & password disimpan sebagai **hash** (argon2/bcrypt), tidak pernah polos.

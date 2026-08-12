@@ -9,6 +9,7 @@ import { paths } from './paths';
 
 // Code-splitting per halaman: chart (recharts) & halaman admin hanya
 // dimuat saat dibutuhkan, memperkecil bundle awal.
+const LandingPage = lazy(() => import('@/pages/landing/LandingPage'));
 const LoginPage = lazy(() => import('@/pages/login/LoginPage'));
 const LoginPetugasPage = lazy(() => import('@/pages/login/LoginPetugasPage'));
 const AktivasiPage = lazy(() => import('@/pages/aktivasi/AktivasiPage'));
@@ -23,15 +24,17 @@ const InfografisPage = lazy(
 );
 const NotFoundPage = lazy(() => import('@/pages/not-found/NotFoundPage'));
 
-/** Redirect root "/" ke beranda sesuai status & role. */
-function RootRedirect() {
+/**
+ * Root "/": landing publik untuk pengunjung, redirect ke beranda role untuk
+ * yang sudah masuk.
+ */
+function RootRoute() {
   const { isAuthenticated, user } = useAuth();
-  return (
-    <Navigate
-      to={isAuthenticated ? homePathForRole(user?.role) : paths.login}
-      replace
-    />
-  );
+
+  if (isAuthenticated) {
+    return <Navigate to={homePathForRole(user?.role)} replace />;
+  }
+  return <LandingPage />;
 }
 
 export function AppRoutes() {
@@ -68,7 +71,7 @@ export function AppRoutes() {
           </Route>
         </Route>
 
-        <Route path="/" element={<RootRedirect />} />
+        <Route path="/" element={<RootRoute />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Suspense>

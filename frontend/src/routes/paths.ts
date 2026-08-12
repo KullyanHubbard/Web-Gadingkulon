@@ -1,6 +1,8 @@
 /** Sumber tunggal kebenaran untuk path routing. */
 export const paths = {
-  /** Halaman masuk utama — form warga (NIK + PIN). */
+  /** Landing publik: statistik padukuhan, tanpa auth. */
+  landing: '/',
+  /** Halaman masuk warga (NIK + PIN). */
   login: '/login',
   /** Masuk khusus pengurus (Dukuh/RW/RT). */
   loginPetugas: '/login/petugas',

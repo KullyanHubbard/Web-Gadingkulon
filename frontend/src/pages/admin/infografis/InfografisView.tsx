@@ -1,11 +1,11 @@
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
-import { QueryBoundary } from '@/components/ui/QueryBoundary';
-import { cn } from '@/lib/utils';
 import {
   DistribusiBarChart,
   DistribusiPieChart,
-} from '@/features/infografis/components/DistribusiCharts';
+} from '@/components/ui/DistribusiCharts';
+import { QueryBoundary } from '@/components/ui/QueryBoundary';
+import { cn } from '@/lib/utils';
 import type { PanelInfografis } from './infografis-view-model';
 
 interface InfografisViewProps {

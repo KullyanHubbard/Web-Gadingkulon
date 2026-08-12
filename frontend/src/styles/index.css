@@ -9,14 +9,29 @@
     /* Jembatan palet -> library yang butuh nilai warna, bukan class (Recharts).
        Nilainya diturunkan dari tailwind.config.js lewat theme(), jadi palet
        tetap satu sumber kebenaran — jangan tulis hex di sini atau di komponen.
-       Dikonsumsi lewat @/lib/colors. */
+       Dikonsumsi lewat @/lib/colors.
+
+       Urutannya selang-seling gelap–terang, bukan menurun bertahap: dua seri
+       yang bersebelahan selalu beda jauh, jadi irisan donut tetap terbaca. */
     --chart-1: theme('colors.brand.600');
-    --chart-2: theme('colors.brand.500');
-    --chart-3: theme('colors.brand.400');
-    --chart-4: theme('colors.brand.300');
-    --chart-5: theme('colors.brand.900');
+    --chart-2: theme('colors.brand.300');
+    --chart-3: theme('colors.brand.900');
+    --chart-4: theme('colors.brand.500');
+    --chart-5: theme('colors.brand.200');
     --chart-6: theme('colors.brand.700');
-    --chart-7: theme('colors.brand.200');
+    --chart-7: theme('colors.brand.400');
+    /* Warna teks yang dicetak DI ATAS irisan seri di atasnya. Dipasangkan satu
+       per satu: seri gelap dapat putih, seri terang dapat slate gelap. Rasio
+       kontras terendah di antaranya 5,4:1 (putih di atas brand-600), jadi
+       label tetap terbaca. Ganti urutan seri di atas -> ganti pasangannya juga. */
+    --chart-1-text: theme('colors.white');
+    --chart-2-text: theme('colors.slate.900');
+    --chart-3-text: theme('colors.white');
+    --chart-4-text: theme('colors.white');
+    --chart-5-text: theme('colors.slate.900');
+    --chart-6-text: theme('colors.white');
+    --chart-7-text: theme('colors.slate.900');
+
     --chart-axis: theme('colors.slate.600');
     --chart-cursor: theme('colors.slate.100');
   }

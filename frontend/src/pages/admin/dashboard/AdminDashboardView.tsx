@@ -4,11 +4,11 @@ import type { LucideIcon } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
+import { DistribusiBarChart } from '@/components/ui/DistribusiCharts';
 import { QueryBoundary } from '@/components/ui/QueryBoundary';
-import { DistribusiBarChart } from '@/features/infografis/components/DistribusiCharts';
 import { StatCard } from '@/features/infografis/components/StatCard';
-import type { Distribusi } from '@/features/infografis/types';
 import { paths } from '@/routes/paths';
+import type { Distribusi } from '@/types/statistik';
 import type { StatRingkas } from './dashboard-view-model';
 
 /** Ikon per kartu statistik — murni pilihan tampilan, jadi dipetakan di sini. */

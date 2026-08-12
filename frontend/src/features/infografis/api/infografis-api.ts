@@ -3,8 +3,10 @@ import { apiClient } from '@/lib/api-client';
 import { pendudukData } from '@/mocks/data/penduduk';
 import { delay } from '@/mocks/utils';
 import { hitungUmur } from '@/lib/tanggal';
+import { formatRw } from '@/lib/wilayah';
 import type { Penduduk } from '@/types/penduduk';
-import type { Distribusi, InfografisData } from '../types';
+import type { Distribusi } from '@/types/statistik';
+import type { InfografisData } from '../types';
 
 /** Kontrak API infografis (agregat statistik) — khusus admin. */
 export interface InfografisApi {
@@ -47,7 +49,7 @@ function computeInfografis(): InfografisData {
     perAgama: distribusiBy(pendudukData, (p) => p.agama),
     perPendidikan: distribusiBy(pendudukData, (p) => p.pendidikan),
     perStatusPerkawinan: distribusiBy(pendudukData, (p) => p.statusPerkawinan),
-    perDusun: distribusiBy(pendudukData, (p) => `RW ${p.alamat.rw}`),
+    perDusun: distribusiBy(pendudukData, (p) => formatRw(p.alamat.rw)),
     perKelompokUmur: distribusiBy(pendudukData, (p) =>
       kelompokUmur(hitungUmur(p.tanggalLahir)),
     ).sort((a, b) => a.label.localeCompare(b.label)),

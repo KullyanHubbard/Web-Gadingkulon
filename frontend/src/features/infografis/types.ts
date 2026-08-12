@@ -1,9 +1,6 @@
 /** Agregat statistik kependudukan untuk halaman infografis (admin). */
 
-export interface Distribusi {
-  label: string;
-  value: number;
-}
+import type { Distribusi } from '@/types/statistik';
 
 export interface InfografisData {
   totalPenduduk: number;

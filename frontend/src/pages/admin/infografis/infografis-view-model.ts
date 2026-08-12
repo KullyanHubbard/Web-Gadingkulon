@@ -3,7 +3,8 @@ import {
   pendidikanLabel,
   statusPerkawinanLabel,
 } from '@/features/penduduk/labels';
-import type { Distribusi, InfografisData } from '@/features/infografis/types';
+import type { InfografisData } from '@/features/infografis/types';
+import type { Distribusi } from '@/types/statistik';
 
 /**
  * Susunan panel halaman infografis.
