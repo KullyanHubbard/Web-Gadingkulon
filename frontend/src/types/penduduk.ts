@@ -1,5 +1,10 @@
 /**
- * Model domain Kependudukan.
+ * Model domain Kependudukan — dipakai lintas fitur.
+ *
+ * Tinggal di `types/` (bukan di `features/penduduk/`) karena fitur infografis
+ * juga menghitung agregat di atas bentuk data yang sama. Lihat CLAUDE.md §4:
+ * apa pun yang dibagi antar fitur dinaikkan ke `types`/`lib`/`components`.
+ *
  * Mengacu pada field kartu keluarga (KK) & KTP Indonesia.
  */
 

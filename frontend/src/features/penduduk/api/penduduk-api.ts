@@ -3,7 +3,7 @@ import { apiClient } from '@/lib/api-client';
 import { pendudukData } from '@/mocks/data/penduduk';
 import { delay } from '@/mocks/utils';
 import type { Paginated, PaginationParams } from '@/types/api';
-import type { KartuKeluarga, Penduduk } from '../types';
+import type { KartuKeluarga, Penduduk } from '@/types/penduduk';
 
 /** Kontrak API data kependudukan. */
 export interface PendudukApi {

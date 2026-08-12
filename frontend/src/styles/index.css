@@ -5,6 +5,20 @@
 @layer base {
   :root {
     color-scheme: light;
+
+    /* Jembatan palet -> library yang butuh nilai warna, bukan class (Recharts).
+       Nilainya diturunkan dari tailwind.config.js lewat theme(), jadi palet
+       tetap satu sumber kebenaran — jangan tulis hex di sini atau di komponen.
+       Dikonsumsi lewat @/lib/colors. */
+    --chart-1: theme('colors.brand.600');
+    --chart-2: theme('colors.brand.500');
+    --chart-3: theme('colors.brand.400');
+    --chart-4: theme('colors.brand.300');
+    --chart-5: theme('colors.brand.900');
+    --chart-6: theme('colors.brand.700');
+    --chart-7: theme('colors.brand.200');
+    --chart-axis: theme('colors.slate.600');
+    --chart-cursor: theme('colors.slate.100');
   }
 
   html,

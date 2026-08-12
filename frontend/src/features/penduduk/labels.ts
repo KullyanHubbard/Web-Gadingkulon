@@ -4,7 +4,7 @@ import type {
   Pendidikan,
   StatusHubunganKeluarga,
   StatusPerkawinan,
-} from './types';
+} from '@/types/penduduk';
 
 /** Peta enum -> label yang enak dibaca untuk ditampilkan di UI. */
 

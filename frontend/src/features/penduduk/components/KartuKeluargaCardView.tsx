@@ -1,18 +1,21 @@
-import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Table, Td, Th } from '@/components/ui/Table';
-import type { KartuKeluarga } from '../types';
-import { jenisKelaminLabel, statusHubunganLabel } from '../labels';
-import { hitungUmur } from '../utils';
+import type { KartuKeluargaView as KartuKeluargaData } from '../view-model';
 
-/** Ringkasan satu Kartu Keluarga beserta daftar anggotanya. */
-export function KartuKeluargaCard({ kk }: { kk: KartuKeluarga }) {
+/**
+ * Ringkasan satu Kartu Keluarga beserta daftar anggotanya.
+ *
+ * Menerima data hasil `toKartuKeluargaView`; seluruh sel di bawah sudah berupa
+ * string siap cetak.
+ */
+export function KartuKeluargaCardView({ kk }: { kk: KartuKeluargaData }) {
   return (
     <Card>
       <CardHeader
-        title={`Kartu Keluarga · ${kk.kepalaKeluarga}`}
+        title={kk.judul}
         description={`No. KK ${kk.noKK}`}
-        action={<Badge tone="slate">{kk.anggota.length} anggota</Badge>}
+        action={<Badge tone="slate">{kk.jumlahAnggota}</Badge>}
       />
       <CardContent className="p-0">
         <Table>
@@ -30,9 +33,9 @@ export function KartuKeluargaCard({ kk }: { kk: KartuKeluarga }) {
               <tr key={a.id} className="hover:bg-slate-50">
                 <Td className="font-medium text-slate-900">{a.nama}</Td>
                 <Td className="font-mono text-xs">{a.nik}</Td>
-                <Td>{statusHubunganLabel[a.statusHubunganKeluarga]}</Td>
-                <Td>{jenisKelaminLabel[a.jenisKelamin]}</Td>
-                <Td>{hitungUmur(a.tanggalLahir)} th</Td>
+                <Td>{a.hubungan}</Td>
+                <Td>{a.jenisKelamin}</Td>
+                <Td>{a.umur}</Td>
               </tr>
             ))}
           </tbody>

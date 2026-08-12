@@ -10,17 +10,12 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import {
+  CHART_AXIS_COLOR,
+  CHART_CURSOR_COLOR,
+  CHART_SERIES_COLORS,
+} from '@/lib/colors';
 import type { Distribusi } from '../types';
-
-const PALETTE = [
-  '#1a5cf5',
-  '#317bff',
-  '#589fff',
-  '#8ec2ff',
-  '#19388f',
-  '#1546e1',
-  '#bcdaff',
-];
 
 /** Bar chart horizontal untuk distribusi kategori. */
 export function DistribusiBarChart({ data }: { data: Distribusi[] }) {
@@ -36,17 +31,20 @@ export function DistribusiBarChart({ data }: { data: Distribusi[] }) {
           type="category"
           dataKey="label"
           width={90}
-          tick={{ fontSize: 12, fill: '#475569' }}
+          tick={{ fontSize: 12, fill: CHART_AXIS_COLOR }}
           axisLine={false}
           tickLine={false}
         />
         <Tooltip
-          cursor={{ fill: '#f1f5f9' }}
+          cursor={{ fill: CHART_CURSOR_COLOR }}
           contentStyle={{ borderRadius: 8, fontSize: 12 }}
         />
         <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={22}>
           {data.map((_, i) => (
-            <Cell key={i} fill={PALETTE[i % PALETTE.length]} />
+            <Cell
+              key={i}
+              fill={CHART_SERIES_COLORS[i % CHART_SERIES_COLORS.length]}
+            />
           ))}
         </Bar>
       </BarChart>
@@ -68,7 +66,10 @@ export function DistribusiPieChart({ data }: { data: Distribusi[] }) {
           paddingAngle={2}
         >
           {data.map((_, i) => (
-            <Cell key={i} fill={PALETTE[i % PALETTE.length]} />
+            <Cell
+              key={i}
+              fill={CHART_SERIES_COLORS[i % CHART_SERIES_COLORS.length]}
+            />
           ))}
         </Pie>
         <Tooltip contentStyle={{ borderRadius: 8, fontSize: 12 }} />

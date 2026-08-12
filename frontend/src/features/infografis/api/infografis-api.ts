@@ -2,8 +2,8 @@ import { isMockMode } from '@/config/env';
 import { apiClient } from '@/lib/api-client';
 import { pendudukData } from '@/mocks/data/penduduk';
 import { delay } from '@/mocks/utils';
-import { hitungUmur } from '@/features/penduduk/utils';
-import type { Penduduk } from '@/features/penduduk/types';
+import { hitungUmur } from '@/lib/tanggal';
+import type { Penduduk } from '@/types/penduduk';
 import type { Distribusi, InfografisData } from '../types';
 
 /** Kontrak API infografis (agregat statistik) — khusus admin. */

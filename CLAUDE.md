@@ -122,8 +122,44 @@ export const pendudukApi: PendudukApi = isMockMode ? mockPendudukApi : httpPendu
 ### Styling
 
 - Tailwind utility-first. Hindari file CSS terpisah kecuali untuk global (`styles/index.css`).
-- Warna brand pakai token `brand-*` (lihat `tailwind.config.js`), jangan hardcode hex di komponen.
 - Kelas panjang: urutkan otomatis oleh `prettier-plugin-tailwindcss` (jalankan `npm run format`).
+
+### Warna — palet tertutup
+
+`tailwind.config.js` **mengganti** `theme.colors` (bukan `extend`), jadi warna di
+luar palet **tidak menghasilkan class sama sekali**. `bg-blue-600` dan
+`text-emerald-500` mati diam-diam — kalau sebuah warna tidak muncul, penyebabnya
+hampir pasti ini.
+
+| Kelompok  | Token                        | Untuk                                          |
+| --------- | ---------------------------- | ---------------------------------------------- |
+| Brand     | `brand-50` … `brand-950`     | aksi utama, aksen, seri chart                  |
+| Netral    | `slate-*`                    | teks, permukaan, border — **satu-satunya netral** |
+| Semantik  | `red-*`                      | error, danger, aksi merusak                    |
+|           | `green-*`                    | sukses, status aktif                           |
+|           | `amber-*`                    | peringatan                                     |
+|           | `violet-*`                   | aksen statistik netral (`StatCard`)            |
+
+Aturan:
+
+- **Dilarang hex di komponen**, termasuk untuk Recharts. Library yang butuh nilai
+  warna (bukan class) mengambilnya dari `@/lib/colors`, yang isinya `var(--…)`
+  hasil `theme()` di `styles/index.css`. Rantainya:
+  `tailwind.config.js` → CSS var → `lib/colors.ts` → komponen. Satu sumber
+  kebenaran; ubah hex di config, chart ikut berubah.
+- `gray` / `zinc` / `neutral` / `stone` **tidak tersedia** — netralnya `slate`.
+- Warna semantik dipilih berdasarkan **makna**, bukan selera visual. Pasangan
+  bakunya `-50` untuk latar, `-200` untuk border, `-700`/`-800` untuk teks
+  (lihat `components/ui/Badge.tsx` & `Alert.tsx`).
+- Butuh warna baru? **Tambahkan di `tailwind.config.js` dulu**, dengan alasan
+  yang jelas. Friksi ini disengaja — keputusan warna harus sadar, bukan ketikan
+  spontan.
+- `borderColor.DEFAULT` dipin ke `slate-200`, jadi `border` polos tetap benar.
+
+Palet tertutup tidak bisa memblokir **arbitrary value** (`bg-[#ff0000]` tetap
+di-generate Tailwind), jadi celah itu ditutup ESLint: rule `no-restricted-syntax`
+di `eslint.config.js` menolak hex mentah **dan** `bg-[…]`/`text-[…]` dst.
+Dua lapis ini yang bikin palet benar-benar terkunci — jangan lepas salah satunya.
 
 ### Data fetching (React Query)
 

@@ -1,4 +1,4 @@
-import type { Alamat, Penduduk } from '@/features/penduduk/types';
+import type { Alamat, Penduduk } from '@/types/penduduk';
 
 /**
  * Dataset dummy kependudukan Desa Sukamaju.
