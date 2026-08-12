@@ -50,32 +50,32 @@ export default function LoginPage() {
 
   return (
     <AuthLayout title="Masuk" description="Masukkan NIK dan PIN Anda.">
-      <form onSubmit={onSubmit} className="mt-6 space-y-4">
+      <form onSubmit={onSubmit} className="mt-6 space-y-6">
         {errorMessage && <Alert tone="error">{errorMessage}</Alert>}
 
-        <Input
-          label="NIK"
-          className="h-12 text-base"
-          inputMode="numeric"
-          maxLength={16}
-          autoComplete="username"
-          placeholder="16 digit angka"
-          hint="Lihat di KTP Anda, baris paling atas."
-          error={errors.nik?.message}
-          {...register('nik')}
-        />
-        <Input
-          label="PIN"
-          type="password"
-          className="h-12 text-base tracking-widest"
-          inputMode="numeric"
-          maxLength={6}
-          autoComplete="current-password"
-          placeholder="••••••"
-          hint="6 angka yang Anda buat sendiri."
-          error={errors.pin?.message}
-          {...register('pin')}
-        />
+        <div className="space-y-4">
+          <Input
+            label="NIK"
+            className="h-12 text-base"
+            inputMode="numeric"
+            maxLength={16}
+            autoComplete="username"
+            placeholder="16 digit angka"
+            error={errors.nik?.message}
+            {...register('nik')}
+          />
+          <Input
+            label="PIN"
+            type="password"
+            className="h-12 text-base tracking-widest"
+            inputMode="numeric"
+            maxLength={6}
+            autoComplete="current-password"
+            placeholder="••••••"
+            error={errors.pin?.message}
+            {...register('pin')}
+          />
+        </div>
 
         <Button
           type="submit"
