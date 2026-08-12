@@ -1,0 +1,90 @@
+[
+  {
+    "id": "png-01",
+    "username": "dukuh",
+    "nama": "Sutrisno Hadiwijaya",
+    "jabatan": "DUKUH",
+    "berlakuSampai": null,
+    "status": "aktif",
+    "bisaKelolaAkun": true,
+    "dinonaktifkanOleh": null,
+    "dinonaktifkanPada": null
+  },
+  {
+    "id": "png-02",
+    "username": "rw01",
+    "nama": "Suryanto Wibowo",
+    "jabatan": "KETUA_RW",
+    "berlakuSampai": "2028-03-31",
+    "status": "aktif",
+    "bisaKelolaAkun": false,
+    "dinonaktifkanOleh": null,
+    "dinonaktifkanPada": null
+  },
+  {
+    "id": "png-03",
+    "username": "rt01",
+    "nama": "Hartono Setiawan",
+    "jabatan": "KETUA_RT",
+    "berlakuSampai": "2027-11-14",
+    "status": "aktif",
+    "bisaKelolaAkun": false,
+    "dinonaktifkanOleh": null,
+    "dinonaktifkanPada": null
+  },
+  {
+    "id": "png-04",
+    "username": "rt02",
+    "nama": "Wagiman Prasetya",
+    "jabatan": "KETUA_RT",
+    "berlakuSampai": "2026-09-02",
+    "status": "aktif",
+    "bisaKelolaAkun": false,
+    "dinonaktifkanOleh": null,
+    "dinonaktifkanPada": null
+  },
+  {
+    "id": "png-05",
+    "username": "rt03",
+    "nama": "Darmaji Kusuma",
+    "jabatan": "KETUA_RT",
+    "berlakuSampai": "2026-06-30",
+    "status": "aktif",
+    "bisaKelolaAkun": false,
+    "dinonaktifkanOleh": null,
+    "dinonaktifkanPada": null
+  },
+  {
+    "id": "png-06",
+    "username": "rt04",
+    "nama": "Parjiman Nugroho",
+    "jabatan": "KETUA_RT",
+    "berlakuSampai": "2029-01-20",
+    "status": "nonaktif",
+    "bisaKelolaAkun": false,
+    "dinonaktifkanOleh": "png-08",
+    "dinonaktifkanPada": "2026-04-18T10:12:00+07:00"
+  },
+  {
+    "id": "png-07",
+    "username": "rt05",
+    "nama": "Sukirman Atmaja",
+    "jabatan": "KETUA_RT",
+    "berlakuSampai": "2026-08-12",
+    "status": "aktif",
+    "bisaKelolaAkun": false,
+    "dinonaktifkanOleh": null,
+    "dinonaktifkanPada": null
+  },
+  {
+    "id": "png-08",
+    "username": "dukuh2021",
+    "nama": "Purnomo Sudarsana",
+    "jabatan": "DUKUH",
+    "berlakuSampai": "2026-05-31",
+    "status": "nonaktif",
+    "bisaKelolaAkun": true,
+    "dinonaktifkanOleh": "png-01",
+    "dinonaktifkanPada": "2026-06-01T09:05:00+07:00"
+  }
+]
