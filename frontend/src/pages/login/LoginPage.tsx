@@ -49,10 +49,7 @@ export default function LoginPage() {
   const errorMessage = pesanError(login.error, 'Gagal masuk. Coba lagi.');
 
   return (
-    <AuthLayout
-      title="Masuk"
-      description="Untuk warga padukuhan. Masukkan NIK dan PIN Anda."
-    >
+    <AuthLayout title="Masuk" description="Masukkan NIK dan PIN Anda.">
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         {errorMessage && <Alert tone="error">{errorMessage}</Alert>}
 
