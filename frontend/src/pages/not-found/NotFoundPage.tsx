@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
+import { paths } from '@/routes/paths';
 
 export default function NotFoundPage() {
   return (
@@ -11,7 +12,7 @@ export default function NotFoundPage() {
       <p className="max-w-sm text-sm text-slate-500">
         Halaman yang Anda cari tidak tersedia atau telah dipindahkan.
       </p>
-      <Link to="/">
+      <Link to={paths.landing}>
         <Button>Kembali ke Beranda</Button>
       </Link>
     </div>

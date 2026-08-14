@@ -15,8 +15,9 @@ import type { PieLabelRenderProps } from 'recharts';
 import {
   CHART_AXIS_COLOR,
   CHART_CURSOR_COLOR,
+  CHART_LEGEND_TEXT_COLOR,
+  CHART_SLICE_LABEL_COLOR,
   warnaSeri,
-  warnaTeksSeri,
 } from '@/lib/colors';
 import type { Distribusi } from '@/types/statistik';
 
@@ -68,7 +69,7 @@ interface DistribusiPieChartProps {
    * Kosongkan bila irisan tidak perlu berlabel.
    *
    * Teksnya dibuat pemanggil supaya komponen ini tidak ikut memformat angka;
-   * warnanya diambil dari `warnaTeksSeri` agar kontras di atas warna irisannya.
+   * warnanya selalu putih (`CHART_SLICE_LABEL_COLOR`).
    */
   labelIrisan?: (index: number) => string[];
 }
@@ -100,7 +101,7 @@ function labelDiIrisan(
     <text
       x={x}
       y={y}
-      fill={warnaTeksSeri(index)}
+      fill={CHART_SLICE_LABEL_COLOR}
       textAnchor="middle"
       dominantBaseline="central"
     >
@@ -108,9 +109,10 @@ function labelDiIrisan(
         <tspan
           key={isi}
           x={x}
-          dy={i === 0 ? -4 : 18}
-          fontSize={i === 0 ? 14 : 12}
-          fontWeight={i === 0 ? 600 : 400}
+          dy={i === 0 ? -5 : 19}
+          fontSize={i === 0 ? 14 : 13}
+          fontWeight={i === 0 ? 700 : 600}
+          opacity={1}
         >
           {isi}
         </tspan>
@@ -118,6 +120,16 @@ function labelDiIrisan(
     </text>
   );
 }
+
+/**
+ * Celah antar-irisan, dalam derajat.
+ *
+ * Spek desainnya "2px latar yang memisahkan", bukan baji lebar: pada radius
+ * donut besar (±270px) sudut ini jatuh di sekitar 2px, dan menyusut proporsional
+ * di chart kecil. Nilai lama (2°) menghasilkan celah ±10px — terbaca sebagai
+ * potongan, bukan sebagai spasi.
+ */
+const CELAH_DERAJAT = 0.6;
 
 /** Pie/donut chart untuk komposisi kategori. */
 export function DistribusiPieChart({
@@ -135,12 +147,16 @@ export function DistribusiPieChart({
             data={data}
             dataKey="value"
             nameKey="label"
-            // Cincin dilebarkan saat berlabel: di layar sempit, cincin 30%
+            // Recharts menjadikan grup donut tab stop (`rootTabIndex` bawaannya
+            // 0). Chart ini tidak punya aksi keyboard apa pun, jadi itu cuma
+            // perhentian kosong buat pengguna Tab — keluarkan dari urutan fokus.
+            rootTabIndex={-1}
+            // Cincin dilebarkan saat berlabel: di layar sempit, cincin tipis
             // tidak cukup menampung dua baris teks dan label mulai keluar ke
             // latar — teks putihnya jadi tak terbaca di sana.
-            innerRadius={labelIrisan ? '46%' : '58%'}
-            outerRadius={labelIrisan ? '92%' : '88%'}
-            paddingAngle={2}
+            innerRadius={labelIrisan ? '52%' : '58%'}
+            outerRadius={labelIrisan ? '88%' : '88%'}
+            paddingAngle={CELAH_DERAJAT}
             labelLine={false}
             label={
               labelIrisan
@@ -153,9 +169,27 @@ export function DistribusiPieChart({
               <Cell key={i} fill={warnaSeri(i)} />
             ))}
           </Pie>
-          <Tooltip contentStyle={{ borderRadius: 8, fontSize: 12 }} />
+          {/* Tooltip hanya untuk chart tanpa label langsung. Saat tiap irisan
+              sudah mencantumkan nama & jumlahnya sendiri, tooltip cuma
+              mengulang isi yang persis sama di atas gambar yang sudah bersih. */}
+          {!labelIrisan && (
+            <Tooltip
+              contentStyle={{
+                borderRadius: 8,
+                fontSize: 12,
+                border: 'none',
+                boxShadow: '0 4px 12px rgb(15 23 42 / 0.12)',
+              }}
+            />
+          )}
           {showLegend && (
-            <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
+            <Legend
+              iconType="circle"
+              wrapperStyle={{ fontSize: 12 }}
+              formatter={(value: string) => (
+                <span style={{ color: CHART_LEGEND_TEXT_COLOR }}>{value}</span>
+              )}
+            />
           )}
         </PieChart>
       </ResponsiveContainer>

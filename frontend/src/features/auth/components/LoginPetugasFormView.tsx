@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { paths } from '@/routes/paths';
 import type { PetugasLoginFormValues } from '../schemas';
-import { AuthLayout } from './AuthLayout';
+import { AuthLayout } from '@/components/layout/AuthLayout';
 
 interface LoginPetugasFormViewProps {
   register: UseFormRegister<PetugasLoginFormValues>;

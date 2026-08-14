@@ -12,7 +12,7 @@ function readString(value: string | undefined, fallback: string): string {
 export const env = {
   apiBaseUrl: readString(import.meta.env.VITE_API_BASE_URL, '/api'),
   apiMode: readString(import.meta.env.VITE_API_MODE, 'mock') as ApiMode,
-  appName: readString(import.meta.env.VITE_APP_NAME, 'NIA'),
+  appName: readString(import.meta.env.VITE_APP_NAME, 'SIDUK'),
 } as const;
 
 export const isMockMode = env.apiMode === 'mock';

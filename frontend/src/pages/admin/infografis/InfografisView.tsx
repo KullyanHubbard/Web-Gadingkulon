@@ -6,7 +6,7 @@ import {
 } from '@/components/ui/DistribusiCharts';
 import { QueryBoundary } from '@/components/ui/QueryBoundary';
 import { cn } from '@/lib/utils';
-import type { PanelInfografis } from './infografis-view-model';
+import type { PanelInfografis } from './view-model';
 
 interface InfografisViewProps {
   isLoading: boolean;

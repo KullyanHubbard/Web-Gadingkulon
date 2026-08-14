@@ -69,6 +69,7 @@ features/penduduk/
 ├── hooks/          # React Query hooks (use-penduduk.ts)
 ├── types.ts        # model domain
 ├── labels.ts       # peta enum -> teks tampilan
+├── view-model.ts   # data mentah -> bentuk siap tampil
 └── utils.ts        # helper murni khusus fitur
 ```
 
@@ -105,6 +106,11 @@ export const pendudukApi: PendudukApi = isMockMode ? mockPendudukApi : httpPendu
 - File komponen: `PascalCase.tsx`. File non-komponen: `kebab-case.ts` (`use-penduduk.ts`, `api-client.ts`).
 - Konstanta modul: `UPPER_SNAKE_CASE` (`PAGE_SIZE`).
 - **Istilah domain memakai Bahasa Indonesia** (`penduduk`, `noKK`, `jenisKelamin`) agar selaras dengan data asli.
+  Sebaliknya, **primitif UI tetap Inggris** (`Button`, `Sidebar`, `LoginButton`) — Bahasa Indonesia dipakai
+  karena datanya berbahasa Indonesia, bukan sebagai gaya bahasa menyeluruh.
+- File view-model **selalu bernama `view-model.ts`** (tanpa prefiks) dan tinggal di folder yang memilikinya:
+  di dalam fitur bila logikanya milik satu fitur, atau di folder halaman bila justru di situ dua fitur bertemu
+  (lihat `pages/admin/infografis/view-model.ts` — memindahkannya ke dalam fitur akan melanggar aturan impor §4).
 
 ### TypeScript
 

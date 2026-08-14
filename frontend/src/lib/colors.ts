@@ -25,32 +25,23 @@ export const CHART_SERIES_COLORS = [
   'var(--chart-7)',
 ] as const;
 
-/**
- * Warna teks untuk label yang dicetak DI ATAS irisan seri, sejajar indeksnya
- * dengan `CHART_SERIES_COLORS`. Pasangannya ditentukan di `styles/index.css`.
- */
-const CHART_SERIES_TEXT_COLORS = [
-  'var(--chart-1-text)',
-  'var(--chart-2-text)',
-  'var(--chart-3-text)',
-  'var(--chart-4-text)',
-  'var(--chart-5-text)',
-  'var(--chart-6-text)',
-  'var(--chart-7-text)',
-] as const;
-
 /** Warna seri ke-`index`, berputar bila kategorinya lebih banyak dari warnanya. */
 export function warnaSeri(index: number): string {
   return CHART_SERIES_COLORS[index % CHART_SERIES_COLORS.length];
 }
 
-/** Warna teks yang kontras di atas `warnaSeri(index)`. */
-export function warnaTeksSeri(index: number): string {
-  return CHART_SERIES_TEXT_COLORS[index % CHART_SERIES_TEXT_COLORS.length];
-}
+/** Warna teks label yang dicetak DI ATAS irisan donut — selalu putih polos. */
+export const CHART_SLICE_LABEL_COLOR = 'var(--chart-slice-label)';
 
 /** Warna label sumbu chart. */
 export const CHART_AXIS_COLOR = 'var(--chart-axis)';
+
+/**
+ * Warna teks legenda. Sengaja token teks, bukan warna seri: seri terang tidak
+ * punya kontras yang cukup untuk dibaca sebagai huruf. Identitasnya dibawa
+ * bulatan berwarna di sebelah teks.
+ */
+export const CHART_LEGEND_TEXT_COLOR = 'var(--chart-legend-text)';
 
 /** Warna sorotan (hover) di belakang batang chart. */
 export const CHART_CURSOR_COLOR = 'var(--chart-cursor)';

@@ -1,4 +1,4 @@
-import type { InfografisData } from '@/features/infografis/types';
+import type { InfografisData } from './types';
 
 /** Empat angka ringkas di puncak dashboard. */
 export interface StatRingkas {

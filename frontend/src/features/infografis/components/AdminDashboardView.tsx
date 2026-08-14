@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { DistribusiBarChart } from '@/components/ui/DistribusiCharts';
 import { QueryBoundary } from '@/components/ui/QueryBoundary';
-import { StatCard } from '@/features/infografis/components/StatCard';
+import { StatCard } from '@/components/ui/StatCard';
 import { paths } from '@/routes/paths';
 import type { Distribusi } from '@/types/statistik';
-import type { StatRingkas } from './dashboard-view-model';
+import type { StatRingkas } from '../view-model';
 
 /** Ikon per kartu statistik — murni pilihan tampilan, jadi dipetakan di sini. */
 const ikonStat: Record<StatRingkas['id'], LucideIcon> = {

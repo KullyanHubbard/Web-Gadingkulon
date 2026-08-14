@@ -144,19 +144,37 @@ Tidak ada satu pun angka statistik yang ditulis di komponen. Seluruhnya mengalir
 
 Tidak ada token baru; palet tertutup di `tailwind.config.js` tetap utuh.
 
-Dua perubahan di `styles/index.css`, nilainya tetap diambil dari
+Perubahan di `styles/index.css`, nilainya tetap diambil dari
 `theme('colors.brand.*')`:
 
-1. Urutan `--chart-1..7` diselang-seling (`600 → 300 → 900 → 500 → 200 → 700 →
-   400`) supaya irisan donut yang bersebelahan tidak nyaris kembar.
-2. Token teks `--chart-1-text..7-text` untuk label yang dicetak **di atas**
-   irisan. Dipasangkan satu per satu: seri gelap dapat `white`, seri terang
-   dapat `slate-900`. Kontras terendah 5,4:1 (putih di atas `brand-600`).
-   Mengubah urutan seri berarti harus mengubah pasangan teksnya juga.
+1. **Slot 1–3 adalah tangga ordinal gelap → terang** (`800 → 600 → 400`), bukan
+   urutan selang-seling. Palet NIA cuma punya satu hue, jadi seri diwarnai
+   sebagai **ordinal**, bukan kategorikal — dan karena data terurut menurun,
+   irisan terbesar otomatis paling pekat. Tervalidasi: lightness monoton,
+   jarak antar-langkah ΔL ≥ 0,06, ujung terang 2,57:1 di atas `slate-50`.
+   `brand-300` **sengaja dibuang dari slot 1–3**: kontrasnya cuma 1,77:1 —
+   irisannya lenyap ke latar. Itu sebab utama donut versi lama terlihat pucat.
+2. Ramp brand **tidak sanggup 7 langkah ordinal sekaligus** (jarak antar-step
+   terlalu rapat), jadi slot 4–7 kembali selang-seling. Itu batas palet
+   satu-hue, bukan kelalaian: chart dengan >3 kategori memang lebih tepat
+   dipecah ketimbang ditambahi warna.
+3. Token teks `--chart-slice-label` untuk label yang dicetak **di atas**
+   irisan: putih polos di semua seri, bukan dipilih per kontras.
+4. `--chart-legend-text` baru: teks legenda memakai **token teks**, bukan warna
+   serinya sendiri. Seri terang hanya 1,9–2,7:1 di atas kartu putih — tak
+   terbaca sebagai huruf. Identitasnya dibawa bulatan berwarna di sebelahnya.
 
-Cincin donut dilebarkan (`46%`–`92%`, dari `58%`–`88%`) **hanya saat berlabel**:
-di layar sempit cincin tipis tidak muat dua baris teks, dan label yang keluar ke
-latar membuat teks putih hilang. Chart tanpa label tidak terpengaruh.
+Cincin donut `52%`–`88%` saat berlabel: cukup tebal untuk memuat dua baris teks
+di layar sempit, tanpa jadi gelang tambun. Celah antar-irisan `0,6°` (≈2px pada
+radius donut besar) — nilai lama `2°` menghasilkan celah ±10px yang terbaca
+sebagai potongan, bukan spasi.
+
+**Donut ini tidak punya efek hover sama sekali.** Tidak ada sorotan/peredupan
+irisan, dan tooltip dimatikan untuk chart berlabel — isinya persis sama dengan
+label yang sudah menempel di tiap irisan. Chart-nya adalah gambar yang sudah
+selesai dibaca dalam keadaan diam; menyorot irisan tidak menambah informasi apa
+pun, cuma membuat gambar berkedip saat kursor lewat. Kalau efek sorot mau
+dihidupkan lagi, itu keputusan sadar — bukan bawaan yang kembali diam-diam.
 
 ## Verifikasi
 

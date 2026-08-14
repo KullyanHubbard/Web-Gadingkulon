@@ -35,14 +35,17 @@ export function StatistikPanelView({
           showLegend={false}
           labelIrisan={(i) => {
             const baris = data.baris[i];
-            return baris ? [baris.label, baris.jumlahTeks] : [];
+            return baris ? [baris.label, baris.persenTeks] : [];
           }}
           center={
             <>
-              <span className="text-6xl font-bold tabular-nums text-slate-900">
+              {/* Hero figure: sengaja TANPA tabular-nums — angka lebar-tetap
+                  terlihat renggang di ukuran display. Itu untuk kolom angka
+                  yang harus lurus ke bawah, bukan untuk satu angka besar. */}
+              <span className="text-7xl font-bold leading-none text-slate-900">
                 {data.totalTeks}
               </span>
-              <span className="mt-1 text-sm uppercase tracking-widest text-slate-400">
+              <span className="mt-2 text-xs font-medium uppercase tracking-widest text-slate-400">
                 jiwa
               </span>
             </>

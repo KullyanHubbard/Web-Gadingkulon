@@ -11,29 +11,34 @@
        tetap satu sumber kebenaran — jangan tulis hex di sini atau di komponen.
        Dikonsumsi lewat @/lib/colors.
 
-       Urutannya selang-seling gelap–terang, bukan menurun bertahap: dua seri
-       yang bersebelahan selalu beda jauh, jadi irisan donut tetap terbaca. */
-    --chart-1: theme('colors.brand.600');
-    --chart-2: theme('colors.brand.300');
-    --chart-3: theme('colors.brand.900');
-    --chart-4: theme('colors.brand.500');
-    --chart-5: theme('colors.brand.200');
-    --chart-6: theme('colors.brand.700');
-    --chart-7: theme('colors.brand.400');
-    /* Warna teks yang dicetak DI ATAS irisan seri di atasnya. Dipasangkan satu
-       per satu: seri gelap dapat putih, seri terang dapat slate gelap. Rasio
-       kontras terendah di antaranya 5,4:1 (putih di atas brand-600), jadi
-       label tetap terbaca. Ganti urutan seri di atas -> ganti pasangannya juga. */
-    --chart-1-text: theme('colors.white');
-    --chart-2-text: theme('colors.slate.900');
-    --chart-3-text: theme('colors.white');
-    --chart-4-text: theme('colors.white');
-    --chart-5-text: theme('colors.slate.900');
-    --chart-6-text: theme('colors.white');
-    --chart-7-text: theme('colors.slate.900');
+       SLOT 1-3 adalah tangga ordinal gelap -> terang, bukan urutan acak. Palet
+       NIA hanya punya satu hue, jadi seri diwarnai sebagai ordinal (satu hue,
+       lightness menurun) — dan karena data terurut menurun, irisan terbesar
+       otomatis paling gelap ("lebih banyak = lebih pekat").
+       Tervalidasi: lightness monoton, jarak antar-langkah dL >= 0,06, dan ujung
+       terang 2,57:1 terhadap latar slate-50. brand-300 SENGAJA tidak dipakai di
+       slot 1-3: kontrasnya cuma 1,77:1, jadi irisannya lenyap ke latar.
+
+       Ramp brand tidak sanggup 7 langkah ordinal sekaligus (jarak antar-step
+       terlalu rapat), jadi slot 4-7 kembali selang-seling — itu batas palet
+       satu-hue, bukan kelalaian. Chart dengan >3 kategori memang lebih tepat
+       dipecah, bukan ditambah warna. */
+    --chart-1: theme('colors.brand.800');
+    --chart-2: theme('colors.brand.600');
+    --chart-3: theme('colors.brand.400');
+    --chart-4: theme('colors.brand.900');
+    --chart-5: theme('colors.brand.500');
+    --chart-6: theme('colors.brand.300');
+    --chart-7: theme('colors.brand.700');
+    /* Warna teks label di atas irisan donut — putih polos di semua seri. */
+    --chart-slice-label: theme('colors.white');
 
     --chart-axis: theme('colors.slate.600');
     --chart-cursor: theme('colors.slate.100');
+    /* Teks legenda memakai token teks, BUKAN warna serinya. Seri terang
+       (brand-300/400) cuma 1,9-2,7:1 di atas kartu putih — tak terbaca sebagai
+       teks. Identitas seri dibawa bulatan berwarna di sebelahnya. */
+    --chart-legend-text: theme('colors.slate.700');
   }
 
   html,
@@ -52,4 +57,22 @@
   .focus-ring {
     @apply outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-brand-500;
   }
+
+}
+
+/* Recharts memasang `tabindex="-1"` di tiap grup irisan. Elemen ber-tabindex
+   jadi fokus begitu diklik, dan Chrome menggambar outline bawaannya
+   mengelilingi *bounding box* grup itu — kotak hitam kaku di atas donut,
+   bukan mengikuti bentuk irisannya.
+
+   Aman dimatikan karena irisan chart bukan kontrol: tidak ada aksi keyboard
+   yang bisa dijalankan di situ, jadi tidak ada fokus yang perlu ditandai.
+   Elemen yang benar-benar interaktif memakai `.focus-ring` dan tak tersentuh
+   rule ini.
+
+   WAJIB di luar @layer: kelas `recharts-*` dibuat library saat runtime dan tak
+   pernah muncul di source, jadi di dalam @layer Tailwind membuangnya saat purge
+   dan rule ini hilang diam-diam dari bundle. */
+.recharts-wrapper :focus {
+  outline: none;
 }

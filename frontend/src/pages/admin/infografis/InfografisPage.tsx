@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useInfografis } from '@/features/infografis/hooks/use-infografis';
-import { toPanelInfografis } from './infografis-view-model';
+import { toPanelInfografis } from './view-model';
 import { InfografisView } from './InfografisView';
 
 /** Container halaman infografis: ambil agregat, ubah jadi panel siap tampil. */

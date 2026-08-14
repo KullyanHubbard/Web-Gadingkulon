@@ -4,7 +4,7 @@ import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import type { SetPinFormValues } from '../schemas';
-import { AuthLayout } from './AuthLayout';
+import { AuthLayout } from '@/components/layout/AuthLayout';
 
 interface AktivasiPinViewProps {
   /** Nama pemilik NIK, untuk dikonfirmasi warga sebelum membuat PIN. */
