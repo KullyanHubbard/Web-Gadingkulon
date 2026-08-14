@@ -47,6 +47,14 @@ export default {
       green: colors.green, // sukses, status aktif
       amber: colors.amber, // peringatan
       violet: colors.violet, // aksen statistik netral (StatCard)
+
+      // Ramp donut RW (statistik publik). Hanya 3 shade yang dipakai — sengaja
+      // tidak buka seluruh skala indigo agar palet tetap tertutup.
+      indigo: {
+        300: colors.indigo[300],
+        500: colors.indigo[500],
+        800: colors.indigo[800],
+      },
     },
     extend: {
       // Tanpa palet bawaan, `borderColor.DEFAULT` jatuh ke `currentColor`.

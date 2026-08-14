@@ -30,6 +30,13 @@ export function warnaSeri(index: number): string {
   return CHART_SERIES_COLORS[index % CHART_SERIES_COLORS.length];
 }
 
+/** Ramp indigo khusus donut RW (statistik publik), tua->muda. */
+export const CHART_RW_COLORS = [
+  'var(--chart-rw-1)',
+  'var(--chart-rw-2)',
+  'var(--chart-rw-3)',
+] as const;
+
 /** Warna teks label yang dicetak DI ATAS irisan donut — selalu putih polos. */
 export const CHART_SLICE_LABEL_COLOR = 'var(--chart-slice-label)';
 

@@ -1,5 +1,6 @@
 import { DistribusiPieChart } from '@/components/ui/DistribusiCharts';
 import { QueryBoundary } from '@/components/ui/QueryBoundary';
+import { CHART_RW_COLORS } from '@/lib/colors';
 import type { RingkasanStatistik } from '../view-model';
 
 interface StatistikPanelViewProps {
@@ -9,9 +10,9 @@ interface StatistikPanelViewProps {
 }
 
 /**
- * Panel statistik di kolom tengah halaman masuk: satu donut besar, tanpa judul
- * dan tanpa legenda. Seluruh keterangan hidup di dalam chart — nama RW beserta
- * jumlah jiwanya dicetak di atas irisannya, totalnya di lubang donut.
+ * Panel statistik di kolom tengah halaman masuk: satu donut, tanpa judul dan
+ * tanpa legenda. Nama RW dicetak di irisannya, persentasenya muncul saat hover,
+ * totalnya di lubang donut.
  *
  * Tampilan saja: semua angka sudah berupa string dari `view-model.ts`.
  */
@@ -31,11 +32,13 @@ export function StatistikPanelView({
       {(data) => (
         <DistribusiPieChart
           data={data.distribusi}
-          height={640}
+          height={384}
           showLegend={false}
+          warna={CHART_RW_COLORS}
           labelIrisan={(i) => {
             const baris = data.baris[i];
-            return baris ? [baris.label, baris.persenTeks] : [];
+            // Persentase pindah ke tooltip; label irisan cukup nama RW.
+            return baris ? [baris.label] : [];
           }}
           center={
             <>

@@ -33,6 +33,11 @@
     /* Warna teks label di atas irisan donut — putih polos di semua seri. */
     --chart-slice-label: theme('colors.white');
 
+    /* Ramp donut RW: indigo tua->muda; irisan terbesar dapat yang tergelap. */
+    --chart-rw-1: theme('colors.indigo.800');
+    --chart-rw-2: theme('colors.indigo.500');
+    --chart-rw-3: theme('colors.indigo.300');
+
     --chart-axis: theme('colors.slate.600');
     --chart-cursor: theme('colors.slate.100');
     /* Teks legenda memakai token teks, BUKAN warna serinya. Seri terang

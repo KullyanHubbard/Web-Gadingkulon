@@ -16,6 +16,7 @@ import {
   CHART_AXIS_COLOR,
   CHART_CURSOR_COLOR,
   CHART_LEGEND_TEXT_COLOR,
+  CHART_SERIES_COLORS,
   CHART_SLICE_LABEL_COLOR,
   warnaSeri,
 } from '@/lib/colors';
@@ -72,6 +73,8 @@ interface DistribusiPieChartProps {
    * warnanya selalu putih (`CHART_SLICE_LABEL_COLOR`).
    */
   labelIrisan?: (index: number) => string[];
+  /** Warna irisan; default seri brand. Urutannya = urutan data. */
+  warna?: readonly string[];
 }
 
 /** Ambil nilai numerik dari properti Recharts yang bertipe longgar. */
@@ -101,6 +104,7 @@ function labelDiIrisan(
     <text
       x={x}
       y={y}
+      className="font-sans"
       fill={CHART_SLICE_LABEL_COLOR}
       textAnchor="middle"
       dominantBaseline="central"
@@ -138,7 +142,9 @@ export function DistribusiPieChart({
   showLegend = true,
   center,
   labelIrisan,
+  warna = CHART_SERIES_COLORS,
 }: DistribusiPieChartProps) {
+  const total = data.reduce((sum, d) => sum + d.value, 0);
   return (
     <div className="relative">
       <ResponsiveContainer width="100%" height={height}>
@@ -157,6 +163,7 @@ export function DistribusiPieChart({
             innerRadius={labelIrisan ? '52%' : '58%'}
             outerRadius={labelIrisan ? '88%' : '88%'}
             paddingAngle={CELAH_DERAJAT}
+            strokeWidth={1}
             labelLine={false}
             label={
               labelIrisan
@@ -166,22 +173,27 @@ export function DistribusiPieChart({
             }
           >
             {data.map((_, i) => (
-              <Cell key={i} fill={warnaSeri(i)} />
+              <Cell key={i} fill={warna[i % warna.length]} />
             ))}
           </Pie>
-          {/* Tooltip hanya untuk chart tanpa label langsung. Saat tiap irisan
-              sudah mencantumkan nama & jumlahnya sendiri, tooltip cuma
-              mengulang isi yang persis sama di atas gambar yang sudah bersih. */}
-          {!labelIrisan && (
-            <Tooltip
-              contentStyle={{
-                borderRadius: 8,
-                fontSize: 12,
-                border: 'none',
-                boxShadow: '0 4px 12px rgb(15 23 42 / 0.12)',
-              }}
-            />
-          )}
+          {/* Chart berlabel: nama RW ada di irisan, persentasenya pindah ke
+              tooltip. Chart tanpa label: tooltip menampilkan jumlah apa adanya. */}
+          <Tooltip
+            contentStyle={{
+              borderRadius: 8,
+              fontSize: 12,
+              border: 'none',
+              boxShadow: '0 4px 12px rgb(15 23 42 / 0.12)',
+            }}
+            formatter={
+              labelIrisan
+                ? (value: unknown) =>
+                    total === 0
+                      ? '—'
+                      : `${Math.round((angka(value) / total) * 100)}%`
+                : undefined
+            }
+          />
           {showLegend && (
             <Legend
               iconType="circle"
