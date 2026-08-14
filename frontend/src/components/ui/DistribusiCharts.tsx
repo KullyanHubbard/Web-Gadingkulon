@@ -144,7 +144,6 @@ export function DistribusiPieChart({
   labelIrisan,
   warna = CHART_SERIES_COLORS,
 }: DistribusiPieChartProps) {
-  const total = data.reduce((sum, d) => sum + d.value, 0);
   return (
     <div className="relative">
       <ResponsiveContainer width="100%" height={height}>
@@ -176,24 +175,19 @@ export function DistribusiPieChart({
               <Cell key={i} fill={warna[i % warna.length]} />
             ))}
           </Pie>
-          {/* Chart berlabel: nama RW ada di irisan, persentasenya pindah ke
-              tooltip. Chart tanpa label: tooltip menampilkan jumlah apa adanya. */}
-          <Tooltip
-            contentStyle={{
-              borderRadius: 8,
-              fontSize: 12,
-              border: 'none',
-              boxShadow: '0 4px 12px rgb(15 23 42 / 0.12)',
-            }}
-            formatter={
-              labelIrisan
-                ? (value: unknown) =>
-                    total === 0
-                      ? '—'
-                      : `${Math.round((angka(value) / total) * 100)}%`
-                : undefined
-            }
-          />
+          {/* Tooltip hanya untuk chart tanpa label langsung. Saat tiap irisan
+              sudah mencantumkan nama & jumlahnya sendiri, tooltip cuma
+              mengulang isi yang persis sama di atas gambar yang sudah bersih. */}
+          {!labelIrisan && (
+            <Tooltip
+              contentStyle={{
+                borderRadius: 8,
+                fontSize: 12,
+                border: 'none',
+                boxShadow: '0 4px 12px rgb(15 23 42 / 0.12)',
+              }}
+            />
+          )}
           {showLegend && (
             <Legend
               iconType="circle"
