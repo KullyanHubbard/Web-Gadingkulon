@@ -61,10 +61,7 @@ export function StatistikPanelView({
           </div>
 
           <Card className="w-72 max-w-full shrink-0">
-            <CardHeader
-              title="Statistik Warga"
-              description="Rincian jumlah warga per RW"
-            />
+            <CardHeader title="Statistik Warga" />
             <ul className="divide-y divide-slate-100 px-5">
               {data.baris.map((baris, i) => (
                 <li

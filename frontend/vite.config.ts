@@ -12,12 +12,5 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    // Proxy ke FastAPI saat backend sudah ada. Ubah target sesuai kebutuhan.
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
-    },
   },
 });

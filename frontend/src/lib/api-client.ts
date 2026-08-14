@@ -6,10 +6,7 @@ import { env } from '@/config/env';
 import { ApiError } from '@/types/api';
 import { getStoredToken, clearSession } from '@/features/auth/token-storage';
 
-/**
- * Instance HTTP tunggal untuk memanggil FastAPI.
- * Digunakan oleh implementasi API mode "http". Mode "mock" tidak memakainya.
- */
+/** Instance HTTP tunggal untuk memanggil FastAPI. */
 export const apiClient: AxiosInstance = axios.create({
   baseURL: env.apiBaseUrl,
   headers: { 'Content-Type': 'application/json' },

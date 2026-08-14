@@ -4,21 +4,25 @@ Portal Data Kependudukan Desa. React + TypeScript + Vite.
 
 ## Menjalankan
 
+Backend (FastAPI, data dummy) harus jalan dulu — lihat
+[`../backend/README.md`](../backend/README.md).
+
 ```bash
 npm install
-cp .env.example .env   # opsional, default sudah mode mock
+cp .env.example .env   # arahkan VITE_API_BASE_URL ke backend
 npm run dev            # http://localhost:5173
 ```
 
-Aplikasi berjalan penuh **tanpa backend** (mode `mock`). Data dummy ada di
-`src/mocks/data/`.
+## Akun Demo (data dummy backend)
 
-## Akun Demo (mode mock)
+| Peran                   | Kredensial                                          |
+| ------------------------ | --------------------------------------------------- |
+| Dukuh                     | `dukuh` / `dukuh123`                                |
+| Ketua RT 03                | `rt03` / `rt123`                                     |
+| Warga (sudah aktif)       | NIK `3204120210750001` / PIN `112233`                |
+| Warga (belum aktivasi)    | NIK `3204124205790001`, lahir `02-05-1979`            |
 
-| Peran               | Username | Password   |
-| ------------------- | -------- | ---------- |
-| Admin (perangkat desa) | `admin`  | `admin123` |
-| Warga               | `warga`  | `warga123` |
+Daftar ini juga tercetak di terminal saat backend dinyalakan.
 
 - **Warga** hanya melihat data NIK & Kartu Keluarganya sendiri.
 - **Admin** melihat dashboard, seluruh data penduduk (cari + paginasi), dan infografis.
@@ -32,11 +36,5 @@ Aplikasi berjalan penuh **tanpa backend** (mode `mock`). Data dummy ada di
 | `npm run typecheck` | Cek tipe (tsc)                  |
 | `npm run lint`      | ESLint                          |
 | `npm run format`    | Prettier                        |
-
-## Menyambungkan ke Backend (FastAPI) nanti
-
-1. Lengkapi implementasi `http*Api` di `src/features/*/api/`.
-2. Set `VITE_API_MODE=http` dan `VITE_API_BASE_URL` di `.env`.
-3. Proxy dev sudah mengarah ke `http://localhost:8000` (lihat `vite.config.ts`).
 
 Konvensi kode & arsitektur lengkap ada di [`../CLAUDE.md`](../CLAUDE.md).

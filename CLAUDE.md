@@ -6,6 +6,19 @@ kode agar hasil tetap rapi dan konsisten.
 
 ---
 
+## Kondisi Saat Ini
+
+- **Backend:** aktif — FastAPI, 12 endpoint (auth, penduduk, kartu-keluarga,
+  infografis, statistik publik). Daftar lengkap di §11.
+- **Frontend:** aktif, http-only — semua fitur memanggil backend langsung
+  lewat `apiClient`. Backend harus jalan (`localhost:8000`) agar frontend
+  berfungsi.
+- **Database:** belum ada. Data berasal dari generator in-memory
+  (`backend/app/data/dummy.py`), hilang setiap restart backend.
+- **Direncanakan:** migrasi ke database asli dengan pola seed/reset/import.
+
+---
+
 ## 1. Tentang Proyek
 
 Web untuk melihat data kependudukan desa berbasis **NIK / No. KK**.
@@ -15,7 +28,9 @@ Web untuk melihat data kependudukan desa berbasis **NIK / No. KK**.
 | **USER**  | Warga. Hanya melihat data NIK miliknya sendiri + anggota Kartu Keluarganya |
 | **ADMIN** | Perangkat desa. Melihat data pribadi, **seluruh data penduduk**, & infografis |
 
-**Status:** Frontend dulu (mode data _mock_). Backend menyusul.
+**Status:** Frontend + backend aktif. Backend (`backend/`) FastAPI dengan data
+dummy di memori (200 KK diacak, lihat `backend/app/data/dummy.py`) — belum
+tersambung Postgres.
 
 ## 2. Tech Stack
 
@@ -28,8 +43,8 @@ Web untuk melihat data kependudukan desa berbasis **NIK / No. KK**.
 | Auth state  | Zustand                                                              |
 | Form        | React Hook Form + Zod                                                |
 | Charts      | Recharts                                                             |
-| Backend*    | Python + FastAPI (*belum dibuat)                                    |
-| Database*   | PostgreSQL (dikelola via DBeaver) (*menyusul)                       |
+| Backend     | Python + FastAPI (data dummy in-memory)                              |
+| Database    | PostgreSQL (dikelola via DBeaver) — direncanakan                    |
 
 ## 3. Struktur Direktori
 
@@ -50,12 +65,11 @@ NIA-WEB/
 │       │   └── statistik-publik/ # agregat halaman depan (tanpa login)
 │       ├── hooks/            # hook generik lintas fitur (useDebounce, …)
 │       ├── lib/              # klien & util lintas fitur (api-client, utils, query-client)
-│       ├── mocks/            # data & util dummy untuk mode mock
 │       ├── pages/            # komponen halaman (route target)
 │       ├── routes/           # definisi route, guards, paths
 │       ├── styles/           # CSS global + Tailwind
 │       └── types/            # tipe lintas fitur (api.ts)
-└── backend/                  # FastAPI (BELUM dibuat)
+└── backend/                  # FastAPI (aktif, data dummy)
 ```
 
 ## 4. Arsitektur Berbasis Fitur (feature-first)
@@ -80,22 +94,26 @@ features/penduduk/
 - `components/ui` **tidak boleh** impor dari `features/*` (harus generik).
 - `pages/*` merakit `features/*` + `components/*`; jangan taruh logika bisnis berat di sini.
 
-## 5. Lapisan Data — Kontrak API yang Bisa Ditukar
+## 5. Lapisan Data — Kontrak API
 
-Backend belum ada, jadi tiap fitur mendefinisikan **kontrak API** lalu menyediakan
-dua implementasi. Pemilihan otomatis lewat `VITE_API_MODE`.
+Backend aktif (data dummy), jadi tiap fitur mendefinisikan **kontrak API** lalu
+menyediakan satu implementasi yang memanggil `apiClient` (axios → FastAPI).
+Tidak ada lagi cabang mock/http — mock sudah dicabut sepenuhnya (§11).
 
 ```ts
 export interface PendudukApi { list(...): Promise<...>; getByNik(...): ...; }
 
-const mockPendudukApi: PendudukApi = { /* baca src/mocks/data */ };
-const httpPendudukApi: PendudukApi = { /* panggil apiClient -> FastAPI */ };
-
-export const pendudukApi: PendudukApi = isMockMode ? mockPendudukApi : httpPendudukApi;
+export const pendudukApi: PendudukApi = {
+  async list(params) {
+    const { data } = await apiClient.get('/penduduk', { params });
+    return data;
+  },
+  // ...
+};
 ```
 
-> **Saat backend siap:** cukup lengkapi bagian `http*Api` dan set `VITE_API_MODE=http`.
-> **Komponen tidak perlu diubah** — mereka hanya kenal `pendudukApi` & React Query hooks.
+Komponen tidak pernah memanggil `apiClient` langsung — selalu lewat `pendudukApi`
+& React Query hooks di `features/*/hooks/`.
 
 ## 6. Konvensi Kode
 
@@ -220,7 +238,8 @@ untuk alasan lengkapnya):**
 
 - Hanya variabel berprefix `VITE_` yang terbaca di client.
 - **Jangan** baca `import.meta.env.*` langsung; akses via `@/config/env`.
-- Salin `.env.example` → `.env`. Kunci utama: `VITE_API_MODE` (`mock` | `http`), `VITE_API_BASE_URL`.
+- Salin `.env.example` → `.env`. Kunci utama: `VITE_API_BASE_URL` (default
+  `http://localhost:8000` — arahkan ke backend yang jalan, lihat §11).
 
 ## 9. Perintah
 
@@ -241,31 +260,35 @@ harus bersih (0 error). `npm run build` harus sukses.
 ## 10. Menambah Fitur / Halaman Baru (checklist)
 
 1. Buat folder `features/<nama>/` (types, api, hooks, components).
-2. Definisikan kontrak API + implementasi `mock` & `http`, pilih via `isMockMode`.
+2. Definisikan kontrak API (`interface XApi`) + implementasi yang memanggil `apiClient`.
 3. Tambah query keys + hook React Query di `features/<nama>/hooks/`.
 4. Buat halaman di `pages/…`, rakit dari komponen fitur.
 5. Daftarkan path di `routes/paths.ts`, route di `routes/AppRoutes.tsx` (bungkus guard yang sesuai), dan lazy-load halamannya.
 6. Tambah item menu di `components/layout/nav-config.ts` bila perlu.
 7. Jalankan `npm run typecheck && npm run lint && npm run build`.
 
-## 11. Rencana Backend (FastAPI) — saat mulai dibuat
+## 11. Backend (FastAPI) — aktif, data dummy
 
-Struktur yang diusulkan (belum ada, jangan dibuat sampai diminta):
+Struktur saat ini (lihat `backend/README.md` untuk cara menjalankan):
 
 ```
 backend/
 ├── app/
-│   ├── main.py            # entrypoint FastAPI
-│   ├── core/              # config, security (JWT), settings
-│   ├── api/routers/       # endpoint: auth, penduduk, infografis
-│   ├── models/            # SQLAlchemy models
-│   ├── schemas/           # Pydantic schemas (samakan bentuk dgn tipe frontend)
-│   ├── services/          # logika bisnis
-│   └── db/                # session, migrasi (Alembic)
+│   ├── main.py            # entrypoint FastAPI, CORS, exception handler
+│   ├── core/               # security (JWT/bcrypt), rate limit, audit log — semua in-memory
+│   ├── api/routers/       # auth, penduduk, publik, infografis
+│   ├── schemas/           # Pydantic — cerminan tipe frontend, harus sinkron manual
+│   └── data/               # generator dummy (200 KK) + akun demo
 └── requirements.txt
 ```
 
-Kontrak endpoint agar cocok dengan `http*Api` frontend:
+**Belum ada `models/`, `services/`, `db/`** — data hidup di memori proses
+(`app/data/dummy.py`), bukan Postgres. Tambahkan lapis itu (SQLAlchemy +
+Alembic) baru saat database asli benar-benar dipasang; sampai saat itu jangan
+scaffold folder kosong untuknya.
+
+Kontrak endpoint yang **sudah diimplementasikan** (bentuknya sinkron dengan
+`*Api` frontend):
 
 | Method | Path                              | Untuk                                   |
 | ------ | --------------------------------- | --------------------------------------- |
@@ -282,21 +305,24 @@ Kontrak endpoint agar cocok dengan `http*Api` frontend:
 | GET    | `/infografis`                     | agregat statistik (ADMIN)               |
 | GET    | `/publik/statistik`               | agregat halaman depan — **tanpa auth**, hanya cacah per RW |
 
-**Wajib ditegakkan backend** (guard frontend hanya UX):
+**Ditegakkan backend** (guard frontend hanya UX) — status implementasi saat ini:
 
-- `/publik/statistik` **hanya boleh mengembalikan cacah**. Tidak ada NIK, nama,
-  atau alamat — endpoint ini terbuka untuk siapa saja, jadi apa pun yang
+- ✅ `/publik/statistik` hanya mengembalikan cacah. Tidak ada NIK, nama, atau
+  alamat — endpoint ini terbuka untuk siapa saja, jadi apa pun yang
   ditambahkan ke sana otomatis menjadi konsumsi publik.
-- USER hanya boleh mengakses NIK miliknya + anggota `noKK` yang sama —
-  divalidasi dari **klaim JWT, bukan parameter request**.
-- PIN & password disimpan sebagai **hash** (argon2/bcrypt), tidak pernah polos.
-- `/auth/warga/aktivasi/cek` **di-throttle per NIK dan per IP**. Ruang tanggal
-  lahir kecil dan bisa ditebak — ini titik terlemah sistem, dan rate limit
-  adalah pertahanan utamanya.
-- Tiket aktivasi **sekali pakai**, umur pendek (±10 menit), terikat ke NIK.
-- Tolak aktivasi untuk NIK yang akunnya sudah aktif (cegah pengambilalihan).
-- Login warga dikunci sementara setelah beberapa PIN salah berturut-turut.
-- `reset-pin` hanya untuk `ADMIN` dan **dicatat di log audit** (siapa, kapan,
-  NIK siapa).
-- Status kependudukan (pindah/meninggal) menonaktifkan akses **otomatis** dari
-  data master, bukan lewat tugas manual admin.
+- ✅ USER hanya boleh mengakses NIK miliknya + anggota `noKK` yang sama —
+  divalidasi dari klaim JWT (`app/api/routers/penduduk.py`), bukan parameter
+  request.
+- ✅ PIN & password disimpan sebagai hash (`bcrypt`, `app/core/security.py`),
+  tidak pernah polos.
+- ✅ `/auth/warga/aktivasi/cek` di-throttle per NIK+IP; login warga dikunci
+  sementara setelah 5 PIN salah berturut-turut (`app/core/ratelimit.py`).
+  ponytail: pembatas ini di memori satu proses — kalau backend jalan lebih
+  dari satu instance, pindah ke penyimpanan bersama (mis. Redis).
+- ✅ Tiket aktivasi sekali pakai, umur ±10 menit, terikat ke NIK.
+- ✅ Aktivasi ditolak untuk NIK yang akunnya sudah aktif (cegah pengambilalihan).
+- ✅ `reset-pin` hanya untuk `ADMIN`, dicatat di log audit (`app/core/audit.py`
+  — baru ke console, belum ada endpoint buat membacanya).
+- ⬜ Status kependudukan (pindah/meninggal) menonaktifkan akses otomatis —
+  belum relevan, `Penduduk` belum punya field status. Tambahkan saat field
+  itu ada di data master.

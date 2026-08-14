@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { env } from '@/config/env';
 import { pesanError } from '@/lib/utils';
 import { useLoginWarga } from '../hooks/use-auth';
 import { useRedirectAfterLogin } from '../hooks/use-redirect-after-login';
@@ -9,13 +8,13 @@ import { wargaLoginSchema, type WargaLoginFormValues } from '../schemas';
 import { DemoAccountsNote } from './DemoAccountsNote';
 import { LoginWargaFormView } from './LoginWargaFormView';
 
-/** Akun contoh yang ikut ditanam di data mock (lihat `src/mocks/data`). */
+/** Akun contoh yang ikut di-seed di data dummy backend (lihat backend/app/data/akun.py). */
 const AKUN_DEMO = [
   <span key="aktif">
-    Warga sudah aktif: NIK <b>3204120208790004</b> / PIN <b>112233</b>
+    Warga sudah aktif: NIK <b>3204120210750001</b> / PIN <b>112233</b>
   </span>,
   <span key="belum-aktif">
-    Warga belum aktif: NIK <b>3204120101600008</b>, lahir <b>01-01-1960</b>
+    Warga belum aktif: NIK <b>3204124205790001</b>, lahir <b>02-05-1979</b>
   </span>,
 ];
 
@@ -50,9 +49,7 @@ export function LoginWargaForm() {
       errorMessage={pesanError(login.error, 'Gagal masuk. Coba lagi.')}
       bantuanTerbuka={bantuanTerbuka}
       onToggleBantuan={() => setBantuanTerbuka((v) => !v)}
-      catatanDemo={
-        env.apiMode === 'mock' ? <DemoAccountsNote items={AKUN_DEMO} /> : null
-      }
+      catatanDemo={<DemoAccountsNote items={AKUN_DEMO} />}
     />
   );
 }

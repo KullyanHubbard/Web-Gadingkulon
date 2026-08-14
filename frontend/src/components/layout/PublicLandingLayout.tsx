@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { PublicFooter } from './PublicFooter';
 import { PublicSidebar } from './PublicSidebar';
 import { PublicTopbar } from './PublicTopbar';
 
@@ -22,6 +23,8 @@ export function PublicLandingLayout({
       <main className="flex flex-1 flex-col justify-center px-6 py-10 lg:col-start-2 lg:row-start-1 lg:px-12">
         {children}
       </main>
+
+      <PublicFooter />
     </div>
   );
 }

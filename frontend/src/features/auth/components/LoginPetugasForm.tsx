@@ -1,6 +1,5 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { env } from '@/config/env';
 import { pesanError } from '@/lib/utils';
 import { useLoginPetugas } from '../hooks/use-auth';
 import { useRedirectAfterLogin } from '../hooks/use-redirect-after-login';
@@ -45,9 +44,7 @@ export function LoginPetugasForm() {
       onSubmit={onSubmit}
       isPending={login.isPending}
       errorMessage={pesanError(login.error, 'Gagal masuk. Coba lagi.')}
-      catatanDemo={
-        env.apiMode === 'mock' ? <DemoAccountsNote items={AKUN_DEMO} /> : null
-      }
+      catatanDemo={<DemoAccountsNote items={AKUN_DEMO} />}
     />
   );
 }
