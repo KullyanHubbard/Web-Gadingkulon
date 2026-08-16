@@ -1,11 +1,6 @@
 /**
- * Model domain Kependudukan — dipakai lintas fitur.
- *
- * Tinggal di `types/` (bukan di `features/penduduk/`) karena fitur infografis
- * juga menghitung agregat di atas bentuk data yang sama. Lihat CLAUDE.md §4:
- * apa pun yang dibagi antar fitur dinaikkan ke `types`/`lib`/`components`.
- *
- * Mengacu pada field kartu keluarga (KK) & KTP Indonesia.
+ * Model domain Kependudukan, mengacu field kartu keluarga (KK) & KTP Indonesia.
+ * Di `types/` karena penduduk & infografis sama-sama memakainya (CLAUDE.md §4).
  */
 
 export type JenisKelamin = 'LAKI_LAKI' | 'PEREMPUAN';
@@ -66,7 +61,6 @@ export interface Penduduk {
   deletedAt: string | null;
 }
 
-/** Satu Kartu Keluarga beserta seluruh anggotanya. */
 export interface KartuKeluarga {
   noKK: string;
   kepalaKeluarga: string;

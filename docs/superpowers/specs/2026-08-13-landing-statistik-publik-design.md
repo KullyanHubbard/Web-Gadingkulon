@@ -154,23 +154,11 @@ Tidak ada satu pun angka statistik yang ditulis di komponen. Seluruhnya mengalir
 
 Tidak ada token baru; palet tertutup di `tailwind.config.js` tetap utuh.
 
-Perubahan di `styles/index.css`, nilainya tetap diambil dari
-`theme('colors.brand.*')`:
+Perubahan di `styles/index.css`:
 
-1. **Slot 1–3 adalah tangga ordinal gelap → terang** (`800 → 600 → 400`), bukan
-   urutan selang-seling. Palet NIA cuma punya satu hue, jadi seri diwarnai
-   sebagai **ordinal**, bukan kategorikal — dan karena data terurut menurun,
-   irisan terbesar otomatis paling pekat. Tervalidasi: lightness monoton,
-   jarak antar-langkah ΔL ≥ 0,06, ujung terang 2,57:1 di atas `slate-50`.
-   `brand-300` **sengaja dibuang dari slot 1–3**: kontrasnya cuma 1,77:1 —
-   irisannya lenyap ke latar. Itu sebab utama donut versi lama terlihat pucat.
-2. Ramp brand **tidak sanggup 7 langkah ordinal sekaligus** (jarak antar-step
-   terlalu rapat), jadi slot 4–7 kembali selang-seling. Itu batas palet
-   satu-hue, bukan kelalaian: chart dengan >3 kategori memang lebih tepat
-   dipecah ketimbang ditambahi warna.
-3. Token teks `--chart-slice-label` untuk label yang dicetak **di atas**
+1. Token teks `--chart-slice-label` untuk label yang dicetak **di atas**
    irisan: putih polos di semua seri, bukan dipilih per kontras.
-4. `--chart-legend-text` baru: teks legenda memakai **token teks**, bukan warna
+2. `--chart-legend-text` baru: teks legenda memakai **token teks**, bukan warna
    serinya sendiri. Seri terang hanya 1,9–2,7:1 di atas kartu putih — tak
    terbaca sebagai huruf. Identitasnya dibawa bulatan berwarna di sebelahnya.
 

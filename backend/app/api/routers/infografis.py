@@ -1,7 +1,12 @@
 from fastapi import APIRouter, Depends
 
 from app.api.routers.auth import current_admin
-from app.data.agregat import distribusi_by, distribusi_kelompok_umur, format_rw
+from app.data.agregat import (
+    distribusi_by,
+    distribusi_kelompok_umur,
+    distribusi_pendidikan,
+    format_rw,
+)
 from app.data.store import DAFTAR_PENDUDUK
 from app.schemas.auth import AuthUser
 from app.schemas.infografis import InfografisData
@@ -21,7 +26,7 @@ async def infografis(_admin: AuthUser = Depends(current_admin)) -> InfografisDat
             1 for p in DAFTAR_PENDUDUK if p.jenisKelamin == "PEREMPUAN"
         ),
         perAgama=distribusi_by(DAFTAR_PENDUDUK, lambda p: p.agama),
-        perPendidikan=distribusi_by(DAFTAR_PENDUDUK, lambda p: p.pendidikan),
+        perPendidikan=distribusi_pendidikan(DAFTAR_PENDUDUK),
         perStatusPerkawinan=distribusi_by(
             DAFTAR_PENDUDUK, lambda p: p.statusPerkawinan
         ),

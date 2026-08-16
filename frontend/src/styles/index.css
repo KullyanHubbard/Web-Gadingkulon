@@ -5,52 +5,6 @@
 @layer base {
   :root {
     color-scheme: light;
-
-    /* Jembatan palet -> library yang butuh nilai warna, bukan class (Recharts).
-       Nilainya diturunkan dari tailwind.config.js lewat theme(), jadi palet
-       tetap satu sumber kebenaran — jangan tulis hex di sini atau di komponen.
-       Dikonsumsi lewat @/lib/colors.
-
-       Dua kelompok, dan memilih yang salah adalah bug tampilan — bukan selera:
-
-       ORDINAL dipakai kategori yang punya urutan (kelompok umur, jenjang
-       pendidikan). Satu hue, lightness turun rata, jadi urutannya terbaca dari
-       warnanya. Delapan langkah = jumlah kategori terbanyak yang ada
-       (8 jenjang pendidikan), jadi tidak pernah ada dua batang sewarna.
-
-       KATEGORIK dipakai kategori tanpa urutan (agama, status perkawinan).
-       Enam hue berbeda; mewarnainya dengan ramp ordinal akan menyiratkan
-       urutan yang tidak ada.
-
-       Alasan angka-angkanya ada di `tailwind.config.js`. */
-    --chart-ordinal-1: theme('colors.chart.ordinal.1');
-    --chart-ordinal-2: theme('colors.chart.ordinal.2');
-    --chart-ordinal-3: theme('colors.chart.ordinal.3');
-    --chart-ordinal-4: theme('colors.chart.ordinal.4');
-    --chart-ordinal-5: theme('colors.chart.ordinal.5');
-    --chart-ordinal-6: theme('colors.chart.ordinal.6');
-    --chart-ordinal-7: theme('colors.chart.ordinal.7');
-    --chart-ordinal-8: theme('colors.chart.ordinal.8');
-
-    --chart-kategori-1: theme('colors.chart.kategori.1');
-    --chart-kategori-2: theme('colors.chart.kategori.2');
-    --chart-kategori-3: theme('colors.chart.kategori.3');
-    --chart-kategori-4: theme('colors.chart.kategori.4');
-    --chart-kategori-5: theme('colors.chart.kategori.5');
-    --chart-kategori-6: theme('colors.chart.kategori.6');
-    /* Warna teks label di atas irisan donut — putih polos di semua seri. */
-    --chart-slice-label: theme('colors.white');
-
-    /* Ramp donut RW: indigo tua->muda; irisan terbesar dapat yang tergelap. */
-    --chart-rw-1: theme('colors.indigo.800');
-    --chart-rw-2: theme('colors.indigo.500');
-    --chart-rw-3: theme('colors.indigo.300');
-
-    --chart-axis: theme('colors.slate.600');
-    /* Teks legenda memakai token teks, BUKAN warna serinya. Seri terang
-       (brand-300/400) cuma 1,9-2,7:1 di atas kartu putih — tak terbaca sebagai
-       teks. Identitas seri dibawa bulatan berwarna di sebelahnya. */
-    --chart-legend-text: theme('colors.slate.700');
   }
 
   html,

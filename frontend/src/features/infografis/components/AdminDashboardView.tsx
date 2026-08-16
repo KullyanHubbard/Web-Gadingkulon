@@ -3,7 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
-import { DistribusiBarChart } from '@/components/ui/DistribusiCharts';
+import { DistribusiBarChart } from '@/components/ui/DistribusiBarChart';
 import { QueryBoundary } from '@/components/ui/QueryBoundary';
 import { StatCard } from '@/components/ui/StatCard';
 import { STAT_WARGA } from '@/lib/stat-warga';

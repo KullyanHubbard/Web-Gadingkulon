@@ -1,34 +1,24 @@
-import type { LucideIcon } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
-import { cn } from '@/lib/utils';
-
-export type Tone = 'brand' | 'green' | 'amber' | 'violet';
-
-const toneStyles: Record<Tone, string> = {
-  brand: 'bg-brand-50 text-brand-600',
-  green: 'bg-green-50 text-green-600',
-  amber: 'bg-amber-50 text-amber-600',
-  violet: 'bg-violet-50 text-violet-600',
-};
 
 export function StatCard({
   label,
   value,
-  icon: Icon,
-  tone = 'brand',
+  icon,
 }: {
   label: string;
   value: string | number;
-  icon: LucideIcon;
-  tone?: Tone;
+  /** URL gambar hasil impor dari `@/assets/icons`. */
+  icon: string;
 }) {
   return (
     <Card className="flex items-center gap-4 p-4">
-      <div className={cn('rounded-xl p-3', toneStyles[tone])}>
-        <Icon className="h-6 w-6" />
-      </div>
+      {/* Tanpa kotak latar: ikonnya ilustrasi yang sudah berwarna sendiri, dan
+          `Card` sudah putih — kotak putih di atas putih cuma markup mati. */}
+      {/* `alt` kosong: labelnya sudah ada di sebelah, ikon cuma hiasan. */}
+      {/* 44px: ikonnya ilustrasi berdetail, di bawah itu bentuknya luruh. */}
+      <img src={icon} alt="" className="h-11 w-11" />
       <div>
-        <p className="text-sm text-slate-500">{label}</p>
+        <p className="text-sm font-bold text-slate-900">{label}</p>
         <p className="text-2xl font-bold text-slate-900">{value}</p>
       </div>
     </Card>

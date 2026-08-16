@@ -1,14 +1,12 @@
 import { cn } from '@/lib/utils';
 import type { PanelDistribusi } from '@/types/statistik';
 import { Card, CardContent, CardHeader } from './Card';
-import { DistribusiBarChart, DistribusiPieChart } from './DistribusiCharts';
+import { DistribusiBarChart } from './DistribusiBarChart';
+import { DistribusiPieChart } from './DistribusiPieChart';
 
 /**
- * Satu panel chart berkartu.
- *
- * Hanya kartunya — grid pembungkusnya tetap milik pemanggil, karena breakpoint
- * kolomnya memang berbeda per halaman (infografis punya lebar penuh, rincian RW
- * berbagi ruang dengan rail kiri).
+ * Hanya kartunya — grid pembungkusnya milik pemanggil, karena breakpoint
+ * kolomnya berbeda per halaman.
  */
 export function PanelDistribusiCard({ panel }: { panel: PanelDistribusi }) {
   return (

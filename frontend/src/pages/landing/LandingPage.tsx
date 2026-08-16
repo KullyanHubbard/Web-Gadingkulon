@@ -6,24 +6,16 @@ import { StatistikPanel } from '@/features/statistik-publik/components/Statistik
 import { RincianRwPanel } from './RincianRwPanel';
 
 /**
- * Landing publik: statistik padukuhan yang boleh dilihat siapa saja, tanpa
- * login. Jalur masuk warga hidup sebagai tautan "Masuk" di layout, menuju
- * `pages/login/LoginPage.tsx`.
+ * Wilayah aktif hidup di URL (`/?rw=RW+19&rt=RT+1`), bukan `useState`, demi
+ * tombol Back: pembacanya mayoritas di ponsel, dan dengan state biasa Back dari
+ * rincian RW keluar dari situs alih-alih kembali ke dashboard.
  *
- * Pilihan wilayah hidup di URL (`/?rw=RW+19&rt=RT+1`), bukan `useState`.
- * Alasannya tombol Back peramban: pembacanya mayoritas di ponsel, dan di ponsel
- * Back adalah cara utama orang mundur. Dengan state biasa, Back dari rincian RW
- * keluar dari situs — bukan kembali ke dashboard.
+ * `rt` tidak pernah berdiri sendiri tanpa `rw`: nomor RT kebetulan unik
+ * se-padukuhan di dataset sekarang, tapi penomoran berulang per RW tetap sah.
  *
- * `rt` selalu berpasangan dengan `rw`, tidak berdiri sendiri: nomor RT unik
- * se-padukuhan di data sekarang, tapi itu kebetulan datasetnya — penomoran RT
- * yang berulang di tiap RW tetap sah dan tautannya harus tahan itu.
- *
- * Kuncinya label apa adanya (`'RW 19'`, `'RT 1'`), bukan kode wilayah, karena
- * itu satu-satunya bentuk yang dikirim `/publik/statistik`. Konsekuensinya
- * tautan lama mati kalau `format_rw`/`format_rt` di backend berubah; saat itu
- * terjadi, daftar di sidebar ikut berubah juga, jadi ketidakcocokannya
- * kelihatan langsung.
+ * Kuncinya label apa adanya (`'RW 19'`), bukan kode wilayah — itu satu-satunya
+ * bentuk yang dikirim `/publik/statistik`. Tautan lama mati kalau
+ * `format_rw`/`format_rt` di backend berubah.
  */
 export default function LandingPage() {
   const [params, setParams] = useSearchParams();

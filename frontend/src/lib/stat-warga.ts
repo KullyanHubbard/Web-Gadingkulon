@@ -1,29 +1,23 @@
-import { Home, User, UserRound, Users } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-import type { Tone } from '@/components/ui/StatCard';
+import ikonKeluarga from '@/assets/icons/keluarga.png';
+import ikonLakiLaki from '@/assets/icons/laki-laki.png';
+import ikonPenduduk from '@/assets/icons/penduduk.png';
+import ikonPerempuan from '@/assets/icons/perempuan.png';
 import { formatAngka } from './utils';
 
 /**
- * Empat angka ringkas kependudukan — dipakai dashboard pengurus, panel
- * statistik publik, dan rincian RW di halaman depan.
- *
- * Tinggal di `lib` karena ketiganya milik fitur/halaman berbeda dan fitur tidak
- * boleh saling impor (CLAUDE.md §4). Sebelumnya label, ikon, dan tone-nya
- * ditulis ulang di tiap tempat, dan ketiganya sempat berbeda-beda.
+ * Empat angka ringkas kependudukan, dipakai dashboard pengurus + statistik
+ * publik + rincian RW. Di `lib` karena ketiganya fitur berbeda dan fitur tidak
+ * boleh saling impor (CLAUDE.md §4).
  */
-
 export type StatWargaId = 'penduduk' | 'kk' | 'lakiLaki' | 'perempuan';
 
-/** Tampilan tetap tiap angka; yang berubah cuma nilainya. */
-export const STAT_WARGA: Record<
-  StatWargaId,
-  { label: string; icon: LucideIcon; tone: Tone }
-> = {
-  penduduk: { label: 'Total Penduduk', icon: Users, tone: 'brand' },
-  kk: { label: 'Kartu Keluarga', icon: Home, tone: 'violet' },
-  lakiLaki: { label: 'Laki-laki', icon: User, tone: 'green' },
-  perempuan: { label: 'Perempuan', icon: UserRound, tone: 'amber' },
-};
+export const STAT_WARGA: Record<StatWargaId, { label: string; icon: string }> =
+  {
+    penduduk: { label: 'Total Penduduk', icon: ikonPenduduk },
+    kk: { label: 'Kartu Keluarga', icon: ikonKeluarga },
+    lakiLaki: { label: 'Laki-laki', icon: ikonLakiLaki },
+    perempuan: { label: 'Perempuan', icon: ikonPerempuan },
+  };
 
 /** Bentuk minimal yang dibutuhkan `toStatWarga` — agregat mana pun cocok. */
 export interface TotalWarga {

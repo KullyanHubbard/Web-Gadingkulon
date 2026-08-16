@@ -1,9 +1,9 @@
 import { ChevronRight } from 'lucide-react';
 import { Card, CardHeader } from '@/components/ui/Card';
-import { DistribusiPieChart } from '@/components/ui/DistribusiCharts';
+import { DistribusiPieChart } from '@/components/ui/DistribusiPieChart';
 import { QueryBoundary } from '@/components/ui/QueryBoundary';
 import { StatCard } from '@/components/ui/StatCard';
-import { CHART_RW_COLORS } from '@/lib/colors';
+import { CHART_KATEGORI_COLORS } from '@/lib/colors';
 import { STAT_WARGA } from '@/lib/stat-warga';
 import type { RingkasanStatistik } from '../view-model';
 
@@ -15,15 +15,10 @@ interface StatistikPanelViewProps {
 }
 
 /**
- * Panel statistik di kolom tengah halaman masuk: donut di kiri (dekat
- * sidebar), tanpa judul dan tanpa legenda bawaan. Nama RW & persentasenya
- * dicetak langsung di irisannya (statis, tanpa hover — interaksi tooltip
- * menyusul), totalnya di lubang donut. Di kanan donut, kolom yang mengisi sisa
- * lebar: tiga kartu angka se-desa, lalu kartu ringkasan jumlah warga per RW.
- * Tiap baris RW membuka rinciannya — satu-satunya jalan ke sana di layar kecil,
- * karena rail kiri disembunyikan di bawah `lg`.
+ * Tampilan saja — semua angka sudah berupa string dari `view-model.ts`.
  *
- * Tampilan saja: semua angka sudah berupa string dari `view-model.ts`.
+ * Tiap baris RW di kartu ringkasan membuka rinciannya, dan itu satu-satunya
+ * jalan ke sana di layar kecil: rail kiri disembunyikan di bawah `lg`.
  */
 export function StatistikPanelView({
   isLoading,
@@ -46,7 +41,7 @@ export function StatistikPanelView({
               data={data.distribusi}
               height={576}
               showLegend={false}
-              warna={CHART_RW_COLORS}
+              warna={CHART_KATEGORI_COLORS}
               labelIrisan={(i) => {
                 const baris = data.baris[i];
                 return baris ? [baris.label, baris.persenTeks] : [];
@@ -95,7 +90,9 @@ export function StatistikPanelView({
                           className="h-2.5 w-2.5 shrink-0 rounded-full"
                           style={{
                             backgroundColor:
-                              CHART_RW_COLORS[i % CHART_RW_COLORS.length],
+                              CHART_KATEGORI_COLORS[
+                                i % CHART_KATEGORI_COLORS.length
+                              ],
                           }}
                           aria-hidden
                         />

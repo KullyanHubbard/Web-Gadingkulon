@@ -6,6 +6,7 @@ from fastapi import APIRouter
 from app.data.agregat import (
     distribusi_by,
     distribusi_kelompok_umur,
+    distribusi_pendidikan,
     format_rt,
     format_rw,
 )
@@ -35,7 +36,7 @@ def _rincian(
         totalLakiLaki=sum(1 for p in warga if p.jenisKelamin == "LAKI_LAKI"),
         totalPerempuan=sum(1 for p in warga if p.jenisKelamin == "PEREMPUAN"),
         perKelompokUmur=distribusi_kelompok_umur(warga),
-        perPendidikan=distribusi_by(warga, lambda p: p.pendidikan),
+        perPendidikan=distribusi_pendidikan(warga),
         perAgama=distribusi_by(warga, lambda p: p.agama),
         perStatusPerkawinan=distribusi_by(warga, lambda p: p.statusPerkawinan),
         perRt=per_rt or [],

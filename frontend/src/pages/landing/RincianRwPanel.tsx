@@ -6,19 +6,12 @@ import { STAT_WARGA } from '@/lib/stat-warga';
 import { toRincianRw } from './view-model';
 
 /**
- * Rincian satu wilayah: empat angka ringkas + grid panel klasifikasi.
+ * Melayani RW maupun RT: bentuk agregatnya identik (`RincianRw` rekursif), yang
+ * berbeda cuma wilayah mana yang dipetik. Query-nya sama dengan panel
+ * dashboard, jadi berpindah wilayah tidak memicu permintaan baru.
  *
- * Satu komponen untuk RW maupun RT — bentuk agregatnya identik (`RincianRw`
- * rekursif), jadi yang berbeda cuma wilayah mana yang dipetik dari data.
- *
- * Datanya dari query yang sama dengan panel dashboard, jadi berpindah wilayah
- * tidak memicu permintaan baru — seluruh rinciannya sudah ikut di
- * `/publik/statistik`.
- *
- * Tanpa judul & tanpa tombol kembali: keduanya sudah dibawa bar breadcrumb di
- * atas kolom ini (`StatistikBreadcrumb`) — nama wilayahnya di ruas terakhir,
- * jalan mundurnya di ruas sebelumnya. Menuliskannya lagi di sini berarti satu
- * layar memuat nama yang sama dua kali.
+ * Tanpa judul & tombol kembali — keduanya sudah dibawa `StatistikBreadcrumb`
+ * di atas kolom ini.
  */
 export function RincianRwPanel({
   rw,

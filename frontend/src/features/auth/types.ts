@@ -1,5 +1,3 @@
-/** Model autentikasi & otorisasi. */
-
 export type Role = 'USER' | 'ADMIN';
 
 export interface AuthUser {
@@ -21,7 +19,6 @@ export interface AuthUser {
   email?: string;
 }
 
-/** Login warga: NIK + PIN yang ia tetapkan sendiri saat aktivasi. */
 export interface WargaCredentials {
   nik: string;
   pin: string;

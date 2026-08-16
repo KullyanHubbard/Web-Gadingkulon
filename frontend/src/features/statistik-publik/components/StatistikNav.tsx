@@ -1,4 +1,6 @@
-import { LayoutDashboard, MapPin } from 'lucide-react';
+import ikonDashboard from '@/assets/icons/dashboard.png';
+import ikonRt from '@/assets/icons/rt-icon.png';
+import ikonRw from '@/assets/icons/rw-icon.png';
 import { cn } from '@/lib/utils';
 import { useStatistikPublik } from '../hooks/use-statistik-publik';
 
@@ -13,23 +15,16 @@ interface StatistikNavProps {
 function itemClass(aktif: boolean) {
   return cn(
     'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium transition-colors',
-    aktif
-      ? 'bg-brand-50 text-brand-700'
-      : 'text-slate-900 hover:bg-slate-50',
+    aktif ? 'bg-brand-50 text-brand-700' : 'text-slate-900 hover:bg-slate-50',
   );
 }
 
 /**
- * Daftar bagian statistik di rail kiri halaman depan: dashboard, lalu satu
- * baris per RW dengan RT-nya sebagai sub-baris.
+ * Rail kiri halaman depan. Sub-baris RT selalu tampil tanpa buka-tutup: satu
+ * padukuhan cuma punya beberapa RT, jadi daftarnya tetap pendek.
  *
- * Sub-baris RT selalu tampil, tanpa mekanisme buka-tutup: satu padukuhan cuma
- * punya beberapa RT, jadi daftarnya tetap pendek dan orang bisa langsung
- * meloncat ke RT-nya tanpa singgah di RW dulu.
- *
- * Daftar wilayahnya datang dari query yang sama dengan panelnya
- * (`useStatistikPublik`) — React Query menyatukan keduanya jadi satu permintaan,
- * jadi nav tidak perlu dioper data lewat props. Yang dioper cuma pilihannya.
+ * Wilayahnya dari query yang sama dengan panelnya — React Query menyatukannya
+ * jadi satu permintaan, jadi nav tidak perlu dioper data lewat props.
  */
 export function StatistikNav({ rwAktif, rtAktif, onPilih }: StatistikNavProps) {
   const { data, isError } = useStatistikPublik();
@@ -42,7 +37,8 @@ export function StatistikNav({ rwAktif, rtAktif, onPilih }: StatistikNavProps) {
         aria-current={rwAktif === null ? 'page' : undefined}
         className={itemClass(rwAktif === null)}
       >
-        <LayoutDashboard className="h-5 w-5" />
+        {/* `alt` kosong: labelnya persis di sebelah, ikon cuma hiasan. */}
+        <img src={ikonDashboard} alt="" className="h-5 w-5 shrink-0" />
         Dashboard
       </button>
 
@@ -67,14 +63,14 @@ export function StatistikNav({ rwAktif, rtAktif, onPilih }: StatistikNavProps) {
                     rwAktif === rw.label && rtAktif === null,
                   )}
                 >
-                  <MapPin className="h-5 w-5 shrink-0" />
+                  <img src={ikonRw} alt="" className="h-5 w-5 shrink-0" />
                   <span className="flex-1 text-left">{rw.label}</span>
                 </button>
 
                 {rw.perRt.length > 0 && (
-                  // Garis vertikal + indentasi: penanda hierarki yang tidak
-                  // memakan lebar, jadi label RT tetap sejajar terbaca.
-                  <ul className="ml-6 mt-1 space-y-1 border-l border-slate-200 pl-2">
+                  // Indentasi saja sebagai penanda hierarki — tanpa garis
+                  // vertikal, tanpa penambah lebar.
+                  <ul className="ml-8 mt-1 space-y-1">
                     {rw.perRt.map((rt) => {
                       const aktif =
                         rwAktif === rw.label && rtAktif === rt.label;
@@ -86,6 +82,11 @@ export function StatistikNav({ rwAktif, rtAktif, onPilih }: StatistikNavProps) {
                             aria-current={aktif ? 'page' : undefined}
                             className={cn(itemClass(aktif), 'py-2 text-sm')}
                           >
+                            <img
+                              src={ikonRt}
+                              alt=""
+                              className="h-5 w-5 shrink-0"
+                            />
                             <span className="flex-1 text-left">{rt.label}</span>
                           </button>
                         </li>

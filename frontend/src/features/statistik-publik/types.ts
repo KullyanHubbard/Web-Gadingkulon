@@ -1,16 +1,13 @@
 import type { Distribusi } from '@/types/statistik';
 
 /**
- * Rincian satu wilayah: sebuah RW, atau satu RT di dalamnya.
- *
- * Bentuknya rekursif dan sengaja sama untuk RW & RT, jadi satu komponen panel
- * bisa menampilkan keduanya. Kedalamannya cuma dua: `perRt` pada entri RT
- * selalu kosong.
+ * Rincian satu wilayah: sebuah RW, atau satu RT di dalamnya. Bentuknya
+ * rekursif & sama untuk keduanya, jadi satu komponen panel melayani dua-duanya.
+ * Kedalamannya cuma dua: `perRt` pada entri RT selalu kosong.
  *
  * Label pada tiap `Distribusi` masih enum mentah (`'ISLAM'`, `'SMA'`) —
- * sengaja: peta enum -> teks tampilan tinggal di `features/penduduk/labels.ts`,
- * dan fitur tidak boleh saling impor (CLAUDE.md §4). Penerjemahannya terjadi di
- * level halaman, sama seperti infografis admin.
+ * peta enum -> teks tinggal di `features/penduduk/labels.ts`, dan fitur tidak
+ * boleh saling impor (CLAUDE.md §4), jadi penerjemahannya di level halaman.
  */
 export interface RincianRw {
   /** Mis. `'RW 19'` atau `'RT 1'` — sudah berbentuk tampilan. */
@@ -28,11 +25,10 @@ export interface RincianRw {
 }
 
 /**
- * Agregat kependudukan yang boleh dilihat siapa pun, termasuk sebelum masuk.
+ * Agregat yang boleh dilihat siapa pun, termasuk sebelum masuk.
  *
- * Sengaja hanya berisi cacah — tidak ada NIK, nama, atau alamat. Apa pun yang
- * ditambahkan ke sini otomatis menjadi konsumsi publik, jadi tambahkan hanya
- * angka yang memang layak dipajang di halaman depan.
+ * Hanya cacah — tidak ada NIK, nama, atau alamat. Apa pun yang ditambahkan ke
+ * sini otomatis menjadi konsumsi publik.
  */
 export interface StatistikPublik {
   totalPenduduk: number;

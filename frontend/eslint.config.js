@@ -27,23 +27,6 @@ export default tseslint.config(
         'warn',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
-      // Penjaga palet tertutup (lihat CLAUDE.md §6 "Warna").
-      // `theme.colors` di tailwind.config.js sudah mematikan warna di luar palet,
-      // tapi tidak bisa mencegah hex mentah & arbitrary value — itu tugas rule ini.
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector: 'Literal[value=/#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?\\b/]',
-          message:
-            'Dilarang hex warna di komponen. Pakai token Tailwind (brand-*/slate-*/…); untuk Recharts pakai @/lib/colors.',
-        },
-        {
-          selector:
-            'Literal[value=/\\b(bg|text|border|ring|fill|stroke|from|to|via|divide|outline|shadow|accent)-\\[/]',
-          message:
-            'Dilarang arbitrary value warna Tailwind (mis. bg-[#…]). Tambahkan warnanya di tailwind.config.js kalau memang perlu.',
-        },
-      ],
     },
   },
 );

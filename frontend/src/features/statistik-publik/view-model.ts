@@ -4,13 +4,6 @@ import { formatAngka } from '@/lib/utils';
 import type { Distribusi } from '@/types/statistik';
 import type { StatistikPublik } from './types';
 
-/**
- * Ubah agregat mentah menjadi bentuk siap tampil.
- *
- * Seluruh perhitungan & pemformatan angka berhenti di sini, sehingga komponen
- * `*View` tinggal mencetak string dan tidak pernah menghitung apa pun.
- */
-
 /** Satu baris legenda di samping donut. */
 export interface BarisRw {
   label: string;
@@ -40,25 +33,13 @@ export interface TujuanWilayah {
   rt: string | null;
 }
 
-/** Satu ruas jalur breadcrumb. */
 export interface Crumb {
   label: string;
-  /**
-   * Tujuan bila ruas ini diklik, atau `null` untuk ruas terakhir — itu halaman
-   * yang sedang dibuka, jadi bukan tautan.
-   *
-   * Sengaja berupa data, bukan callback: penyusunan jalurnya tetap fungsi
-   * murni, dan komponennya tinggal memetakan tujuan ke `onPilih`.
-   */
+  /** `null` = ruas terakhir: halaman yang sedang dibuka, jadi bukan tautan. */
   tujuan: TujuanWilayah | null;
 }
 
-/**
- * Susun jalur breadcrumb dari wilayah yang sedang aktif.
- *
- * Susunannya mengikuti rail kiri: "Dashboard" berdiri sendiri di luar bagian
- * "Statistik Warga", sedangkan RW & RT ada di dalamnya.
- */
+/** Jalur breadcrumb mengikuti rail kiri: "Dashboard" di luar "Statistik Warga". */
 export function toJalurWilayah(
   rwAktif: string | null,
   rtAktif: string | null,
@@ -82,8 +63,6 @@ export function toRingkasanStatistik(
   const total = data.totalPenduduk;
 
   return {
-    // Donut cuma butuh cacah per RW; sisanya (gender, umur, dst.) dipakai
-    // panel rincian, jadi diturunkan di sini alih-alih dikirim dua kali.
     distribusi: data.perRw.map((d) => ({
       label: d.label,
       value: d.totalPenduduk,
