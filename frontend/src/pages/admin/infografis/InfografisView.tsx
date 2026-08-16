@@ -1,17 +1,12 @@
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Card, CardContent, CardHeader } from '@/components/ui/Card';
-import {
-  DistribusiBarChart,
-  DistribusiPieChart,
-} from '@/components/ui/DistribusiCharts';
+import { PanelDistribusiCard } from '@/components/ui/PanelDistribusiCard';
 import { QueryBoundary } from '@/components/ui/QueryBoundary';
-import { cn } from '@/lib/utils';
-import type { PanelInfografis } from './view-model';
+import type { PanelDistribusi } from '@/types/statistik';
 
 interface InfografisViewProps {
   isLoading: boolean;
   isError: boolean;
-  panels: PanelInfografis[] | undefined;
+  panels: PanelDistribusi[] | undefined;
 }
 
 /** Halaman infografis: judul + grid panel. Tampilan saja. */
@@ -24,7 +19,7 @@ export function InfografisView({
     <div>
       <PageHeader
         title="Infografis Kependudukan"
-        description="Visualisasi komposisi penduduk Desa Sukamaju."
+        description="Visualisasi komposisi penduduk padukuhan."
       />
 
       <QueryBoundary
@@ -36,19 +31,7 @@ export function InfografisView({
         {(daftar) => (
           <div className="grid gap-6 lg:grid-cols-2">
             {daftar.map((panel) => (
-              <Card
-                key={panel.id}
-                className={cn(panel.lebarPenuh && 'lg:col-span-2')}
-              >
-                <CardHeader title={panel.judul} description={panel.deskripsi} />
-                <CardContent>
-                  {panel.jenis === 'pie' ? (
-                    <DistribusiPieChart data={panel.data} />
-                  ) : (
-                    <DistribusiBarChart data={panel.data} />
-                  )}
-                </CardContent>
-              </Card>
+              <PanelDistribusiCard key={panel.id} panel={panel} />
             ))}
           </div>
         )}

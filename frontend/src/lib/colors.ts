@@ -10,24 +10,53 @@
  */
 
 /**
- * Urutan warna seri chart. Dipakai bergilir (modulo) untuk kategori.
- *
- * Urutannya sengaja selang-seling gelap–terang (lihat `styles/index.css`) supaya
- * dua irisan donut yang bersebelahan tidak nyaris kembar.
+ * Ramp ORDINAL — untuk kategori yang punya urutan (kelompok umur, jenjang
+ * pendidikan). Satu hue, terang -> gelap. Alasan tiap langkahnya di
+ * `tailwind.config.js`.
  */
-export const CHART_SERIES_COLORS = [
-  'var(--chart-1)',
-  'var(--chart-2)',
-  'var(--chart-3)',
-  'var(--chart-4)',
-  'var(--chart-5)',
-  'var(--chart-6)',
-  'var(--chart-7)',
+export const CHART_ORDINAL_COLORS = [
+  'var(--chart-ordinal-1)',
+  'var(--chart-ordinal-2)',
+  'var(--chart-ordinal-3)',
+  'var(--chart-ordinal-4)',
+  'var(--chart-ordinal-5)',
+  'var(--chart-ordinal-6)',
+  'var(--chart-ordinal-7)',
+  'var(--chart-ordinal-8)',
 ] as const;
 
-/** Warna seri ke-`index`, berputar bila kategorinya lebih banyak dari warnanya. */
-export function warnaSeri(index: number): string {
-  return CHART_SERIES_COLORS[index % CHART_SERIES_COLORS.length];
+/**
+ * Warna KATEGORIK — untuk kategori tanpa urutan (agama, status perkawinan).
+ * Enam hue berbeda; identitasnya dibawa hue, bukan gelap-terang.
+ *
+ * Enam adalah batasnya, bukan awalnya: kategori ke-7 digabung jadi "Lainnya",
+ * jangan dikarang warna baru (lihat `tailwind.config.js`).
+ */
+export const CHART_KATEGORI_COLORS = [
+  'var(--chart-kategori-1)',
+  'var(--chart-kategori-2)',
+  'var(--chart-kategori-3)',
+  'var(--chart-kategori-4)',
+  'var(--chart-kategori-5)',
+  'var(--chart-kategori-6)',
+] as const;
+
+/**
+ * Warna ordinal ke-`index` dari `total` kategori, gelap -> terang.
+ *
+ * Rampnya DIBENTANGKAN sepanjang jumlah kategori, bukan diambil dari ujung:
+ * chart 4 kategori yang memakai slot 1-4 saja akan jadi empat biru muda yang
+ * mirip semua. Dengan dibentangkan, berapa pun jumlah kategorinya (sampai 8)
+ * selisih antar batang tetap selebar mungkin — dan tidak pernah ada dua batang
+ * bewarna sama.
+ *
+ * Gelap duluan: data sudah terurut menurun, jadi yang terbanyak paling pekat.
+ */
+export function warnaOrdinal(index: number, total: number): string {
+  const akhir = CHART_ORDINAL_COLORS.length - 1;
+  if (total <= 1) return CHART_ORDINAL_COLORS[akhir];
+  const langkah = Math.round((index / (total - 1)) * akhir);
+  return CHART_ORDINAL_COLORS[akhir - Math.min(langkah, akhir)];
 }
 
 /** Ramp indigo khusus donut RW (statistik publik), tua->muda. */
@@ -49,6 +78,3 @@ export const CHART_AXIS_COLOR = 'var(--chart-axis)';
  * bulatan berwarna di sebelah teks.
  */
 export const CHART_LEGEND_TEXT_COLOR = 'var(--chart-legend-text)';
-
-/** Warna sorotan (hover) di belakang batang chart. */
-export const CHART_CURSOR_COLOR = 'var(--chart-cursor)';

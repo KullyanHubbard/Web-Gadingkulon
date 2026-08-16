@@ -1,29 +1,21 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Home, User, UserRound, Users } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { DistribusiBarChart } from '@/components/ui/DistribusiCharts';
 import { QueryBoundary } from '@/components/ui/QueryBoundary';
 import { StatCard } from '@/components/ui/StatCard';
+import { STAT_WARGA } from '@/lib/stat-warga';
+import type { StatWarga } from '@/lib/stat-warga';
 import { paths } from '@/routes/paths';
 import type { Distribusi } from '@/types/statistik';
-import type { StatRingkas } from '../view-model';
-
-/** Ikon per kartu statistik — murni pilihan tampilan, jadi dipetakan di sini. */
-const ikonStat: Record<StatRingkas['id'], LucideIcon> = {
-  penduduk: Users,
-  kk: Home,
-  lakiLaki: User,
-  perempuan: UserRound,
-};
 
 interface AdminDashboardViewProps {
   namaPengurus: string;
   isLoading: boolean;
   isError: boolean;
-  stats: StatRingkas[] | undefined;
+  stats: StatWarga[] | undefined;
   distribusiUsia: Distribusi[] | undefined;
 }
 
@@ -39,7 +31,7 @@ export function AdminDashboardView({
     <div>
       <PageHeader
         title="Dashboard"
-        description={`Selamat datang, ${namaPengurus}. Ringkasan data Desa Sukamaju.`}
+        description={`Selamat datang, ${namaPengurus}. Ringkasan data padukuhan.`}
       />
 
       <QueryBoundary
@@ -54,10 +46,8 @@ export function AdminDashboardView({
               {daftarStat.map((stat) => (
                 <StatCard
                   key={stat.id}
-                  label={stat.label}
                   value={stat.value}
-                  icon={ikonStat[stat.id]}
-                  tone={stat.tone}
+                  {...STAT_WARGA[stat.id]}
                 />
               ))}
             </div>

@@ -1,4 +1,4 @@
-# NIA — Portal Data Kependudukan Desa
+# SIDUK — Portal Data Kependudukan Desa
 
 Aplikasi web untuk melihat data kependudukan desa berdasarkan **NIK / No. KK**.
 
@@ -28,8 +28,9 @@ npm install
 npm run dev        # http://localhost:5173
 ```
 
-Frontend butuh backend jalan (`VITE_API_BASE_URL` di `frontend/.env`). Akun
-demo & detail endpoint ada di [`backend/README.md`](backend/README.md).
+Frontend butuh backend jalan (`VITE_API_BASE_URL` di `frontend/.env`). Akun demo
+dicetak backend di terminal setiap kali dinyalakan. Detail endpoint ada di
+[`backend/README.md`](backend/README.md).
 
 ## Tech Stack
 
@@ -37,6 +38,6 @@ demo & detail endpoint ada di [`backend/README.md`](backend/README.md).
 | -------- | ------------------------------------------------------ |
 | Frontend | React 18, TypeScript, Vite, Tailwind, React Query      |
 | Backend  | Python, FastAPI _(data dummy, belum ke database)_      |
-| Database | PostgreSQL, dikelola via DBeaver _(direncanakan)_      |
+| Database | SQLite _(dalam implementasi)_                          |
 
 Konvensi & arsitektur: lihat [`CLAUDE.md`](CLAUDE.md).

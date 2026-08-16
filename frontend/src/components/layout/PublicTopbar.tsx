@@ -1,6 +1,6 @@
 import { Building2 } from 'lucide-react';
 import { env } from '@/config/env';
-import { LoginButton } from './LoginButton';
+import { AccountButton } from './AccountButton';
 
 /**
  * Bilah atas landing page publik untuk layar kecil — gantinya `PublicSidebar`
@@ -13,7 +13,7 @@ export function PublicTopbar() {
         <Building2 className="h-6 w-6 text-brand-600" />
         {env.appName}
       </div>
-      <LoginButton />
+      <AccountButton />
     </div>
   );
 }

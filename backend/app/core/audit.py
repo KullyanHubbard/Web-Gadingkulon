@@ -1,6 +1,7 @@
 """Log audit di memori — CLAUDE.md §11: reset-pin wajib tercatat (siapa,
 kapan, NIK siapa). Belum ada endpoint buat membacanya; baru dicetak ke
-console. Upgrade path: tulis ke tabel `audit_log` saat database asli ada.
+console. Upgrade path: tulis ke tabel `audit_log` di SQLite (lihat CLAUDE.md
+§11) begitu databasenya terpasang.
 """
 
 import time

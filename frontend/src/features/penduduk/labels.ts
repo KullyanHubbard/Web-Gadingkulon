@@ -5,6 +5,7 @@ import type {
   StatusHubunganKeluarga,
   StatusPerkawinan,
 } from '@/types/penduduk';
+import type { Distribusi } from '@/types/statistik';
 
 /** Peta enum -> label yang enak dibaca untuk ditampilkan di UI. */
 
@@ -48,3 +49,17 @@ export const statusHubunganLabel: Record<StatusHubunganKeluarga, string> = {
   FAMILI_LAIN: 'Famili Lain',
   LAINNYA: 'Lainnya',
 };
+
+/**
+ * Terjemahkan label enum mentah pada distribusi menjadi label manusiawi.
+ *
+ * Backend mengirim `'ISLAM'`, chart menampilkan `'Islam'`. Tinggal di sini
+ * bersama petanya karena dua halaman memakainya — infografis admin dan rincian
+ * RW di halaman depan.
+ */
+export function relabel<T extends string>(
+  data: Distribusi[],
+  map: Record<T, string>,
+): Distribusi[] {
+  return data.map((d) => ({ ...d, label: map[d.label as T] ?? d.label }));
+}

@@ -32,7 +32,7 @@ export function KartuKeluargaCardView({ kk }: { kk: KartuKeluargaData }) {
             {kk.anggota.map((a) => (
               <tr key={a.id} className="hover:bg-slate-50">
                 <Td className="font-medium text-slate-900">{a.nama}</Td>
-                <Td className="font-mono text-xs">{a.nik}</Td>
+                <Td className="text-xs tabular-nums">{a.nik}</Td>
                 <Td>{a.hubungan}</Td>
                 <Td>{a.jenisKelamin}</Td>
                 <Td>{a.umur}</Td>

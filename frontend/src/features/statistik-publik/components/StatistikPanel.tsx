@@ -8,7 +8,12 @@ import { StatistikPanelView } from './StatistikPanelView';
  * Satu-satunya tempat panel ini menyentuh React Query; tampilannya ada di
  * `StatistikPanelView` dan tidak tahu dari mana angkanya datang.
  */
-export function StatistikPanel() {
+export function StatistikPanel({
+  onPilihRw,
+}: {
+  /** Buka rincian sebuah RW dari kartu ringkasan. */
+  onPilihRw: (rw: string) => void;
+}) {
   const { data, isLoading, isError } = useStatistikPublik();
 
   return (
@@ -16,6 +21,7 @@ export function StatistikPanel() {
       isLoading={isLoading}
       isError={isError}
       ringkasan={data && toRingkasanStatistik(data)}
+      onPilihRw={onPilihRw}
     />
   );
 }

@@ -1,3 +1,11 @@
 .venv
 __pycache__
 *.pyc
+.env
+
+# Basis data SQLite. WAJIB di sini: begitu isinya NIK asli, satu commit saja
+# menaruh data kependudukan sedesa di git history secara permanen.
+data/
+*.db
+*.db-wal
+*.db-shm

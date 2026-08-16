@@ -1,8 +1,20 @@
-# Backend NIA (dummy)
+# Backend SIDUK (dummy)
 
-FastAPI, data dummy di memori — belum tersambung Postgres (lihat CLAUDE.md §11).
+FastAPI. Data penduduk di SQLite, di-seed dari generator dummy (CLAUDE.md §11).
 200 Kartu Keluarga, tiap KK 3-5 anggota (diacak, seed tetap jadi datanya sama
 tiap restart). Generator ada di `app/data/dummy.py`.
+
+Bentuk datanya sudah mengikuti skema yang direncanakan untuk database, jadi
+impor data asli nanti tinggal mengisi tabel dengan kolom yang sama:
+
+| Kolom                | Isi                                                    |
+| -------------------- | ------------------------------------------------------ |
+| `statusKependudukan` | `AKTIF` / `PINDAH` / `MENINGGAL` — datanya sah, tetap ikut daftar & statistik |
+| `deletedAt`          | ISO date atau `null` — salah input, **tidak pernah** ikut daftar & statistik |
+
+Penyaringan `deletedAt` ada di `app/data/store.py`, satu tempat, bukan di
+tiap router. Cacah saat ini: 801 baris digenerate, 3 bertanda `deletedAt`,
+jadi 798 yang terlihat lewat API.
 
 ## Jalankan
 
@@ -39,6 +51,12 @@ VITE_API_BASE_URL=http://localhost:8000
 | GET    | `/publik/statistik`             | cacah per RW — tanpa auth                     |
 | GET    | `/infografis`                   | agregat lengkap — hanya ADMIN                 |
 
-Token JWT dikirim lewat header `Authorization: Bearer <token>`. Semua state
-(akun warga, tiket aktivasi, rate limit) hidup di memori proses — hilang tiap
-restart, kecuali akun warga demo yang di-seed ulang otomatis.
+Token JWT dikirim lewat header `Authorization: Bearer <token>`.
+
+**Data penduduk** tinggal di SQLite (`data/siduk.db`, dibuat otomatis saat
+backend pertama kali jalan lalu diisi dari generator dummy) — selamat melewati
+restart. Mau dataset baru? Hapus filenya, jalankan ulang. File itu
+di-gitignore: jangan pernah di-commit, apalagi setelah berisi NIK asli.
+
+**Sisanya masih di memori proses** dan hilang tiap restart: akun warga & tiket
+aktivasi, rate limit, audit log. Akun warga demo di-seed ulang otomatis.

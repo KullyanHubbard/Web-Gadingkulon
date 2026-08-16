@@ -17,7 +17,7 @@ interface LoginWargaFormViewProps {
   errorMessage: string | null;
   bantuanTerbuka: boolean;
   onToggleBantuan: () => void;
-  /** Catatan akun demo — hanya diisi container saat mode mock. */
+  /** Catatan akun demo, diisi container. */
   catatanDemo?: ReactNode;
 }
 

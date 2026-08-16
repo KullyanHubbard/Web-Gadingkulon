@@ -1,7 +1,7 @@
-# CLAUDE.md — Panduan Kerja & Konvensi Kode (NIA Web)
+# CLAUDE.md — Panduan Kerja & Konvensi Kode (SIDUK)
 
 Dokumen ini adalah **sumber kebenaran** untuk gaya kode, arsitektur, dan alur
-kerja proyek **NIA — Portal Data Kependudukan Desa**. Baca ini sebelum menulis
+kerja proyek **SIDUK — Portal Data Kependudukan Desa**. Baca ini sebelum menulis
 kode agar hasil tetap rapi dan konsisten.
 
 ---
@@ -13,9 +13,11 @@ kode agar hasil tetap rapi dan konsisten.
 - **Frontend:** aktif, http-only — semua fitur memanggil backend langsung
   lewat `apiClient`. Backend harus jalan (`localhost:8000`) agar frontend
   berfungsi.
-- **Database:** belum ada. Data berasal dari generator in-memory
-  (`backend/app/data/dummy.py`), hilang setiap restart backend.
-- **Direncanakan:** migrasi ke database asli dengan pola seed/reset/import.
+- **Database:** **SQLite — terpasang** untuk data penduduk
+  (`backend/app/data/db.py`, file di `settings.DATABASE_PATH`). File kosong
+  diisi sekali dari `dummy.py`, yang sekarang cuma seeder. Data penduduk
+  selamat melewati restart. **Yang masih di memori:** akun warga & pengurus,
+  tiket aktivasi, rate limit, audit log — semua itu belum pindah.
 
 ---
 
@@ -23,14 +25,32 @@ kode agar hasil tetap rapi dan konsisten.
 
 Web untuk melihat data kependudukan desa berbasis **NIK / No. KK**.
 
-| Peran     | Hak akses                                                                 |
-| --------- | ------------------------------------------------------------------------- |
-| **USER**  | Warga. Hanya melihat data NIK miliknya sendiri + anggota Kartu Keluarganya |
-| **ADMIN** | Perangkat desa. Melihat data pribadi, **seluruh data penduduk**, & infografis |
+| Peran        | Hak akses                                                                 |
+| ------------ | ------------------------------------------------------------------------- |
+| **WARGA**    | Hanya melihat data NIK miliknya sendiri + anggota Kartu Keluarganya        |
+| **PENGURUS** | Dukuh/RW/RT. Baca seluruh data penduduk & infografis; **mutasi data warga dibatasi wilayah kerjanya** |
+| **ADMIN**    | Semua kewenangan PENGURUS + kelola akun pengurus. Peran pemeliharaan, bukan nama orang |
+
+Tiga peran ini menggantikan model `ADMIN` datar. Desain lengkap + matriks
+kewenangan per endpoint: `docs/superpowers/specs/2026-08-12-auth-warga-pin-design.md`.
+**Kode belum menyusul** — backend masih `USER`/`ADMIN` (lihat §7).
 
 **Status:** Frontend + backend aktif. Backend (`backend/`) FastAPI dengan data
-dummy di memori (200 KK diacak, lihat `backend/app/data/dummy.py`) — belum
-tersambung Postgres.
+penduduk di SQLite, di-seed sekali dari generator dummy (200 KK diacak, lihat
+`backend/app/data/dummy.py`).
+
+### Penamaan proyek (jangan ditanya ulang)
+
+| Konteks                                   | Nama                            |
+| ----------------------------------------- | ------------------------------- |
+| Repo & direktori                          | `NIA-WEB` — **jangan diubah**   |
+| Nama package (`frontend/package.json`)    | `nia-web-frontend` — **jangan diubah** |
+| Nama produk yang dilihat user             | **SIDUK**                       |
+| Judul dokumen, README, UI, FastAPI `title` | **SIDUK** (`title="SIDUK API"`) |
+
+`NIA-WEB` / `nia-web-frontend` sudah tertanam di git history dan lockfile;
+menggantinya cuma bikin diff besar tanpa manfaat. Yang penting konsisten adalah
+nama yang **dibaca user** — itu selalu SIDUK.
 
 ## 2. Tech Stack
 
@@ -43,8 +63,8 @@ tersambung Postgres.
 | Auth state  | Zustand                                                              |
 | Form        | React Hook Form + Zod                                                |
 | Charts      | Recharts                                                             |
-| Backend     | Python + FastAPI (data dummy in-memory)                              |
-| Database    | PostgreSQL (dikelola via DBeaver) — direncanakan                    |
+| Backend     | Python + FastAPI                                                     |
+| Database    | SQLite (`sqlite3` stdlib, tanpa ORM) — data penduduk                 |
 
 ## 3. Struktur Direktori
 
@@ -69,7 +89,7 @@ NIA-WEB/
 │       ├── routes/           # definisi route, guards, paths
 │       ├── styles/           # CSS global + Tailwind
 │       └── types/            # tipe lintas fitur (api.ts)
-└── backend/                  # FastAPI (aktif, data dummy)
+└── backend/                  # FastAPI (aktif, penduduk di SQLite)
 ```
 
 ## 4. Arsitektur Berbasis Fitur (feature-first)
@@ -78,7 +98,7 @@ Setiap domain berdiri sendiri di `src/features/<nama>/` dengan isi standar:
 
 ```
 features/penduduk/
-├── api/            # implementasi pemanggilan data (kontrak + mock + http)
+├── api/            # kontrak (`interface XApi`) + implementasi http
 ├── components/     # komponen khusus fitur ini
 ├── hooks/          # React Query hooks (use-penduduk.ts)
 ├── types.ts        # model domain
@@ -124,7 +144,7 @@ Komponen tidak pernah memanggil `apiClient` langsung — selalu lewat `pendudukA
 - File komponen: `PascalCase.tsx`. File non-komponen: `kebab-case.ts` (`use-penduduk.ts`, `api-client.ts`).
 - Konstanta modul: `UPPER_SNAKE_CASE` (`PAGE_SIZE`).
 - **Istilah domain memakai Bahasa Indonesia** (`penduduk`, `noKK`, `jenisKelamin`) agar selaras dengan data asli.
-  Sebaliknya, **primitif UI tetap Inggris** (`Button`, `Sidebar`, `LoginButton`) — Bahasa Indonesia dipakai
+  Sebaliknya, **primitif UI tetap Inggris** (`Button`, `Sidebar`, `AccountButton`) — Bahasa Indonesia dipakai
   karena datanya berbahasa Indonesia, bukan sebagai gaya bahasa menyeluruh.
 - File view-model **selalu bernama `view-model.ts`** (tanpa prefiks) dan tinggal di folder yang memilikinya:
   di dalam fitur bila logikanya milik satu fitur, atau di folder halaman bila justru di situ dua fitur bertemu
@@ -158,7 +178,9 @@ hampir pasti ini.
 
 | Kelompok  | Token                        | Untuk                                          |
 | --------- | ---------------------------- | ---------------------------------------------- |
-| Brand     | `brand-50` … `brand-950`     | aksi utama, aksen, seri chart                  |
+| Brand     | `brand-50` … `brand-950`     | aksi utama, aksen                              |
+| Chart     | `chart-ordinal-1` … `-8`     | kategori **berurutan** (umur, pendidikan) — satu hue, terang→gelap |
+|           | `chart-kategori-1` … `-6`    | kategori **tanpa urutan** (agama, perkawinan) — 6 hue berbeda |
 | Netral    | `slate-*`                    | teks, permukaan, border — **satu-satunya netral** |
 | Semantik  | `red-*`                      | error, danger, aksi merusak                    |
 |           | `green-*`                    | sukses, status aktif                           |
@@ -176,6 +198,15 @@ Aturan:
 - Warna semantik dipilih berdasarkan **makna**, bukan selera visual. Pasangan
   bakunya `-50` untuk latar, `-200` untuk border, `-700`/`-800` untuk teks
   (lihat `components/ui/Badge.tsx` & `Alert.tsx`).
+- **Warna chart dipilih menurut jenis datanya, bukan selera.** Kategori
+  berurutan (kelompok umur, jenjang pendidikan) memakai `chart.ordinal` — satu
+  hue, lightness turun rata, jadi urutannya terbaca dari warnanya. Kategori
+  tanpa urutan (agama, status perkawinan) memakai `chart.kategori` — hue
+  berbeda-beda. Tertukar = grafik berbohong: hue acak pada data berurutan
+  menghapus urutannya, ramp pada data tak berurutan mengarang urutan.
+  Nilainya dihitung & divalidasi (lightness monoton, kontras, jarak
+  protan/deutan), bukan dikira-kira — alasan tiap angkanya ada di
+  `tailwind.config.js`. Menambah/menukar langkah berarti menghitung ulang.
 - Butuh warna baru? **Tambahkan di `tailwind.config.js` dulu**, dengan alasan
   yang jelas. Friksi ini disengaja — keputusan warna harus sadar, bukan ketikan
   spontan.
@@ -209,8 +240,20 @@ untuk alasan lengkapnya):**
 - **Warga** masuk dengan **NIK + PIN 6 digit**. Tidak ada registrasi — seluruh
   NIK sudah ada di data kependudukan. Pertama kali, warga mengaktifkan akunnya
   di `/aktivasi` dengan **NIK + tanggal lahir**, lalu menetapkan PIN sendiri.
-- **Pengurus** (Dukuh/RW/RT, semuanya role `ADMIN`) masuk di `/login/petugas`
-  dengan username + password.
+- **Pengurus** (Dukuh/RW/RT) masuk di `/login/petugas` dengan username +
+  password. Desainnya memakai tiga peran (`WARGA`/`PENGURUS`/`ADMIN`);
+  **kode saat ini masih dua** (`USER`/`ADMIN` datar) — selisih ini disengaja
+  dan tercatat, jangan dianggap sudah beres.
+- **Akun pengurus tidak punya masa berlaku.** Satu-satunya mekanisme siklus
+  hidupnya kolom boolean `aktif`; tidak ada tanggal dan tidak ada perbandingan
+  waktu di mana pun. Konsekuensinya diterima sadar: akun pengurus lama tetap
+  bisa masuk sampai ada yang menonaktifkannya manual. Penggantinya prosedur
+  di `docs/PROSEDUR-PENGURUS.md`, bukan kode.
+- **Mutasi data warga dibatasi wilayah** (Dukuh = padukuhan, Ketua RW = RW-nya,
+  Ketua RT = RT-nya) lewat satu helper `boleh_akses(pengurus, warga)` yang
+  dipanggil setiap endpoint mutasi — jangan sebar logikanya per endpoint.
+  **Baca tidak dibatasi wilayah**: daftar penduduk & infografis tetap
+  se-padukuhan untuk semua pengurus.
 - **Tidak ada OTP, SMS, WhatsApp, atau email di jalur autentikasi.** Syarat nol
   biaya bersifat mutlak; semua jalur pengiriman token terbukti berbiaya atau
   butuh perawatan yang tidak akan ada setelah KKN. Jangan menambahkannya
@@ -267,7 +310,7 @@ harus bersih (0 error). `npm run build` harus sukses.
 6. Tambah item menu di `components/layout/nav-config.ts` bila perlu.
 7. Jalankan `npm run typecheck && npm run lint && npm run build`.
 
-## 11. Backend (FastAPI) — aktif, data dummy
+## 11. Backend (FastAPI) — aktif, penduduk di SQLite
 
 Struktur saat ini (lihat `backend/README.md` untuk cara menjalankan):
 
@@ -278,14 +321,33 @@ backend/
 │   ├── core/               # security (JWT/bcrypt), rate limit, audit log — semua in-memory
 │   ├── api/routers/       # auth, penduduk, publik, infografis
 │   ├── schemas/           # Pydantic — cerminan tipe frontend, harus sinkron manual
-│   └── data/               # generator dummy (200 KK) + akun demo
+│   └── data/               # db.py (SQLite) + store.py (dibaca router)
+│                           # + dummy.py (seeder 200 KK) + akun.py (akun demo)
+├── data/siduk.db          # di-gitignore — jangan pernah di-commit
 └── requirements.txt
 ```
 
-**Belum ada `models/`, `services/`, `db/`** — data hidup di memori proses
-(`app/data/dummy.py`), bukan Postgres. Tambahkan lapis itu (SQLAlchemy +
-Alembic) baru saat database asli benar-benar dipasang; sampai saat itu jangan
-scaffold folder kosong untuknya.
+**Database: SQLite — keputusan final, bukan salah satu opsi.** Postgres/DBeaver
+sudah tidak dipertimbangkan lagi: satu file `.db` yang gampang di-backup, nol
+server buat dipasang dan dirawat setelah KKN. Jangan mengusulkan Postgres balik
+tanpa keputusan eksplisit.
+
+**File `.db` TIDAK ikut repo** dan itu tidak bisa ditawar: begitu isinya NIK
+asli, satu commit menaruh data kependudukan sedesa di git history permanen, dan
+git history tidak bisa dibersihkan setengah-setengah. Sudah dikunci di
+`backend/.gitignore` (`data/`, `*.db`). Backup-nya salin file, bukan commit.
+
+**Akses SQL cuma di `app/data/db.py`** — `sqlite3` stdlib, satu tabel
+`penduduk` dengan `Alamat` diratakan jadi kolom `alamat_*`. Tanpa ORM: query
+yang ada muat di satu layar, dan SQLAlchemy cuma menambah dependensi yang harus
+dirawat orang lain setelah KKN. **Tidak ada `models/` atau `services/`** —
+skema Pydantic di `app/schemas/` sudah merangkap model; jangan scaffold lapis
+yang belum ada isinya.
+
+`app/data/store.py` membaca seluruh tabel ke memori sekali saat impor, jadi
+router tidak berubah sama sekali. Ini punya ceiling dan sudah ditandai
+`ponytail:` di file itu — begitu ada endpoint tulis, cache itu basi dan router
+harus query `db.py` langsung.
 
 Kontrak endpoint yang **sudah diimplementasikan** (bentuknya sinkron dengan
 `*Api` frontend):
@@ -297,13 +359,13 @@ Kontrak endpoint yang **sudah diimplementasikan** (bentuknya sinkron dengan
 | POST   | `/auth/warga/aktivasi/cek`        | NIK + tanggal lahir → `{ tiket, nama }` |
 | POST   | `/auth/warga/aktivasi/set-pin`    | tiket + PIN → `{ token, user }`         |
 | PATCH  | `/auth/me/kontak`                 | simpan `noHp` / `email` opsional        |
-| POST   | `/auth/warga/{nik}/reset-pin`     | hanya ADMIN                             |
+| POST   | `/auth/warga/{nik}/reset-pin`     | **kode: hanya ADMIN** — desain sudah menurunkannya ke PENGURUS |
 | POST   | `/auth/logout`                    | —                                       |
 | GET    | `/penduduk`                       | daftar (paginasi: `page`, `pageSize`, `search`) |
 | GET    | `/penduduk/nik/{nik}`             | detail per NIK                          |
 | GET    | `/kartu-keluarga/{noKK}`          | KK + anggota                            |
 | GET    | `/infografis`                     | agregat statistik (ADMIN)               |
-| GET    | `/publik/statistik`               | agregat halaman depan — **tanpa auth**, hanya cacah per RW |
+| GET    | `/publik/statistik`               | agregat halaman depan — **tanpa auth**, total se-desa (jiwa, KK, L/P) + rincian per RW (gender, umur, pendidikan, agama, status perkawinan) |
 
 **Ditegakkan backend** (guard frontend hanya UX) — status implementasi saat ini:
 
@@ -324,5 +386,34 @@ Kontrak endpoint yang **sudah diimplementasikan** (bentuknya sinkron dengan
 - ✅ `reset-pin` hanya untuk `ADMIN`, dicatat di log audit (`app/core/audit.py`
   — baru ke console, belum ada endpoint buat membacanya).
 - ⬜ Status kependudukan (pindah/meninggal) menonaktifkan akses otomatis —
-  belum relevan, `Penduduk` belum punya field status. Tambahkan saat field
-  itu ada di data master.
+  **fieldnya sekarang sudah ada** (`Penduduk.statusKependudukan`), jadi butir
+  ini sudah bisa dikerjakan. Yang belum: `auth.py` masih meloloskan login warga
+  ber-status `PINDAH`/`MENINGGAL`.
+- ✅ `deletedAt` (salah input) disaring di `app/data/store.py`, satu tempat —
+  baris ber-nilai tidak pernah sampai ke router. `PINDAH`/`MENINGGAL` sengaja
+  **tidak** disaring: datanya sah, dan keputusan sementaranya tetap dihitung
+  (spec auth, bagian "Hapus warga").
+
+**Selisih desain vs kode yang disengaja** — semuanya sudah diputuskan di
+`docs/superpowers/specs/2026-08-12-auth-warga-pin-design.md`, tinggal
+dikerjakan. Jangan diperlakukan sebagai kondisi final:
+
+- ⬜ **Tiga peran** (`WARGA`/`PENGURUS`/`ADMIN`). Kode masih `USER`/`ADMIN`
+  datar, dan `current_admin` di `app/api/routers/auth.py` menjaga dua hal
+  berbeda sekaligus (baca seluruh penduduk vs kelola akun) yang di desain
+  sudah dipisah tegas.
+- ⬜ **Kolom `aktif`** pada akun pengurus + penolakan login untuk akun
+  nonaktif. Belum ada; `PETUGAS_ACCOUNTS` sekarang tidak punya kolom status.
+- ⬜ **Kolom `rw`/`rt` nullable** + helper `boleh_akses(pengurus, warga)`.
+- ⬜ **Endpoint mutasi warga** (`POST`/`PATCH`/`DELETE /penduduk`). Backend
+  masih nol endpoint tulis di luar auth. Rencananya menempel di
+  `app/api/routers/penduduk.py` sebagai `APIRouter` kedua ber-`dependencies`,
+  bukan file router baru — alasannya di spec.
+- ⬜ **Router `/pengurus`** (kelola akun, ADMIN saja) + bootstrap ADMIN pertama.
+- ⬜ **Sesi server-side menggantikan JWT.** Naik prioritas: sejak masa berlaku
+  akun dihapus, menonaktifkan akun adalah satu-satunya cara memutus akses,
+  dan itu harus berlaku seketika — bukan menunggu TTL 12 jam
+  (`settings.JWT_TTL_JAM`) habis sendiri.
+- ⬜ **Audit log persisten** (`tabel audit_log` + `GET /audit`) dengan nilai
+  sebelum/sesudah. `app/core/audit.py` masih `print()` ke console dan hilang
+  tiap restart — tidak memadai begitu ada mutasi data warga.

@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.routers import auth, infografis, penduduk, publik
-from app.core.config import CORS_ORIGINS
+from app.core.config import settings
 from app.data.akun import (
     DEMO_WARGA_AKTIF_NIK,
     DEMO_WARGA_AKTIF_PIN,
@@ -11,11 +11,11 @@ from app.data.akun import (
     DEMO_WARGA_AKTIVASI_TANGGAL_LAHIR,
 )
 
-app = FastAPI(title="NIA API", description="Backend dummy — lihat CLAUDE.md §11")
+app = FastAPI(title="SIDUK API", description="Backend dummy — lihat CLAUDE.md §11")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=CORS_ORIGINS,
+    allow_origins=settings.CORS_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -43,6 +43,7 @@ def health() -> dict[str, str]:
 def _cetak_akun_demo() -> None:
     print("=== Akun demo backend dummy ===")
     print("  Petugas — dukuh / dukuh123")
+    print("  Petugas — rw019 / rw123")
     print("  Petugas — rt03 / rt123")
     print(f"  Warga (sudah aktif) — NIK {DEMO_WARGA_AKTIF_NIK} / PIN {DEMO_WARGA_AKTIF_PIN}")
     print(

@@ -18,6 +18,7 @@ npm run dev            # http://localhost:5173
 | Peran                   | Kredensial                                          |
 | ------------------------ | --------------------------------------------------- |
 | Dukuh                     | `dukuh` / `dukuh123`                                |
+| Ketua RW 019               | `rw019` / `rw123`                                    |
 | Ketua RT 03                | `rt03` / `rt123`                                     |
 | Warga (sudah aktif)       | NIK `3204120210750001` / PIN `112233`                |
 | Warga (belum aktivasi)    | NIK `3204124205790001`, lahir `02-05-1979`            |

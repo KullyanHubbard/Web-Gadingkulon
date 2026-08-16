@@ -2,7 +2,7 @@ import type { LucideIcon } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { cn } from '@/lib/utils';
 
-type Tone = 'brand' | 'green' | 'amber' | 'violet';
+export type Tone = 'brand' | 'green' | 'amber' | 'violet';
 
 const toneStyles: Record<Tone, string> = {
   brand: 'bg-brand-50 text-brand-600',

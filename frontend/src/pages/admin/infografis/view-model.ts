@@ -1,10 +1,11 @@
 import {
   agamaLabel,
   pendidikanLabel,
+  relabel,
   statusPerkawinanLabel,
 } from '@/features/penduduk/labels';
 import type { InfografisData } from '@/features/infografis/types';
-import type { Distribusi } from '@/types/statistik';
+import type { PanelDistribusi } from '@/types/statistik';
 
 /**
  * Susunan panel halaman infografis.
@@ -14,25 +15,7 @@ import type { Distribusi } from '@/types/statistik';
  * Fitur tidak boleh saling mengimpor (CLAUDE.md §4) — halaman boleh merakit.
  */
 
-export interface PanelInfografis {
-  id: string;
-  judul: string;
-  deskripsi: string;
-  jenis: 'pie' | 'bar';
-  data: Distribusi[];
-  /** Panel melebar penuh di layar besar. */
-  lebarPenuh?: boolean;
-}
-
-/** Terjemahkan label enum mentah pada distribusi menjadi label manusiawi. */
-function relabel<T extends string>(
-  data: Distribusi[],
-  map: Record<T, string>,
-): Distribusi[] {
-  return data.map((d) => ({ ...d, label: map[d.label as T] ?? d.label }));
-}
-
-export function toPanelInfografis(data: InfografisData): PanelInfografis[] {
+export function toPanelInfografis(data: InfografisData): PanelDistribusi[] {
   return [
     {
       id: 'agama',

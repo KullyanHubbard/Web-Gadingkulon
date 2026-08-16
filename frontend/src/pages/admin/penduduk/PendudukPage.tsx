@@ -13,7 +13,7 @@ export default function PendudukPage() {
     <div>
       <PageHeader
         title="Data Penduduk"
-        description="Seluruh data kependudukan Desa Sukamaju."
+        description="Seluruh data kependudukan padukuhan."
       />
 
       <DaftarPenduduk

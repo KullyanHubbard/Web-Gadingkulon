@@ -1,10 +1,8 @@
 import { lazy, Suspense } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { LoadingBlock } from '@/components/ui/Spinner';
-import { useAuth } from '@/features/auth/hooks/use-auth';
 import { RedirectIfAuthenticated, RequireAuth, RequireRole } from './guards';
-import { homePathForRole } from './role-utils';
 import { paths } from './paths';
 
 // Code-splitting per halaman: chart (recharts) & halaman admin hanya
@@ -23,19 +21,6 @@ const InfografisPage = lazy(
   () => import('@/pages/admin/infografis/InfografisPage'),
 );
 const NotFoundPage = lazy(() => import('@/pages/not-found/NotFoundPage'));
-
-/**
- * Root "/": landing publik untuk pengunjung, redirect ke beranda role untuk
- * yang sudah masuk.
- */
-function RootRoute() {
-  const { isAuthenticated, user } = useAuth();
-
-  if (isAuthenticated) {
-    return <Navigate to={homePathForRole(user?.role)} replace />;
-  }
-  return <LandingPage />;
-}
 
 export function AppRoutes() {
   return (
@@ -71,7 +56,13 @@ export function AppRoutes() {
           </Route>
         </Route>
 
-        <Route path="/" element={<RootRoute />} />
+        {/* Landing publik, terbuka untuk semua — termasuk yang sudah masuk.
+            Sebelumnya root melempar sesi aktif ke beranda rolenya, sehingga
+            warga kehilangan statistik desa begitu login (warga tidak punya
+            halaman statistik lain; `/admin/infografis` khusus ADMIN).
+            Pengalihan setelah masuk tetap ditangani `RedirectIfAuthenticated`
+            di `/login`, jadi alur login tidak berubah. */}
+        <Route path={paths.landing} element={<LandingPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Suspense>

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.api.routers.auth import current_admin, current_user
-from app.data.dummy import DAFTAR_PENDUDUK, KARTU_KELUARGA_BY_NOKK
+from app.data.store import DAFTAR_PENDUDUK, KARTU_KELUARGA_BY_NOKK
 from app.schemas.auth import AuthUser
 from app.schemas.penduduk import KartuKeluarga, PaginatedPenduduk, Penduduk
 

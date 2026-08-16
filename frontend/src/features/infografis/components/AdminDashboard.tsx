@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
+import { toStatWarga } from '@/lib/stat-warga';
 import { useInfografis } from '../hooks/use-infografis';
-import { toStatRingkas } from '../view-model';
 import { AdminDashboardView } from './AdminDashboardView';
 
 interface AdminDashboardProps {
@@ -18,7 +18,7 @@ interface AdminDashboardProps {
 export function AdminDashboard({ namaPengurus }: AdminDashboardProps) {
   const { data, isLoading, isError } = useInfografis();
 
-  const stats = useMemo(() => (data ? toStatRingkas(data) : undefined), [data]);
+  const stats = useMemo(() => (data ? toStatWarga(data) : undefined), [data]);
 
   return (
     <AdminDashboardView

@@ -1,7 +1,8 @@
-"""Hash & token untuk backend dummy.
+"""Hash & token.
 
-Secret JWT ditulis polos di sini karena datanya dummy dan cuma jalan lokal.
-Saat backend beneran dipakai produksi, pindahkan ke env var.
+Secret dan umur token dibaca dari `settings` (env `JWT_SECRET`, `JWT_TTL_JAM`).
+Defaultnya nilai dev yang sengaja bertuliskan "dev-only" — kalau nilai itu
+sampai jalan di produksi, artinya `.env` belum dipasang.
 """
 
 from datetime import datetime, timedelta, timezone
@@ -9,9 +10,10 @@ from datetime import datetime, timedelta, timezone
 import bcrypt
 import jwt
 
-JWT_SECRET = "dummy-secret-nia-backend"
+from app.core.config import settings
+
+# Keputusan teknis, bukan konfigurasi deployment — tidak perlu ke env.
 JWT_ALGORITHM = "HS256"
-JWT_TTL = timedelta(hours=12)
 
 
 def hash_rahasia(plain: str) -> bytes:
@@ -23,14 +25,15 @@ def cocok_rahasia(plain: str, hashed: bytes) -> bool:
 
 
 def buat_token(user_id: str) -> str:
-    payload = {"sub": user_id, "exp": datetime.now(timezone.utc) + JWT_TTL}
-    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    kedaluwarsa = datetime.now(timezone.utc) + timedelta(hours=settings.JWT_TTL_JAM)
+    payload = {"sub": user_id, "exp": kedaluwarsa}
+    return jwt.encode(payload, settings.JWT_SECRET, algorithm=JWT_ALGORITHM)
 
 
 def urai_token(token: str) -> str | None:
     """`sub` (id user) dari token, atau `None` kalau tidak valid/kedaluwarsa."""
     try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[JWT_ALGORITHM])
         return payload.get("sub")
     except jwt.PyJWTError:
         return None

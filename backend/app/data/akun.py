@@ -5,8 +5,9 @@ asli terpasang (CLAUDE.md §11: "PIN & password disimpan sebagai hash").
 
 from dataclasses import dataclass
 
+from app.core.config import settings
 from app.core.security import hash_rahasia
-from app.data.dummy import DAFTAR_PENDUDUK
+from app.data.store import DAFTAR_PENDUDUK
 from app.schemas.auth import AuthUser
 from app.schemas.penduduk import Penduduk
 
@@ -26,6 +27,10 @@ class WargaAccount:
     email: str | None = None
 
 
+# Petugas ikut kode wilayah yang sama dengan penduduk; yang membedakan cuma
+# blok serialnya (`00000090xx`, di luar rentang yang dipakai generator).
+_NIK_PETUGAS = f"{settings.SEED_KODE_WILAYAH}00000090"
+
 PETUGAS_ACCOUNTS: list[PetugasAccount] = [
     PetugasAccount(
         username="dukuh",
@@ -34,9 +39,21 @@ PETUGAS_ACCOUNTS: list[PetugasAccount] = [
             id="u-dukuh-1",
             nama="Ki Demang Suryanto",
             role="ADMIN",
-            nik="3204120000009001",
+            nik=f"{_NIK_PETUGAS}01",
             username="dukuh",
             jabatan="Dukuh",
+        ),
+    ),
+    PetugasAccount(
+        username="rw019",
+        password_hash=hash_rahasia("rw123"),
+        user=AuthUser(
+            id="u-rw-019",
+            nama="Herman Wijaya",
+            role="ADMIN",
+            nik=f"{_NIK_PETUGAS}02",
+            username="rw019",
+            jabatan="Ketua RW 019",
         ),
     ),
     PetugasAccount(
@@ -46,7 +63,7 @@ PETUGAS_ACCOUNTS: list[PetugasAccount] = [
             id="u-rt-03",
             nama="Fajar Nugraha",
             role="ADMIN",
-            nik="3204120000009002",
+            nik=f"{_NIK_PETUGAS}03",
             username="rt03",
             jabatan="Ketua RT 03",
         ),

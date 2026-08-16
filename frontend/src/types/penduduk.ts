@@ -24,6 +24,13 @@ export type StatusHubunganKeluarga =
 
 export type GolonganDarah = 'A' | 'B' | 'AB' | 'O' | 'TIDAK_TAHU';
 
+/**
+ * Dua sebab hilangnya warga dari daftar sengaja dipisah — lihat spec auth,
+ * bagian "Hapus warga". Status ini untuk yang datanya sah tapi statusnya
+ * berubah; `deletedAt` untuk baris yang memang tidak pernah valid.
+ */
+export type StatusKependudukan = 'AKTIF' | 'PINDAH' | 'MENINGGAL';
+
 export interface Alamat {
   jalan: string;
   rt: string;
@@ -54,6 +61,9 @@ export interface Penduduk {
   statusHubunganKeluarga: StatusHubunganKeluarga;
   kewarganegaraan: string;
   alamat: Alamat;
+  statusKependudukan: StatusKependudukan;
+  /** ISO date string, atau null kalau barisnya masih berlaku. */
+  deletedAt: string | null;
 }
 
 /** Satu Kartu Keluarga beserta seluruh anggotanya. */

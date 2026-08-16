@@ -103,7 +103,7 @@ export function DaftarPendudukView({
                   {daftar.map((row) => (
                     <tr key={row.id} className="hover:bg-slate-50">
                       <Td className="font-medium text-slate-900">{row.nama}</Td>
-                      <Td className="font-mono text-xs">{row.nik}</Td>
+                      <Td className="text-xs tabular-nums">{row.nik}</Td>
                       <Td>
                         <Badge tone={row.jenisKelaminTone}>
                           {row.jenisKelamin}

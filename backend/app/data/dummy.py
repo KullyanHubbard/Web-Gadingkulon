@@ -1,32 +1,30 @@
-"""Generator data dummy kependudukan: 200 Kartu Keluarga, tiap KK beranggota
-3-5 orang (diacak). Dipakai selama backend belum tersambung ke Postgres asli
-(lihat CLAUDE.md §11) — data ini hidup di memori proses, hilang tiap restart.
+"""Generator data dummy kependudukan: sejumlah Kartu Keluarga, tiap KK
+beranggota 3-5 orang (diacak). Dipakai selama backend belum tersambung ke
+SQLite (lihat CLAUDE.md §11) — hasilnya hidup di memori proses.
 
-Diseed supaya datasetnya tetap sama di setiap restart, bukan berubah-ubah
-tiap kali server dinyalakan.
+Modul ini murni generator: mengimpornya tidak membangkitkan apa-apa. Yang
+memanggilnya sekali lalu menyimpan hasilnya adalah `app/data/store.py`.
+
+Semua nilai yang bisa berbeda antar environment (jumlah KK, kode wilayah, RW,
+alamat, seed acak) masuk lewat parameter `cfg` — lihat `app/core/config.py`.
+Yang tetap di file ini cuma kosakata & bobot distribusi: itu bagian dari
+definisi datasetnya, bukan tombol deployment.
 """
 
 import calendar
 import itertools
 import random
+from collections import Counter
 from datetime import date
 
+from app.core.config import Settings, settings
 from app.schemas.penduduk import Alamat, KartuKeluarga, Penduduk
 
-JUMLAH_KELUARGA = 200
+# Tahun acuan buat menghitung tanggal lahir dari usia. Bukan konfigurasi:
+# mengubahnya menggeser seluruh NIK & tanggal lahir, jadi ia bagian dari
+# definisi dataset — sama statusnya dengan bobot distribusi di bawah.
 TAHUN_SEKARANG = 2026
 
-SEED = 20260814
-
-WILAYAH = {
-    "desa": "Sukamaju",
-    "kecamatan": "Cibiru",
-    "kabupaten": "Bandung",
-    "provinsi": "Jawa Barat",
-    "kodePos": "40615",
-}
-
-RW_LIST = ["019", "020", "021"]
 JALAN_POOL = [
     "Melati", "Mawar", "Kenanga", "Anggrek", "Dahlia",
     "Flamboyan", "Cempaka", "Kamboja", "Seroja", "Tulip",
@@ -66,6 +64,16 @@ PENDIDIKAN_DEWASA_POOL = (
     + ["S3"] * 3 + ["TIDAK_SEKOLAH"] * 5
 )
 
+# Bobot status kependudukan — sekelas dengan bobot agama/golongan darah di
+# atas: bagian dari definisi dataset, bukan tombol deployment.
+PELUANG_PINDAH = 0.02
+PELUANG_MENINGGAL_LANSIA = 0.08
+USIA_MINIMAL_MENINGGAL = 50
+# Beberapa baris sengaja ditandai "salah input" supaya penyaringan `deletedAt`
+# punya data ujinya. Tanggalnya tetap biar datasetnya tidak berubah tiap hari.
+JUMLAH_SALAH_INPUT = 3
+TANGGAL_HAPUS_DUMMY = f"{TAHUN_SEKARANG}-01-15"
+
 
 def _nama_depan(perempuan: bool) -> str:
     return random.choice(NAMA_DEPAN_PEREMPUAN if perempuan else NAMA_DEPAN_LAKI)
@@ -78,13 +86,16 @@ def _tanggal_lahir(usia: int) -> date:
     return date(tahun, bulan, hari)
 
 
-def _nik(tanggal: date, perempuan: bool, urut: int) -> str:
+def _nik(tanggal: date, perempuan: bool, urut: int, kode_wilayah: str) -> str:
     hari = tanggal.day + (40 if perempuan else 0)
-    return f"320412{hari:02d}{tanggal.month:02d}{tanggal.year % 100:02d}{urut:04d}"
+    return (
+        f"{kode_wilayah}{hari:02d}{tanggal.month:02d}"
+        f"{tanggal.year % 100:02d}{urut:04d}"
+    )
 
 
-def _no_kk(index_keluarga: int) -> str:
-    return f"320412000001{index_keluarga:04d}"
+def _no_kk(index_keluarga: int, kode_wilayah: str) -> str:
+    return f"{kode_wilayah}000001{index_keluarga:04d}"
 
 
 def _pendidikan_untuk_usia(usia: int) -> str:
@@ -125,6 +136,7 @@ def _anggota(
     id_urut: int,
     nik_urut: int,
     no_kk: str,
+    kode_wilayah: str,
     nama: str,
     perempuan: bool,
     usia: int,
@@ -136,7 +148,7 @@ def _anggota(
     tanggal_lahir = _tanggal_lahir(usia)
     return Penduduk(
         id=f"p-{id_urut:04d}",
-        nik=_nik(tanggal_lahir, perempuan, nik_urut),
+        nik=_nik(tanggal_lahir, perempuan, nik_urut, kode_wilayah),
         noKK=no_kk,
         nama=nama,
         jenisKelamin="PEREMPUAN" if perempuan else "LAKI_LAKI",
@@ -153,16 +165,31 @@ def _anggota(
     )
 
 
-def _keluarga(index_keluarga: int, counter: itertools.count) -> list[Penduduk]:
+def _keluarga(
+    index_keluarga: int, counter: itertools.count, cfg: Settings
+) -> list[Penduduk]:
+    kode_wilayah = cfg.SEED_KODE_WILAYAH
+    rw_list = cfg.SEED_RW_LIST
+
     jumlah_anggota = random.randint(3, 5)
-    no_kk = _no_kk(index_keluarga)
-    rw = RW_LIST[(index_keluarga - 1) % len(RW_LIST)]
-    rt = f"{((index_keluarga - 1) % 5) + 1:03d}"
+    no_kk = _no_kk(index_keluarga, kode_wilayah)
+    # Tiap RW punya `cfg.SEED_RT_PER_RW` buah RT, bernomor berurutan lintas RW.
+    # Nomor RT diturunkan dari posisi RW, bukan dari sisa bagi sendiri — kalau
+    # tidak, jumlah RW yang habis dibagi jumlah RT bikin tiap RW cuma kebagian
+    # satu RT tanpa ada yang sadar.
+    urut_rw = (index_keluarga - 1) % len(rw_list)
+    rw = rw_list[urut_rw]
+    urut_rt = ((index_keluarga - 1) // len(rw_list)) % cfg.SEED_RT_PER_RW
+    rt = f"{urut_rw * cfg.SEED_RT_PER_RW + urut_rt + 1:03d}"
     alamat = Alamat(
         jalan=f"Jl. {random.choice(JALAN_POOL)} No. {random.randint(1, 60)}",
         rt=rt,
         rw=rw,
-        **WILAYAH,
+        desa=cfg.SEED_DESA,
+        kecamatan=cfg.SEED_KECAMATAN,
+        kabupaten=cfg.SEED_KABUPATEN,
+        provinsi=cfg.SEED_PROVINSI,
+        kodePos=cfg.SEED_KODE_POS,
     )
     agama = random.choice(AGAMA_KELUARGA)
     marga = random.choice(NAMA_BELAKANG)
@@ -178,6 +205,7 @@ def _keluarga(index_keluarga: int, counter: itertools.count) -> list[Penduduk]:
             id_urut=next(counter),
             nik_urut=index_keluarga,
             no_kk=no_kk,
+            kode_wilayah=kode_wilayah,
             nama=f"{_nama_depan(kepala_perempuan)} {marga}",
             perempuan=kepala_perempuan,
             usia=usia_kepala,
@@ -196,6 +224,7 @@ def _keluarga(index_keluarga: int, counter: itertools.count) -> list[Penduduk]:
                 id_urut=next(counter),
                 nik_urut=index_keluarga,
                 no_kk=no_kk,
+                kode_wilayah=kode_wilayah,
                 nama=f"{_nama_depan(True)} {random.choice(NAMA_BELAKANG)}",
                 perempuan=True,
                 usia=usia_pasangan,
@@ -222,6 +251,7 @@ def _keluarga(index_keluarga: int, counter: itertools.count) -> list[Penduduk]:
                 id_urut=next(counter),
                 nik_urut=index_keluarga,
                 no_kk=no_kk,
+                kode_wilayah=kode_wilayah,
                 nama=nama,
                 perempuan=perempuan,
                 usia=usia,
@@ -235,21 +265,49 @@ def _keluarga(index_keluarga: int, counter: itertools.count) -> list[Penduduk]:
     return anggota
 
 
-def _generate() -> list[Penduduk]:
-    random.seed(SEED)
+def _tandai_status(daftar: list[Penduduk], seed: int) -> None:
+    """Isi `statusKependudukan` & `deletedAt` di lintasan kedua.
+
+    Sengaja memakai RNG sendiri, bukan `random` global, supaya urutan acak
+    lintasan pertama tidak bergeser — NIK, nama, dan akun demo tetap sama
+    persis seperti sebelum dua kolom ini ada.
+    """
+    rng = random.Random(seed + 1)
+
+    for p in daftar:
+        usia = TAHUN_SEKARANG - int(p.tanggalLahir[:4])
+        # Kepala keluarga dilewati: KK yang kepalanya tercatat meninggal tapi
+        # masih tampil sebagai kepala keluarga cuma bikin bingung di layar.
+        if (
+            usia >= USIA_MINIMAL_MENINGGAL
+            and p.statusHubunganKeluarga != "KEPALA_KELUARGA"
+            and rng.random() < PELUANG_MENINGGAL_LANSIA
+        ):
+            p.statusKependudukan = "MENINGGAL"
+        elif rng.random() < PELUANG_PINDAH:
+            p.statusKependudukan = "PINDAH"
+
+    # Dua baris pertama dilewati — `data/akun.py` memakainya sebagai akun demo.
+    for p in rng.sample(daftar[2:], JUMLAH_SALAH_INPUT):
+        p.deletedAt = TANGGAL_HAPUS_DUMMY
+
+
+def generate_penduduk(cfg: Settings) -> list[Penduduk]:
+    """Bangkitkan seluruh penduduk. Diseed dari `cfg.SEED_RANDOM_SEED` supaya
+    datasetnya sama di setiap restart, bukan berubah-ubah tiap dinyalakan."""
+    random.seed(cfg.SEED_RANDOM_SEED)
     counter = itertools.count(1)
     daftar: list[Penduduk] = []
-    for index_keluarga in range(1, JUMLAH_KELUARGA + 1):
-        daftar.extend(_keluarga(index_keluarga, counter))
+    for index_keluarga in range(1, cfg.SEED_JUMLAH_KELUARGA + 1):
+        daftar.extend(_keluarga(index_keluarga, counter, cfg))
+    _tandai_status(daftar, cfg.SEED_RANDOM_SEED)
     return daftar
 
 
-DAFTAR_PENDUDUK: list[Penduduk] = _generate()
-
-
-def _bangun_kartu_keluarga() -> dict[str, KartuKeluarga]:
+def bangun_kartu_keluarga(daftar: list[Penduduk]) -> dict[str, KartuKeluarga]:
+    """Kelompokkan penduduk per `noKK` jadi indeks Kartu Keluarga."""
     by_no_kk: dict[str, list[Penduduk]] = {}
-    for p in DAFTAR_PENDUDUK:
+    for p in daftar:
         by_no_kk.setdefault(p.noKK, []).append(p)
 
     hasil: dict[str, KartuKeluarga] = {}
@@ -267,18 +325,53 @@ def _bangun_kartu_keluarga() -> dict[str, KartuKeluarga]:
     return hasil
 
 
-KARTU_KELUARGA_BY_NOKK: dict[str, KartuKeluarga] = _bangun_kartu_keluarga()
-
-
 def _self_check() -> None:
-    assert len(KARTU_KELUARGA_BY_NOKK) == JUMLAH_KELUARGA, "jumlah KK harus 200"
-    for kk in KARTU_KELUARGA_BY_NOKK.values():
+    daftar = generate_penduduk(settings)
+    kk_by_no_kk = bangun_kartu_keluarga(daftar)
+
+    assert len(kk_by_no_kk) == settings.SEED_JUMLAH_KELUARGA, "jumlah KK tidak cocok"
+    for kk in kk_by_no_kk.values():
         assert 3 <= len(kk.anggota) <= 5, f"anggota KK {kk.noKK} di luar 3-5"
-    nik_set = {p.nik for p in DAFTAR_PENDUDUK}
-    assert len(nik_set) == len(DAFTAR_PENDUDUK), "ada NIK duplikat"
+    nik_set = {p.nik for p in daftar}
+    assert len(nik_set) == len(daftar), "ada NIK duplikat"
+
+    # Dua kolom baru: ada isinya, dan tidak menabrak akun demo.
+    terhapus = [p for p in daftar if p.deletedAt is not None]
+    assert len(terhapus) == JUMLAH_SALAH_INPUT, "jumlah baris salah input meleset"
+    assert all(p.deletedAt is None for p in daftar[:2]), "akun demo ikut terhapus"
+    status = {p.statusKependudukan for p in daftar}
+    assert status == {"AKTIF", "PINDAH", "MENINGGAL"}, f"status tidak lengkap: {status}"
+    assert all(
+        p.statusHubunganKeluarga != "KEPALA_KELUARGA"
+        for p in daftar
+        if p.statusKependudukan == "MENINGGAL"
+    ), "kepala keluarga tidak boleh bertanda meninggal"
+    # Yang baru diparameterkan — pastikan cfg benar-benar dipakai, bukan literal.
+    assert all(nik.startswith(settings.SEED_KODE_WILAYAH) for nik in nik_set), (
+        "kode wilayah tidak terpakai di NIK"
+    )
+    assert {p.alamat.rw for p in daftar} <= set(settings.SEED_RW_LIST), (
+        "ada RW di luar SEED_RW_LIST"
+    )
+    rt_per_rw: dict[str, set[str]] = {}
+    for p in daftar:
+        rt_per_rw.setdefault(p.alamat.rw, set()).add(p.alamat.rt)
+    assert all(len(rts) == settings.SEED_RT_PER_RW for rts in rt_per_rw.values()), (
+        f"tiap RW harus punya {settings.SEED_RT_PER_RW} RT: "
+        f"{ {rw: sorted(rts) for rw, rts in rt_per_rw.items()} }"
+    )
+    # Tidak ada nomor RT yang dipakai dua RW.
+    assert len({rt for rts in rt_per_rw.values() for rt in rts}) == (
+        len(rt_per_rw) * settings.SEED_RT_PER_RW
+    ), "nomor RT bertabrakan antar RW"
+    assert {p.alamat.desa for p in daftar} == {settings.SEED_DESA}, (
+        "desa tidak diambil dari config"
+    )
+    cacah = Counter(p.statusKependudukan for p in daftar)
     print(
-        f"OK: {len(KARTU_KELUARGA_BY_NOKK)} KK, "
-        f"{len(DAFTAR_PENDUDUK)} penduduk, NIK semua unik"
+        f"OK: {len(kk_by_no_kk)} KK, {len(daftar)} penduduk, NIK semua unik, "
+        f"wilayah {settings.SEED_KODE_WILAYAH} RW {settings.SEED_RW_LIST}\n"
+        f"    status: {dict(cacah)}, salah input (deletedAt): {len(terhapus)}"
     )
 
 

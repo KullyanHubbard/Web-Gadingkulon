@@ -25,6 +25,16 @@ Bentuk final membelah dua tanggung jawab itu:
 - **`/` (root)** — landing publik: rail `Dashboard` + panel statistik saja.
   Tidak ada form. Pengunjung yang belum masuk mendarat di sini; yang sudah
   masuk tetap dilempar ke beranda rolenya (`RootRoute` di `AppRoutes.tsx`).
+
+  > **Revisi 2026-08-16 — `RootRoute` dihapus, `/` kini terbuka untuk semua.**
+  > Pelemparan itu membuat warga kehilangan statistik desa persis setelah
+  > login: warga tidak punya halaman statistik lain (`/admin/infografis`
+  > khusus ADMIN), jadi satu-satunya cara melihatnya kembali adalah keluar.
+  > Sekarang `/` selalu merender `LandingPage`. Pengalihan setelah masuk tidak
+  > berubah — tetap dikerjakan `RedirectIfAuthenticated` di `/login`.
+  > Ikutannya: tombol rail kiri berganti dari `LoginButton` menjadi
+  > `AccountButton` ("Masuk" atau "Akun Saya" tergantung sesi), dan
+  > `navItemsForRole()` mendapat item **Statistik Desa** untuk kedua peran.
 - **`/login`** — dikembalikan jadi halaman masuk berdiri sendiri
   (`LoginWargaForm` di dalam `AuthLayout`), persis seperti sebelum perubahan
   ini mulai. Dituju lewat tautan **Masuk** di rail kiri landing (desktop) atau

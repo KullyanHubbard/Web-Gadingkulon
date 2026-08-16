@@ -12,3 +12,18 @@ export interface Distribusi {
   label: string;
   value: number;
 }
+
+/**
+ * Satu panel chart siap tampil — dirakit view-model, dicetak
+ * `components/ui/PanelDistribusiCard`.
+ */
+export interface PanelDistribusi {
+  id: string;
+  judul: string;
+  jenis: 'pie' | 'bar';
+  data: Distribusi[];
+  /** Baris kedua di header kartu; kosongkan bila judulnya sudah cukup. */
+  deskripsi?: string;
+  /** Panel melebar penuh di layar besar. */
+  lebarPenuh?: boolean;
+}

@@ -1,4 +1,5 @@
 import {
+  BarChart3,
   LayoutDashboard,
   Users,
   PieChart,
@@ -17,6 +18,17 @@ export interface NavItem {
   end?: boolean;
 }
 
+/**
+ * Statistik desa (landing publik). `end: true` wajib — tanpa itu `/` cocok
+ * sebagai prefix setiap route dan menunya menyala terus.
+ */
+const statistikDesa: NavItem = {
+  label: 'Statistik Desa',
+  to: paths.landing,
+  icon: BarChart3,
+  end: true,
+};
+
 /** Menu navigasi sesuai role. */
 export function navItemsForRole(role: Role | undefined): NavItem[] {
   if (role === 'ADMIN') {
@@ -30,6 +42,7 @@ export function navItemsForRole(role: Role | undefined): NavItem[] {
       { label: 'Data Penduduk', to: paths.admin.penduduk, icon: Users },
       { label: 'Infografis', to: paths.admin.infografis, icon: PieChart },
       { label: 'Data Saya', to: paths.beranda, icon: IdCard },
+      statistikDesa,
     ];
   }
   // Warga. "Kontak Saya" hanya relevan untuk warga — pengurus tidak punya
@@ -37,5 +50,6 @@ export function navItemsForRole(role: Role | undefined): NavItem[] {
   return [
     { label: 'Data Saya', to: paths.beranda, icon: IdCard },
     { label: 'Kontak Saya', to: paths.kontak, icon: Phone },
+    statistikDesa,
   ];
 }

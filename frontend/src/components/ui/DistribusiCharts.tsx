@@ -3,6 +3,7 @@ import {
   Bar,
   BarChart,
   Cell,
+  LabelList,
   Legend,
   Pie,
   PieChart,
@@ -14,40 +15,73 @@ import {
 import type { PieLabelRenderProps } from 'recharts';
 import {
   CHART_AXIS_COLOR,
-  CHART_CURSOR_COLOR,
+  CHART_KATEGORI_COLORS,
   CHART_LEGEND_TEXT_COLOR,
-  CHART_SERIES_COLORS,
   CHART_SLICE_LABEL_COLOR,
-  warnaSeri,
+  warnaOrdinal,
 } from '@/lib/colors';
 import type { Distribusi } from '@/types/statistik';
 
-/** Bar chart horizontal untuk distribusi kategori. */
+/**
+ * Ukuran teks di dalam chart, dalam piksel.
+ *
+ * Mengikuti skala tipe aplikasi (lihat `tailwind.config.js`) — kalau tidak,
+ * teks chart jadi satu-satunya yang tertinggal kecil. Recharts menerima angka,
+ * bukan class Tailwind, jadi nilainya tinggal di sini — satu tempat, bukan
+ * angka lepas yang diulang di tiap prop.
+ */
+const UKURAN_TEKS_CHART = 13;
+
+/**
+ * Ruang di kanan batang, dalam piksel, untuk angka yang dicetak di ujungnya.
+ * Tanpa ini angka pada batang terpanjang tertimpa tepi kartu.
+ *
+ * ponytail: lebar tetap, muat sampai 5 digit pada `UKURAN_TEKS_CHART`. Cacah
+ * warga sedesa tidak sedekat itu ke batasnya. Kalau komponen ini nanti dipakai
+ * untuk angka yang lebih besar, hitung dari nilai terpanjang di `data`.
+ */
+const RUANG_ANGKA_KANAN = 44;
+
+/**
+ * Bar chart horizontal untuk distribusi kategori.
+ *
+ * Batangnya diwarnai ramp ORDINAL, bukan hue kategorik: yang masuk ke sini
+ * kategori berurutan (kelompok umur, jenjang pendidikan) atau daftar terurut
+ * menurun, dan enam hue berbeda di situ menyiratkan enam hal yang tak
+ * berhubungan — padahal urutannya justru isinya.
+ *
+ * Cacahnya dicetak permanen di ujung batang, jadi chart ini tidak punya
+ * tooltip: hover bukan syarat untuk membaca angkanya, dan menaruh tooltip di
+ * atas angka yang sudah tercetak cuma mengulang isi yang sama. Aturan yang
+ * sama dipakai donut berlabel di bawah.
+ */
 export function DistribusiBarChart({ data }: { data: Distribusi[] }) {
   return (
     <ResponsiveContainer width="100%" height={Math.max(200, data.length * 44)}>
       <BarChart
         data={data}
         layout="vertical"
-        margin={{ left: 8, right: 16, top: 4, bottom: 4 }}
+        margin={{ left: 8, right: RUANG_ANGKA_KANAN, top: 4, bottom: 4 }}
       >
         <XAxis type="number" allowDecimals={false} hide />
         <YAxis
           type="category"
           dataKey="label"
-          width={90}
-          tick={{ fontSize: 12, fill: CHART_AXIS_COLOR }}
+          width={104}
+          tick={{ fontSize: UKURAN_TEKS_CHART, fill: CHART_AXIS_COLOR }}
           axisLine={false}
           tickLine={false}
         />
-        <Tooltip
-          cursor={{ fill: CHART_CURSOR_COLOR }}
-          contentStyle={{ borderRadius: 8, fontSize: 12 }}
-        />
         <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={22}>
           {data.map((_, i) => (
-            <Cell key={i} fill={warnaSeri(i)} />
+            <Cell key={i} fill={warnaOrdinal(i, data.length)} />
           ))}
+          <LabelList
+            dataKey="value"
+            position="right"
+            fontSize={UKURAN_TEKS_CHART}
+            fill={CHART_AXIS_COLOR}
+          />
         </Bar>
       </BarChart>
     </ResponsiveContainer>
@@ -73,13 +107,30 @@ interface DistribusiPieChartProps {
    * warnanya selalu putih (`CHART_SLICE_LABEL_COLOR`).
    */
   labelIrisan?: (index: number) => string[];
-  /** Warna irisan; default seri brand. Urutannya = urutan data. */
+  /**
+   * Warna irisan; default hue kategorik. Urutannya = urutan data.
+   *
+   * Oper ramp sendiri hanya kalau kategorinya memang berurutan — donut agama
+   * & status perkawinan tidak, jadi keduanya memakai default.
+   */
   warna?: readonly string[];
 }
 
 /** Ambil nilai numerik dari properti Recharts yang bertipe longgar. */
 function angka(nilai: unknown): number {
   return typeof nilai === 'number' ? nilai : 0;
+}
+
+/**
+ * Cacah untuk ditempel di teks legenda, mis. `' 120'`.
+ *
+ * Kosong bila Recharts tidak memberi angka — beda dengan `angka()` yang jatuh
+ * ke `0`: nol di sini terbaca sebagai "tidak ada warga di kategori ini",
+ * padahal yang terjadi bentuk payload-nya berubah. Legenda tanpa angka jelek,
+ * legenda yang salah angka lebih buruk.
+ */
+function teksCacah(nilai: unknown): string {
+  return typeof nilai === 'number' ? ` ${nilai}` : '';
 }
 
 const DERAJAT = Math.PI / 180;
@@ -113,8 +164,8 @@ function labelDiIrisan(
         <tspan
           key={isi}
           x={x}
-          dy={i === 0 ? -5 : 19}
-          fontSize={i === 0 ? 14 : 13}
+          dy={i === 0 ? -5 : 20}
+          fontSize={i === 0 ? 15 : 14}
           fontWeight={i === 0 ? 700 : 600}
           opacity={1}
         >
@@ -142,7 +193,7 @@ export function DistribusiPieChart({
   showLegend = true,
   center,
   labelIrisan,
-  warna = CHART_SERIES_COLORS,
+  warna = CHART_KATEGORI_COLORS,
 }: DistribusiPieChartProps) {
   return (
     <div className="relative">
@@ -191,9 +242,20 @@ export function DistribusiPieChart({
           {showLegend && (
             <Legend
               iconType="circle"
-              wrapperStyle={{ fontSize: 12 }}
-              formatter={(value: string) => (
-                <span style={{ color: CHART_LEGEND_TEXT_COLOR }}>{value}</span>
+              wrapperStyle={{ fontSize: UKURAN_TEKS_CHART }}
+              // Cacah ikut dicetak di legenda, bukan cuma di tooltip: irisan
+              // kecil (Konghucu, Buddha) tidak muat teks di dalamnya, dan
+              // legenda satu-satunya tempat SEMUA kategori pasti terbaca tanpa
+              // hover. `entry.payload` = baris data aslinya, jadi `.value`
+              // cacah yang sama dengan yang menggambar irisannya.
+              formatter={(
+                nama: string,
+                entry: { payload?: { value?: unknown } },
+              ) => (
+                <span style={{ color: CHART_LEGEND_TEXT_COLOR }}>
+                  {nama}
+                  {teksCacah(entry.payload?.value)}
+                </span>
               )}
             />
           )}
