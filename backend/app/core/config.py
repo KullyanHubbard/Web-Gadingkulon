@@ -39,22 +39,13 @@ class Settings(BaseSettings):
     JWT_SECRET: str = "dev-only-ganti-di-produksi"
     JWT_TTL_JAM: int = 12
 
-    # --- Seed / generator data dummy ---------------------------------------
-    # Dipakai sekali saat seeding (lihat `app/data/store.py`), bukan tiap request.
-    SEED_JUMLAH_KELUARGA: int = 200
-    SEED_RANDOM_SEED: int = 20260814
-    # 6 digit kode wilayah — jadi prefiks NIK & no KK. Salah panjang = NIK rusak
-    # diam-diam, jadi divalidasi di sini, bukan di generator.
-    SEED_KODE_WILAYAH: str = Field(default="320412", pattern=r"^\d{6}$")
-    SEED_DESA: str = "Sukamaju"
-    SEED_KECAMATAN: str = "Cibiru"
-    SEED_KABUPATEN: str = "Bandung"
-    SEED_PROVINSI: str = "Jawa Barat"
-    SEED_KODE_POS: str = "40615"
-    # Jumlah RT di tiap RW. Nomor RT-nya berurutan lintas RW — dengan
-    # SEED_RW_LIST=019,020,021 dan nilai 2: RW 019 = RT 001-002, RW 020 =
-    # RT 003-004, RW 021 = RT 005-006.
-    SEED_RT_PER_RW: int = Field(default=2, ge=1)
+    # --- Wilayah -----------------------------------------------------------
+    # 6 digit kode wilayah, jadi prefiks NIK akun pengurus (`app/data/akun.py`).
+    # Salah panjang = NIK rusak diam-diam, jadi divalidasi di sini.
+    #
+    # Data penduduk TIDAK lagi memakai nilai ini: alamat & NIK warga sekarang
+    # ikut apa adanya dari file Excel pendataan, bukan dibangkitkan dari config.
+    KODE_WILAYAH: str = Field(default="320412", pattern=r"^\d{6}$")
 
     # --- Daftar bernilai jamak ---------------------------------------------
     # pydantic-settings 2.6 memaksa JSON untuk field bertipe list, padahal env
@@ -64,7 +55,6 @@ class Settings(BaseSettings):
         default="http://localhost:5173,http://127.0.0.1:5173",
         validation_alias="CORS_ORIGINS",
     )
-    SEED_RW_LIST_RAW: str = Field(default="019,020,021", validation_alias="SEED_RW_LIST")
 
     @property
     def DATABASE_FILE(self) -> Path:
@@ -74,10 +64,6 @@ class Settings(BaseSettings):
     @property
     def CORS_ORIGINS(self) -> list[str]:
         return _pisah_koma(self.CORS_ORIGINS_RAW)
-
-    @property
-    def SEED_RW_LIST(self) -> list[str]:
-        return _pisah_koma(self.SEED_RW_LIST_RAW)
 
 
 settings = Settings()

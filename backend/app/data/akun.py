@@ -11,8 +11,7 @@ Dua tempat penyimpanan, dan bedanya disengaja:
   semua warga sudah otomatis kembali ke keadaan "belum punya PIN" tanpa ada
   yang menekan apa pun.
 
-PIN & password di-hash (bcrypt) walau datanya masih dummy, karena kebiasaan
-inilah yang harus terus dipakai saat data asli masuk (CLAUDE.md §11).
+PIN & password selalu di-hash (bcrypt), tidak pernah disimpan polos.
 """
 
 from dataclasses import dataclass
@@ -46,8 +45,9 @@ def _db():
 
 
 # Petugas ikut kode wilayah yang sama dengan penduduk; yang membedakan cuma
-# blok serialnya (`00000090xx`, di luar rentang yang dipakai generator).
-_NIK_PETUGAS = f"{settings.SEED_KODE_WILAYAH}00000090"
+# blok serialnya (`00000090xx`), dipilih supaya tidak mungkin bertabrakan
+# dengan NIK warga mana pun yang masuk lewat pendataan.
+_NIK_PETUGAS = f"{settings.KODE_WILAYAH}00000090"
 
 PETUGAS_ACCOUNTS: list[PetugasAccount] = [
     PetugasAccount(
@@ -87,16 +87,6 @@ PETUGAS_ACCOUNTS: list[PetugasAccount] = [
         ),
     ),
 ]
-
-# Dua warga demo dipilih dari data dummy urutan pertama & kedua — dicetak saat
-# startup (lihat app/main.py) biar gampang dites manual.
-_DEMO_AKTIF: Penduduk = DAFTAR_PENDUDUK[0]
-_DEMO_AKTIVASI: Penduduk = DAFTAR_PENDUDUK[1]
-
-DEMO_WARGA_AKTIF_NIK = _DEMO_AKTIF.nik
-DEMO_WARGA_AKTIF_PIN = "112233"
-DEMO_WARGA_AKTIVASI_NIK = _DEMO_AKTIVASI.nik
-DEMO_WARGA_AKTIVASI_TANGGAL_LAHIR = _DEMO_AKTIVASI.tanggalLahir
 
 def cari_warga_account(nik: str) -> WargaAccount | None:
     with _db() as conn:
@@ -142,13 +132,10 @@ def cari_penduduk_by_nik(nik: str) -> Penduduk | None:
     return next((p for p in DAFTAR_PENDUDUK if p.nik == nik), None)
 
 
-# Warga demo di-seed sekali, saat tabelnya masih benar-benar kosong. Sesudah itu
-# isi tabel yang berkuasa: PIN yang dihapus pengurus tidak boleh hidup lagi cuma
-# karena backend di-restart.
-with _db() as _conn:
-    if not db.warga_akun_niks(_conn):
-        db.warga_akun_simpan(
-            _conn,
-            nik=DEMO_WARGA_AKTIF_NIK,
-            pin_hash=hash_rahasia(DEMO_WARGA_AKTIF_PIN),
-        )
+# Tidak ada akun warga yang di-seed. Setiap warga mengaktifkan akunnya sendiri
+# lewat /aktivasi (NIK + tanggal lahir), lalu menetapkan PIN-nya sendiri.
+#
+# Sebelumnya baris pertama data ikut diberi PIN tetap supaya gampang dites.
+# Itu dicabut: begitu isi tabel jadi data pendataan sungguhan, warga pertama di
+# file Excel akan punya akun aktif yang tidak pernah ia buat, dengan PIN yang
+# tertulis di kode dan tercetak di log.

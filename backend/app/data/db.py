@@ -141,6 +141,22 @@ def simpan(conn: sqlite3.Connection, daftar: Iterable[Penduduk]) -> int:
     return len(rows)
 
 
+def nik_sudah_ada(conn: sqlite3.Connection, niks: list[str]) -> list[str]:
+    """NIK dari `niks` yang sudah ada di tabel.
+
+    Dipakai importer supaya berhenti dengan pesan jelas sebelum menulis apa
+    pun, bukan menabrak `UNIQUE` di tengah `executemany` (baris lain di batch
+    yang sama ikut gagal karena `simpan()` satu transaksi).
+    """
+    if not niks:
+        return []
+    tanda = ",".join("?" * len(niks))
+    return [
+        r["nik"]
+        for r in conn.execute(f"SELECT nik FROM penduduk WHERE nik IN ({tanda})", niks)
+    ]
+
+
 def muat(conn: sqlite3.Connection) -> list[Penduduk]:
     """Semua baris, termasuk yang ber-`deletedAt`. Penyaringan milik `store.py`.
 
@@ -194,13 +210,41 @@ def warga_akun_niks(conn: sqlite3.Connection) -> list[str]:
     return [r["nik"] for r in conn.execute("SELECT nik FROM warga_akun ORDER BY nik")]
 
 
+def _contoh_penduduk() -> list[Penduduk]:
+    """Data uji seadanya untuk `_self_check`. Sengaja ditulis tangan, bukan
+    dibangkitkan: yang diuji di sini penyimpanan, bukan pembangkit data.
+
+    Tiga baris memikul beban berbeda — satu normal, satu `deletedAt`, satu
+    `statusKependudukan` non-AKTIF, dan NIK yang berawalan `0` supaya ketahuan
+    kalau kolomnya berubah jadi INTEGER dan memakan nol depannya.
+    """
+
+    def _buat(nik: str, nama: str, **ubah: object) -> Penduduk:
+        bawaan = dict(
+            id=nik, nik=nik, noKK="0204120101900001", nama=nama,
+            jenisKelamin="LAKI_LAKI", tempatLahir="Bandung",
+            tanggalLahir="1990-01-01", agama="ISLAM", statusPerkawinan="KAWIN",
+            pendidikan="SMA", pekerjaan="Petani", golonganDarah="O",
+            statusHubunganKeluarga="KEPALA_KELUARGA", kewarganegaraan="WNI",
+            alamat=Alamat(
+                jalan="Jl. Uji No. 1", rt="001", rw="019", desa="Sukamaju",
+                kecamatan="Cibiru", kabupaten="Bandung", provinsi="Jawa Barat",
+                kodePos="40615",
+            ),
+        )
+        return Penduduk(**{**bawaan, **ubah})  # type: ignore[arg-type]
+
+    return [
+        _buat("0204120101900001", "Warga Normal"),
+        _buat("0204124101900002", "Warga Salah Input", deletedAt="2026-01-15"),
+        _buat("0204120101900003", "Warga Pindah", statusKependudukan="PINDAH"),
+    ]
+
+
 def _self_check() -> None:
     import tempfile
 
-    from app.core.config import settings
-    from app.data.dummy import generate_penduduk
-
-    asli = generate_penduduk(settings)
+    asli = _contoh_penduduk()
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "sub" / "uji.db"  # `sub/` belum ada: uji mkdir juga.
 
@@ -242,6 +286,12 @@ def _self_check() -> None:
             pass
         else:
             raise AssertionError("NIK duplikat lolos, UNIQUE tidak jalan")
+
+        # nik_sudah_ada: dasar importer "tambah warga baru" — harus menunjuk
+        # NIK yang benar-benar sudah ada, dan tidak salah tunjuk NIK yang belum.
+        bentrok = nik_sudah_ada(conn, [asli[0].nik, "9999999999999999"])
+        assert bentrok == [asli[0].nik], "nik_sudah_ada salah deteksi bentrok"
+        assert nik_sudah_ada(conn, []) == [], "nik_sudah_ada harus terima list kosong"
         conn.close()
 
     print(f"OK: {len(hasil)} baris selamat lewat tutup-buka SQLite, NIK utuh 16 digit")

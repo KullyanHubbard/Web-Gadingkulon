@@ -4,14 +4,9 @@ from fastapi.responses import JSONResponse
 
 from app.api.routers import auth, infografis, penduduk, publik
 from app.core.config import settings
-from app.data.akun import (
-    DEMO_WARGA_AKTIF_NIK,
-    DEMO_WARGA_AKTIF_PIN,
-    DEMO_WARGA_AKTIVASI_NIK,
-    DEMO_WARGA_AKTIVASI_TANGGAL_LAHIR,
-)
+from app.data.store import DAFTAR_PENDUDUK
 
-app = FastAPI(title="SIDUK API", description="Backend dummy — lihat CLAUDE.md §11")
+app = FastAPI(title="SIDUK API", description="Data penduduk dari pendataan Excel — lihat CLAUDE.md §11")
 
 app.add_middleware(
     CORSMiddleware,
@@ -40,14 +35,16 @@ def health() -> dict[str, str]:
 
 
 @app.on_event("startup")
-def _cetak_akun_demo() -> None:
-    print("=== Akun demo backend dummy ===")
-    print("  Petugas — dukuh / dukuh123")
-    print("  Petugas — rw019 / rw123")
-    print("  Petugas — rt03 / rt123")
-    print(f"  Warga (sudah aktif) — NIK {DEMO_WARGA_AKTIF_NIK} / PIN {DEMO_WARGA_AKTIF_PIN}")
-    print(
-        f"  Warga (belum aktivasi) — NIK {DEMO_WARGA_AKTIVASI_NIK} / "
-        f"tanggal lahir {DEMO_WARGA_AKTIVASI_TANGGAL_LAHIR}"
-    )
-    print("================================")
+def _cetak_status_awal() -> None:
+    """Akun pengurus saja. NIK/PIN warga sengaja tidak dicetak — begitu tabelnya
+    berisi data pendataan sungguhan, log server jadi tempat bocornya."""
+    print("=== SIDUK backend ===")
+    print("  Akun pengurus — dukuh / dukuh123")
+    print("  Akun pengurus — rw019 / rw123")
+    print("  Akun pengurus — rt03 / rt123")
+    if DAFTAR_PENDUDUK:
+        print(f"  Data penduduk: {len(DAFTAR_PENDUDUK)} jiwa terbaca dari DB")
+    else:
+        print("  Data penduduk: KOSONG — impor dulu:")
+        print("    .venv/bin/python -m app.data.impor_excel ../docs/data-penduduk.xlsx")
+    print("=====================")
