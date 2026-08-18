@@ -1,5 +1,6 @@
 import { ChevronRight } from 'lucide-react';
 import { Card, CardHeader } from '@/components/ui/Card';
+import { CountUp } from '@/components/ui/CountUp';
 import { DistribusiPieChart } from '@/components/ui/DistribusiPieChart';
 import { QueryBoundary } from '@/components/ui/QueryBoundary';
 import { StatCard } from '@/components/ui/StatCard';
@@ -15,7 +16,8 @@ interface StatistikPanelViewProps {
 }
 
 /**
- * Tampilan saja — semua angka sudah berupa string dari `view-model.ts`.
+ * Tampilan saja — angka sudah berupa string dari `view-model.ts`, kecuali total
+ * di tengah donut yang sengaja mentah karena `CountUp` memformatnya per bingkai.
  *
  * Tiap baris RW di kartu ringkasan membuka rinciannya, dan itu satu-satunya
  * jalan ke sana di layar kecil: rail kiri disembunyikan di bawah `lg`.
@@ -48,12 +50,14 @@ export function StatistikPanelView({
               }}
               center={
                 <>
-                  {/* Hero figure: sengaja TANPA tabular-nums — angka lebar-tetap
-                      terlihat renggang di ukuran display. Itu untuk kolom angka
-                      yang harus lurus ke bawah, bukan untuk satu angka besar. */}
-                  <span className="text-7xl font-bold leading-none text-slate-900">
-                    {data.totalTeks}
-                  </span>
+                  {/* Hero figure: di sini `tabular-nums` justru WAJIB meski
+                      angka display biasanya lebih baik tanpanya — angkanya
+                      berubah tiap bingkai, dan lebar digit proporsional bikin
+                      seluruh angka bergoyang kiri-kanan selama menghitung. */}
+                  <CountUp
+                    value={data.total}
+                    className="text-7xl font-bold tabular-nums leading-none text-slate-900"
+                  />
                   <span className="mt-2 text-xs font-medium uppercase tracking-widest text-slate-400">
                     jiwa
                   </span>

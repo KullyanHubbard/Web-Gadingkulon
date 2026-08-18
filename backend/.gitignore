@@ -5,7 +5,10 @@ __pycache__
 
 # Basis data SQLite. WAJIB di sini: begitu isinya NIK asli, satu commit saja
 # menaruh data kependudukan sedesa di git history secara permanen.
-data/
+# Berawalan `/` supaya cuma `backend/data/` yang kena — pola telanjang `data/`
+# cocok di kedalaman mana pun, dan itu ikut membuang `app/data/*.py` yang justru
+# kode sumber.
+/data/
 *.db
 *.db-wal
 *.db-shm

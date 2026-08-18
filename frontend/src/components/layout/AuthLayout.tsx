@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
-import { ArrowLeft, Building2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { env } from '@/config/env';
 import { paths } from '@/routes/paths';
+import { KreditKkn } from './KreditKkn';
+import { Logo } from './Logo';
 
 interface AuthLayoutProps {
   title: string;
@@ -25,10 +26,11 @@ export function AuthLayout({ title, description, children }: AuthLayoutProps) {
       <div className="relative hidden flex-col justify-between bg-brand-700 p-12 text-white lg:flex">
         <Link
           to={paths.landing}
-          className="flex items-center gap-2 self-start text-lg font-semibold transition-opacity hover:opacity-80"
+          className="self-start transition-opacity hover:opacity-80"
         >
-          <Building2 className="h-6 w-6" />
-          {env.appName}
+          {/* Latarnya `brand-700` sementara wordmark-nya ungu tua — `text-*`
+              tidak menyentuh berkas SVG, jadi pemutihannya lewat filter. */}
+          <Logo className="h-8 brightness-0 invert" />
         </Link>
         <div>
           <h1 className="text-3xl font-bold leading-tight">
@@ -44,17 +46,13 @@ export function AuthLayout({ title, description, children }: AuthLayoutProps) {
         </p>
       </div>
 
-      {/* Kolom form (kanan) */}
-      <div className="flex items-center justify-center p-6">
-        <div className="w-full max-w-sm">
-          <Link
-            to={paths.landing}
-            className="mb-6 flex items-center gap-2 lg:hidden"
-          >
-            <Building2 className="h-6 w-6 text-brand-600" />
-            <span className="text-lg font-semibold text-slate-900">
-              {env.appName}
-            </span>
+      {/* Kolom form (kanan). `flex-col` + `my-auto`, bukan `justify-center`:
+          formnya tetap di tengah tapi kredit pembuat bisa duduk di kaki kolom
+          — di bawah `lg` panel brand hilang, jadi ini satu-satunya tempatnya. */}
+      <div className="flex flex-col p-6">
+        <div className="my-auto w-full max-w-sm self-center">
+          <Link to={paths.landing} className="mb-6 block lg:hidden">
+            <Logo />
           </Link>
 
           <Link
@@ -72,6 +70,8 @@ export function AuthLayout({ title, description, children }: AuthLayoutProps) {
 
           {children}
         </div>
+
+        <KreditKkn className="pt-8" />
       </div>
     </div>
   );

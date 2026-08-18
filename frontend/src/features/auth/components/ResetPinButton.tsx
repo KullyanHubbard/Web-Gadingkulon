@@ -8,6 +8,8 @@ import { ResetPinDialogView } from './ResetPinDialogView';
 interface ResetPinButtonProps {
   nik: string;
   nama: string;
+  /** Belum pernah aktivasi = tidak ada PIN untuk direset, jadi tanpa tombol. */
+  akunAktif: boolean;
 }
 
 /**
@@ -20,7 +22,7 @@ interface ResetPinButtonProps {
  * Container: memegang state dialog + mutation. Isi dialognya di
  * `ResetPinDialogView`.
  */
-export function ResetPinButton({ nik, nama }: ResetPinButtonProps) {
+export function ResetPinButton({ nik, nama, akunAktif }: ResetPinButtonProps) {
   const [open, setOpen] = useState(false);
   const reset = useResetPinWarga();
 
@@ -28,6 +30,10 @@ export function ResetPinButton({ nik, nama }: ResetPinButtonProps) {
     setOpen(false);
     // Buang hasil mutation supaya dialog dibuka lagi dalam keadaan bersih.
     reset.reset();
+  }
+
+  if (!akunAktif) {
+    return <span className="text-xs text-slate-400">Belum aktivasi</span>;
   }
 
   return (

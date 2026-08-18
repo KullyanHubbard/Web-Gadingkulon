@@ -22,6 +22,8 @@ export interface AuthApi {
   setPin(payload: SetPinPayload): Promise<Session>;
   /** Simpan kontak opsional milik warga yang sedang masuk. */
   simpanKontak(payload: KontakPayload): Promise<AuthUser>;
+  /** NIK yang akunnya sudah aktif — penentu munculnya tombol Reset PIN. */
+  daftarNikBerakun(): Promise<string[]>;
   /** Reset PIN warga (hanya ADMIN) — warga wajib aktivasi ulang setelahnya. */
   resetPinWarga(nik: string): Promise<void>;
   logout(): Promise<void>;
@@ -62,6 +64,11 @@ export const authApi: AuthApi = {
       '/auth/me/kontak',
       payload,
     );
+    return data;
+  },
+
+  async daftarNikBerakun() {
+    const { data } = await apiClient.get<string[]>('/auth/warga/akun');
     return data;
   },
 

@@ -12,6 +12,7 @@ from app.data.akun import (
     WargaAccount,
     cari_penduduk_by_nik,
     cari_warga_account,
+    daftar_nik_berakun,
     hapus_warga_account,
     simpan_warga_account,
 )
@@ -172,11 +173,23 @@ async def simpan_kontak(
     return _warga_user(user.nik)
 
 
+@router.get("/warga/akun", response_model=list[str])
+async def daftar_akun_warga(_: AuthUser = Depends(current_admin)) -> list[str]:
+    """NIK yang akunnya sudah aktif — penentu munculnya tombol Reset PIN.
+
+    Warga yang belum pernah aktivasi tidak punya PIN untuk direset; tombolnya
+    tidak boleh ada supaya pengurus tidak menekan sesuatu yang tidak berlaku.
+    """
+    return daftar_nik_berakun()
+
+
 @router.post("/warga/{nik}/reset-pin", status_code=204)
 async def reset_pin_warga(nik: str, admin: AuthUser = Depends(current_admin)) -> None:
-    if cari_warga_account(nik) is None:
+    """Hapus akun warga. Setelah ini ia kembali ke keadaan sebelum aktivasi:
+    masuk lagi lewat NIK + tanggal lahir, lalu menetapkan PIN barunya sendiri.
+    """
+    if not hapus_warga_account(nik):
         raise HTTPException(404, "Warga ini belum pernah mengaktifkan akun.")
-    hapus_warga_account(nik)
     catat_audit(aktor=admin.username or admin.id, aksi="reset-pin", target_nik=nik)
 
 

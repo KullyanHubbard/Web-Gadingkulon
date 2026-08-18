@@ -43,13 +43,13 @@ export function toRincianRw(rw: RincianRw): RincianRwViewModel {
       {
         id: 'agama',
         judul: 'Komposisi Agama',
-        jenis: 'pie',
+        jenis: 'bar',
         data: relabel(rw.perAgama, agamaLabel),
       },
       {
         id: 'perkawinan',
         judul: 'Status Perkawinan',
-        jenis: 'pie',
+        jenis: 'bar',
         data: relabel(rw.perStatusPerkawinan, statusPerkawinanLabel),
       },
     ],

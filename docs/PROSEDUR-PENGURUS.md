@@ -97,6 +97,10 @@ mencari Dukuh atau pemelihara aplikasi.
 4. Sampaikan ke warga: buka halaman masuk → **Aktifkan akun Anda** → masukkan
    NIK dan tanggal lahir → buat PIN baru.
 
+Kalau tombolnya tidak ada dan yang tertulis **"Belum aktivasi"**, berarti warga
+itu memang belum pernah membuat PIN — tidak ada yang perlu direset. Ia tinggal
+langsung memakai **Aktifkan akun Anda** di langkah 4.
+
 **JANGAN mereset PIN atas permintaan lewat telepon, SMS, atau WhatsApp.**
 Verifikasi tatap muka adalah satu-satunya pengaman yang dimiliki sistem ini.
 Kalau itu dilanggar, tidak ada lapisan pengaman lain di belakangnya.

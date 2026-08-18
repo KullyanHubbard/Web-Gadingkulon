@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
+import { keTanggalLahirIso } from '@/lib/tanggal';
 import { pesanError } from '@/lib/utils';
 import { paths } from '@/routes/paths';
 import { useCekAktivasi, useSetPin } from '../hooks/use-auth';
@@ -35,7 +36,7 @@ export function AktivasiFlow() {
 
   const formCek = useForm<AktivasiFormValues>({
     resolver: zodResolver(aktivasiSchema),
-    defaultValues: { nik: '', tanggalLahir: '' },
+    defaultValues: { nik: '', tanggal: '', bulan: '', tahun: '' },
   });
 
   const formPin = useForm<SetPinFormValues>({
@@ -43,8 +44,15 @@ export function AktivasiFlow() {
     defaultValues: { pin: '', ulangiPin: '' },
   });
 
-  const onCek = formCek.handleSubmit((values) => {
-    cek.mutate(values, { onSuccess: (hasil) => setTiket(hasil) });
+  const onCek = formCek.handleSubmit(({ nik, ...bagianTanggal }) => {
+    // Tiga kolom disatukan jadi satu tanggal ISO di sini — backend tetap
+    // menerima bentuk yang sama seperti sebelumnya. `!` aman: skema Zod sudah
+    // menolak submit-nya kalau fungsi ini mengembalikan null.
+    const tanggalLahir = keTanggalLahirIso(bagianTanggal)!;
+    cek.mutate(
+      { nik, tanggalLahir },
+      { onSuccess: (hasil) => setTiket(hasil) },
+    );
   });
 
   const onSetPin = formPin.handleSubmit(({ pin }) => {
@@ -88,7 +96,12 @@ export function AktivasiFlow() {
       register={formCek.register}
       errors={{
         nik: formCek.formState.errors.nik?.message,
-        tanggalLahir: formCek.formState.errors.tanggalLahir?.message,
+        // Tiga kolom, satu baris pesan — warga tidak perlu tahu kolom mana
+        // yang secara teknis gagal, ia perlu tahu tanggalnya belum benar.
+        tanggalLahir:
+          formCek.formState.errors.tanggal?.message ??
+          formCek.formState.errors.bulan?.message ??
+          formCek.formState.errors.tahun?.message,
       }}
       onSubmit={onCek}
       isPending={cek.isPending}

@@ -13,11 +13,11 @@ kode agar hasil tetap rapi dan konsisten.
 - **Frontend:** aktif, http-only — semua fitur memanggil backend langsung
   lewat `apiClient`. Backend harus jalan (`localhost:8000`) agar frontend
   berfungsi.
-- **Database:** **SQLite — terpasang** untuk data penduduk
+- **Database:** **SQLite — terpasang** untuk data penduduk **dan akun warga**
   (`backend/app/data/db.py`, file di `settings.DATABASE_PATH`). File kosong
-  diisi sekali dari `dummy.py`, yang sekarang cuma seeder. Data penduduk
-  selamat melewati restart. **Yang masih di memori:** akun warga & pengurus,
-  tiket aktivasi, rate limit, audit log — semua itu belum pindah.
+  diisi sekali dari `dummy.py`, yang sekarang cuma seeder. **Yang masih di
+  memori:** akun pengurus (di-seed identik tiap start, jadi restart tidak
+  mengubahnya), tiket aktivasi, rate limit, audit log.
 
 ---
 
@@ -178,6 +178,12 @@ Komponen tidak pernah memanggil `apiClient` langsung — selalu lewat `pendudukA
 ### Form
 
 - React Hook Form + skema Zod di `features/*/schemas.ts`. Validasi lewat `zodResolver`.
+- **Jangan `<input type="date">` untuk tanggal yang diketik warga.** Urutan
+  kotaknya (dd/mm vs mm/dd) ikut bahasa browser dan **tidak bisa dipaksa** —
+  tidak lewat atribut, CSS, maupun `lang`. Akibatnya isian diam-diam terbaca
+  jadi tanggal lain dan backend cuma bisa menjawab "tidak cocok". Pakai tiga
+  kolom Tgl / Bulan (nama, bukan angka) / Tahun seperti `AktivasiCekView`,
+  disatukan jadi ISO oleh `keTanggalLahirIso()` di `lib/tanggal.ts`.
 
 ### Error
 
@@ -238,7 +244,7 @@ untuk alasan lengkapnya):**
 
 ## 9. Perintah
 
-Jalankan dari `frontend/`:
+Dari `frontend/`:
 
 ```bash
 npm install        # sekali di awal
@@ -246,11 +252,38 @@ npm run dev        # dev server (http://localhost:5173)
 npm run build      # typecheck + build produksi
 npm run typecheck  # tsc --noEmit
 npm run lint       # ESLint
-npm run format     # Prettier
+npm run format     # Prettier — mengubah file, jadi typecheck/lint lagi sesudahnya
+```
+
+Dari `backend/` — **selalu `.venv/bin/python`**, `python3` sistem tidak punya
+dependensinya:
+
+```bash
+.venv/bin/uvicorn app.main:app --reload --port 8000
+.venv/bin/python -m app.data.db    # self-check SQLite; satu-satunya tes backend
+DATABASE_PATH=/tmp/uji.db .venv/bin/uvicorn app.main:app --port 8001   # DB sekali pakai
 ```
 
 **Sebelum menganggap tugas selesai:** `npm run typecheck` **dan** `npm run lint`
-harus bersih (0 error). `npm run build` harus sukses.
+harus bersih (0 error), `npm run build` sukses, dan `python -m app.data.db`
+lolos bila menyentuh lapisan data.
+
+### Menguji — perkakasnya terbatas, ini yang jalan
+
+- **`fastapi.testclient` tidak bisa dipakai:** `httpx` tidak ada di
+  `requirements.txt`. Uji ujung-ke-ujung dengan menjalankan uvicorn di port
+  lain + `DATABASE_PATH` sementara, lalu panggil pakai `urllib` stdlib.
+- **Frontend tidak punya test runner.** Untuk memeriksa satu modul murni:
+  `node --experimental-strip-types <file>.ts` dari `frontend/` — Node 22 bisa
+  mengimpor `.ts` langsung, tanpa memasang apa pun.
+- **NIK & tanggal lahir demo dibaca dari DB**, bukan dari log startup:
+  `SELECT nik, tanggalLahir FROM penduduk ORDER BY rowid LIMIT 2` (baris 1 =
+  warga sudah aktif, baris 2 = belum aktivasi). `print()` di startup ter-buffer
+  begitu stdout dipipe ke file, jadi sering belum muncul saat dibaca.
+- **Jangan `pkill -f "uvicorn …"`** untuk mematikan server latar: polanya
+  cocok dengan baris perintah shell yang sedang menjalankannya, jadi shell-nya
+  ikut mati dan output perintah berikutnya hilang. Simpan PID-nya
+  (`echo $! > /tmp/pid`) lalu `kill "$(cat /tmp/pid)"`.
 
 ## 10. Menambah Fitur / Halaman Baru (checklist)
 
@@ -289,8 +322,11 @@ asli, satu commit menaruh data kependudukan sedesa di git history permanen, dan
 git history tidak bisa dibersihkan setengah-setengah. Sudah dikunci di
 `backend/.gitignore` (`data/`, `*.db`). Backup-nya salin file, bukan commit.
 
-**Akses SQL cuma di `app/data/db.py`** — `sqlite3` stdlib, satu tabel
-`penduduk` dengan `Alamat` diratakan jadi kolom `alamat_*`. Tanpa ORM: query
+**Akses SQL cuma di `app/data/db.py`** — `sqlite3` stdlib, dua tabel:
+`penduduk` (dengan `Alamat` diratakan jadi kolom `alamat_*`) dan `warga_akun`
+(PIN). `warga_akun` dibaca lewat koneksi sekali pakai per operasi
+(`db.koneksi`), **bukan** lewat cache `store.py` — tabelnya ditulis saat
+runtime, jadi cache impor-sekali itu akan basi. Tanpa ORM: query
 yang ada muat di satu layar, dan SQLAlchemy cuma menambah dependensi yang harus
 dirawat orang lain setelah KKN. **Tidak ada `models/` atau `services/`** —
 skema Pydantic di `app/schemas/` sudah merangkap model; jangan scaffold lapis
@@ -311,7 +347,8 @@ Kontrak endpoint yang **sudah diimplementasikan** (bentuknya sinkron dengan
 | POST   | `/auth/warga/aktivasi/cek`        | NIK + tanggal lahir → `{ tiket, nama }` |
 | POST   | `/auth/warga/aktivasi/set-pin`    | tiket + PIN → `{ token, user }`         |
 | PATCH  | `/auth/me/kontak`                 | simpan `noHp` / `email` opsional        |
-| POST   | `/auth/warga/{nik}/reset-pin`     | **kode: hanya ADMIN** — desain sudah menurunkannya ke PENGURUS |
+| GET    | `/auth/warga/akun`                | ADMIN — NIK yang akunnya sudah aktif; penentu munculnya tombol Reset PIN |
+| POST   | `/auth/warga/{nik}/reset-pin`     | **kode: hanya ADMIN** — desain sudah menurunkannya ke PENGURUS. Menghapus akun; warga aktivasi ulang |
 | POST   | `/auth/logout`                    | —                                       |
 | GET    | `/penduduk`                       | daftar (paginasi: `page`, `pageSize`, `search`) |
 | GET    | `/penduduk/nik/{nik}`             | detail per NIK                          |
@@ -337,6 +374,12 @@ Kontrak endpoint yang **sudah diimplementasikan** (bentuknya sinkron dengan
 - ✅ Aktivasi ditolak untuk NIK yang akunnya sudah aktif (cegah pengambilalihan).
 - ✅ `reset-pin` hanya untuk `ADMIN`, dicatat di log audit (`app/core/audit.py`
   — baru ke console, belum ada endpoint buat membacanya).
+- ✅ Akun warga selamat melewati restart. Selagi PIN di memori, tombol Reset
+  PIN tidak berarti apa-apa: tiap backend nyala ulang semua warga sudah
+  otomatis kembali ke keadaan "belum punya PIN" tanpa ada yang menekannya.
+- ✅ Tombol Reset PIN cuma muncul untuk warga yang akunnya sudah aktif
+  (`GET /auth/warga/akun`), dan backend menolaknya juga (404) — bukan sekadar
+  disembunyikan di layar.
 - ⬜ Status kependudukan (pindah/meninggal) menonaktifkan akses otomatis —
   **fieldnya sekarang sudah ada** (`Penduduk.statusKependudukan`), jadi butir
   ini sudah bisa dikerjakan. Yang belum: `auth.py` masih meloloskan login warga

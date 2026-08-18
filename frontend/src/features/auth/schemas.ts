@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { keTanggalLahirIso } from '@/lib/tanggal';
 
 /** NIK: tepat 16 digit angka. */
 const nik = z
@@ -21,10 +22,24 @@ export const petugasLoginSchema = z.object({
 });
 export type PetugasLoginFormValues = z.infer<typeof petugasLoginSchema>;
 
-export const aktivasiSchema = z.object({
-  nik,
-  tanggalLahir: z.string().min(1, 'Tanggal lahir wajib diisi'),
-});
+/**
+ * Tanggal lahir diisi tiga kolom terpisah, bukan satu `<input type="date">`.
+ * Alasannya ada di `AktivasiCekView`; ringkasnya, urutan input tanggal bawaan
+ * browser tidak bisa dipaksa dd/mm/yyyy.
+ */
+export const aktivasiSchema = z
+  .object({
+    nik,
+    tanggal: z.string().regex(/^([1-9]|[12]\d|3[01])$/, 'Tanggal 1–31'),
+    bulan: z.string().regex(/^(0[1-9]|1[0-2])$/, 'Pilih bulan'),
+    tahun: z.string().regex(/^(19|20)\d{2}$/, 'Tahun 4 angka'),
+  })
+  .refine((v) => keTanggalLahirIso(v) !== null, {
+    // Menangkap dua hal yang lolos pemeriksaan per kolom: tanggal yang tidak
+    // ada di kalender (31 Februari) dan tanggal yang melewati hari ini.
+    message: 'Tanggal itu tidak ada di kalender, atau melewati hari ini',
+    path: ['tanggal'],
+  });
 export type AktivasiFormValues = z.infer<typeof aktivasiSchema>;
 
 export const setPinSchema = z

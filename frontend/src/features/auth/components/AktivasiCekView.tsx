@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { NAMA_BULAN } from '@/lib/tanggal';
+import { cn } from '@/lib/utils';
 import { paths } from '@/routes/paths';
 import type { AktivasiFormValues } from '../schemas';
 import { AuthLayout } from '@/components/layout/AuthLayout';
@@ -41,14 +43,73 @@ export function AktivasiCekView({
           error={errors.nik}
           {...register('nik')}
         />
-        <Input
-          label="Tanggal lahir"
-          type="date"
-          className="h-12 text-base"
-          hint="Sesuai yang tertulis di KTP / Kartu Keluarga."
-          error={errors.tanggalLahir}
-          {...register('tanggalLahir')}
-        />
+
+        {/*
+          Tiga kolom terpisah, bukan `<input type="date">`.
+
+          Urutan kotak pada input tanggal bawaan ditentukan bahasa BROWSER, dan
+          tidak bisa dipaksa dari kode — tidak lewat atribut, tidak lewat CSS,
+          tidak lewat `lang`. Akibatnya "02/05/1979" terbaca 2 Mei di satu
+          laptop dan 5 Februari di laptop sebelahnya, warga tidak punya cara
+          tahu yang mana, dan backend cuma bisa menjawab "tidak cocok" —
+          menyalahkan datanya, padahal yang meleset urutan ketiknya.
+
+          Bulannya berupa NAMA, bukan angka. Itu bagian yang menyelesaikan
+          masalahnya: "Mei" tidak bisa dibaca sebagai apa pun selain Mei.
+        */}
+        <fieldset>
+          <legend className="mb-1.5 text-sm font-medium text-slate-700">
+            Tanggal lahir
+          </legend>
+
+          <div className="grid grid-cols-[4.5rem_1fr_5.5rem] gap-2">
+            <Input
+              aria-label="Tanggal"
+              className="h-12 text-center text-base"
+              inputMode="numeric"
+              maxLength={2}
+              placeholder="Tgl"
+              {...register('tanggal')}
+            />
+
+            <select
+              aria-label="Bulan"
+              defaultValue=""
+              className={cn(
+                'focus-ring h-12 w-full rounded-lg border border-slate-300 bg-white px-3 text-base text-slate-900',
+                errors.tanggalLahir &&
+                  'border-red-400 focus-visible:ring-red-500',
+              )}
+              {...register('bulan')}
+            >
+              <option value="" disabled>
+                Bulan
+              </option>
+              {NAMA_BULAN.map((nama, i) => (
+                <option key={nama} value={String(i + 1).padStart(2, '0')}>
+                  {nama}
+                </option>
+              ))}
+            </select>
+
+            <Input
+              aria-label="Tahun"
+              className="h-12 text-center text-base"
+              inputMode="numeric"
+              maxLength={4}
+              placeholder="Tahun"
+              {...register('tahun')}
+            />
+          </div>
+
+          {errors.tanggalLahir ? (
+            <p className="mt-1 text-xs text-red-600">{errors.tanggalLahir}</p>
+          ) : (
+            <p className="mt-1 text-xs text-slate-500">
+              Sesuai yang tertulis di KTP / Kartu Keluarga.
+            </p>
+          )}
+        </fieldset>
 
         <Button
           type="submit"

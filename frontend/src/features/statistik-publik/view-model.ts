@@ -14,8 +14,12 @@ export interface BarisRw {
 }
 
 export interface RingkasanStatistik {
-  /** Mis. `'36'` — angka besar di tengah donut. */
-  totalTeks: string;
+  /**
+   * Angka besar di tengah donut. Satu-satunya nilai di sini yang TIDAK
+   * diformat: `CountUp` menghitungnya naik per bingkai, jadi pemformatannya
+   * harus terjadi di komponen, bukan sekali di sini.
+   */
+  total: number;
   /**
    * Tiga kartu, bukan empat: total penduduk sudah jadi angka besar di lubang
    * donut, dan mengulangnya sebagai kartu berarti angka yang sama dua kali
@@ -67,7 +71,7 @@ export function toRingkasanStatistik(
       label: d.label,
       value: d.totalPenduduk,
     })),
-    totalTeks: formatAngka(total),
+    total,
     stat: toStatWarga(data).filter((s) => s.id !== 'penduduk'),
     baris: data.perRw.map((d) => ({
       label: d.label,

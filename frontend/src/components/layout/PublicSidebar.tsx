@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
-import { Building2 } from 'lucide-react';
-import { env } from '@/config/env';
 import { AccountButton } from './AccountButton';
+import { Logo } from './Logo';
 
 interface PublicSidebarProps {
   /** Daftar bagian statistik. */
@@ -18,19 +17,18 @@ export function PublicSidebar({ nav }: PublicSidebarProps) {
       {/* `h-20` harus sama persis dengan bar breadcrumb di `PublicLandingLayout`
           — garis bawah keduanya bersambung jadi satu baris melintang. Ubah
           satu, ubah dua-duanya. */}
-      <div className="flex h-20 items-center gap-2 border-b border-slate-100 px-5 text-lg font-semibold text-slate-900">
-        <Building2 className="h-7 w-7 text-brand-600" />
-        {env.appName}
+      <div className="flex h-20 shrink-0 items-center justify-center border-b border-slate-100 px-5">
+        <Logo className="h-8" />
       </div>
 
-      <div className="overflow-y-auto p-3">
+      <div className="min-h-0 overflow-y-auto p-3">
         {nav}
         <AccountButton className="mt-4 w-full justify-center" />
       </div>
 
       <div className="flex-1" />
 
-      <p className="border-t border-slate-100 p-4 text-sm text-slate-400">
+      <p className="shrink-0 border-t border-slate-100 p-4 text-sm text-slate-400">
         Portal Data Kependudukan Padukuhan
       </p>
     </aside>

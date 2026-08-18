@@ -43,7 +43,8 @@ VITE_API_BASE_URL=http://localhost:8000
 | POST   | `/auth/warga/aktivasi/cek`      | NIK + tanggal lahir → tiket (throttled)      |
 | POST   | `/auth/warga/aktivasi/set-pin`  | tiket + PIN baru → sesi                      |
 | PATCH  | `/auth/me/kontak`               | simpan noHp/email opsional (perlu token)     |
-| POST   | `/auth/warga/{nik}/reset-pin`   | hanya ADMIN, tercatat di audit log           |
+| GET    | `/auth/warga/akun`              | hanya ADMIN — NIK yang akunnya sudah aktif   |
+| POST   | `/auth/warga/{nik}/reset-pin`   | hanya ADMIN — hapus akun, warga aktivasi ulang; tercatat di audit log |
 | POST   | `/auth/logout`                  | —                                             |
 | GET    | `/penduduk`                     | daftar (`page`, `pageSize`, `search`)        |
 | GET    | `/penduduk/nik/{nik}`           | detail per NIK                                |
@@ -53,10 +54,14 @@ VITE_API_BASE_URL=http://localhost:8000
 
 Token JWT dikirim lewat header `Authorization: Bearer <token>`.
 
-**Data penduduk** tinggal di SQLite (`data/siduk.db`, dibuat otomatis saat
-backend pertama kali jalan lalu diisi dari generator dummy) — selamat melewati
-restart. Mau dataset baru? Hapus filenya, jalankan ulang. File itu
-di-gitignore: jangan pernah di-commit, apalagi setelah berisi NIK asli.
+**Data penduduk & akun warga** tinggal di SQLite (`data/siduk.db`, dibuat
+otomatis saat backend pertama kali jalan lalu diisi dari generator dummy) —
+selamat melewati restart. Akun warga wajib ikut di sini: kalau PIN disimpan di
+memori, tiap restart semua warga otomatis kembali ke keadaan "belum punya PIN"
+dan tombol Reset PIN pengurus tidak menentukan apa pun. Mau dataset baru? Hapus
+filenya, jalankan ulang. File itu di-gitignore: jangan pernah di-commit,
+apalagi setelah berisi NIK asli.
 
-**Sisanya masih di memori proses** dan hilang tiap restart: akun warga & tiket
-aktivasi, rate limit, audit log. Akun warga demo di-seed ulang otomatis.
+**Sisanya masih di memori proses** dan hilang tiap restart: akun pengurus
+(di-seed identik tiap start, jadi tidak berubah), tiket aktivasi, rate limit,
+audit log.
