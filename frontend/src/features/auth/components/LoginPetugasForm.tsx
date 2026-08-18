@@ -4,21 +4,7 @@ import { pesanError } from '@/lib/utils';
 import { useLoginPetugas } from '../hooks/use-auth';
 import { useRedirectAfterLogin } from '../hooks/use-redirect-after-login';
 import { petugasLoginSchema, type PetugasLoginFormValues } from '../schemas';
-import { DemoAccountsNote } from './DemoAccountsNote';
 import { LoginPetugasFormView } from './LoginPetugasFormView';
-
-/** Akun contoh yang ikut di-seed di data dummy backend (lihat backend/app/data/akun.py). */
-const AKUN_DEMO = [
-  <span key="dukuh">
-    Dukuh: <b>dukuh</b> / <b>dukuh123</b>
-  </span>,
-  <span key="rw019">
-    Ketua RW 019: <b>rw019</b> / <b>rw123</b>
-  </span>,
-  <span key="rt03">
-    Ketua RT 03: <b>rt03</b> / <b>rt123</b>
-  </span>,
-];
 
 /** Logika masuk pengurus. Tampilannya ada di `LoginPetugasFormView`. */
 export function LoginPetugasForm() {
@@ -48,7 +34,6 @@ export function LoginPetugasForm() {
       onSubmit={onSubmit}
       isPending={login.isPending}
       errorMessage={pesanError(login.error, 'Gagal masuk. Coba lagi.')}
-      catatanDemo={<DemoAccountsNote items={AKUN_DEMO} />}
     />
   );
 }

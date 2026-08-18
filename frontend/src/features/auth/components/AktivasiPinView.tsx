@@ -1,8 +1,9 @@
 import type { FormEventHandler } from 'react';
 import type { UseFormRegister } from 'react-hook-form';
+import { KeyRound } from 'lucide-react';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import type { SetPinFormValues } from '../schemas';
 import { AuthLayout } from '@/components/layout/AuthLayout';
 
@@ -32,7 +33,7 @@ export function AktivasiPinView({
       title="Buat PIN Anda"
       description="PIN ini yang Anda pakai setiap kali masuk. Jangan beri tahu siapa pun."
     >
-      <div className="mt-6 rounded-lg border border-brand-200 bg-brand-50 p-3.5 text-sm text-brand-900">
+      <div className="mt-6 rounded-lg border-1 border-brand-200 bg-brand-50 p-3.5 text-sm text-brand-900">
         Data ditemukan atas nama <b>{nama}</b>.
         <button
           type="button"
@@ -46,10 +47,10 @@ export function AktivasiPinView({
       <form onSubmit={onSubmit} className="mt-4 space-y-4">
         {errorMessage && <Alert tone="error">{errorMessage}</Alert>}
 
-        <Input
+        <PasswordInput
           label="PIN baru"
-          type="password"
           className="h-12 text-base tracking-widest"
+          icon={<KeyRound className="h-4 w-4" />}
           inputMode="numeric"
           maxLength={6}
           autoComplete="new-password"
@@ -58,10 +59,10 @@ export function AktivasiPinView({
           error={errors.pin}
           {...register('pin')}
         />
-        <Input
+        <PasswordInput
           label="Ulangi PIN"
-          type="password"
           className="h-12 text-base tracking-widest"
+          icon={<KeyRound className="h-4 w-4" />}
           inputMode="numeric"
           maxLength={6}
           autoComplete="new-password"
@@ -73,7 +74,7 @@ export function AktivasiPinView({
         <Button
           type="submit"
           size="lg"
-          className="w-full"
+          className="w-full active:scale-[0.99]"
           isLoading={isPending}
         >
           Simpan PIN & Masuk

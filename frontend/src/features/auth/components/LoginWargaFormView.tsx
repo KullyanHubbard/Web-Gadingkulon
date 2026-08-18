@@ -1,10 +1,11 @@
-import type { FormEventHandler, ReactNode } from 'react';
+import type { FormEventHandler } from 'react';
 import type { UseFormRegister } from 'react-hook-form';
-import { HelpCircle } from 'lucide-react';
+import { KeyRound, UserRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import { paths } from '@/routes/paths';
 import type { WargaLoginFormValues } from '../schemas';
 import { AuthLayout } from '@/components/layout/AuthLayout';
@@ -17,8 +18,8 @@ interface LoginWargaFormViewProps {
   errorMessage: string | null;
   bantuanTerbuka: boolean;
   onToggleBantuan: () => void;
-  /** Catatan akun demo, diisi container. */
-  catatanDemo?: ReactNode;
+  ingatNik: boolean;
+  onToggleIngatNik: () => void;
 }
 
 /**
@@ -36,28 +37,30 @@ export function LoginWargaFormView({
   errorMessage,
   bantuanTerbuka,
   onToggleBantuan,
-  catatanDemo,
+  ingatNik,
+  onToggleIngatNik,
 }: LoginWargaFormViewProps) {
   return (
-    <AuthLayout title="Masuk" description="Masukkan NIK dan PIN Anda.">
-      <form onSubmit={onSubmit} className="mt-6 space-y-6">
+    <AuthLayout title="Masuk sebagai warga">
+      <form onSubmit={onSubmit} className="mt-6 space-y-5">
         {errorMessage && <Alert tone="error">{errorMessage}</Alert>}
 
         <div className="space-y-4">
           <Input
             label="NIK"
             className="h-12 text-base"
+            icon={<UserRound className="h-4 w-4" />}
             inputMode="numeric"
             maxLength={16}
             autoComplete="username"
-            placeholder="16 digit angka"
+            placeholder="3204xxxxxxxxxxxx"
             error={errors.nik}
             {...register('nik')}
           />
-          <Input
+          <PasswordInput
             label="PIN"
-            type="password"
             className="h-12 text-base tracking-widest"
+            icon={<KeyRound className="h-4 w-4" />}
             inputMode="numeric"
             maxLength={6}
             autoComplete="current-password"
@@ -67,36 +70,26 @@ export function LoginWargaFormView({
           />
         </div>
 
-        <Button
-          type="submit"
-          size="lg"
-          className="w-full"
-          isLoading={isPending}
-        >
-          Masuk
-        </Button>
-      </form>
+        <div className="flex items-center justify-between gap-4 text-sm">
+          <label className="inline-flex cursor-pointer select-none items-center gap-2 text-slate-600">
+            <input
+              type="checkbox"
+              checked={ingatNik}
+              onChange={onToggleIngatNik}
+              className="focus-ring h-4 w-4 cursor-pointer rounded border-1 border-slate-300 text-brand-600 accent-brand-600"
+            />
+            Ingat NIK saya
+          </label>
 
-      <div className="mt-6 space-y-3 text-sm">
-        <p className="text-slate-600">
-          Baru pertama kali masuk?{' '}
-          <Link
-            to={paths.aktivasi}
-            className="font-medium text-brand-700 underline underline-offset-2"
+          <button
+            type="button"
+            onClick={onToggleBantuan}
+            className="focus-ring rounded font-semibold text-brand-700 hover:underline hover:underline-offset-2"
+            aria-expanded={bantuanTerbuka}
           >
-            Aktifkan akun Anda
-          </Link>
-        </p>
-
-        <button
-          type="button"
-          onClick={onToggleBantuan}
-          className="focus-ring inline-flex items-center gap-1.5 rounded text-slate-500 hover:text-slate-700"
-          aria-expanded={bantuanTerbuka}
-        >
-          <HelpCircle className="h-4 w-4" />
-          Lupa PIN?
-        </button>
+            Lupa PIN?
+          </button>
+        </div>
 
         {bantuanTerbuka && (
           <Alert tone="info">
@@ -106,18 +99,37 @@ export function LoginWargaFormView({
             <b>Aktifkan akun</b>.
           </Alert>
         )}
-      </div>
 
-      <div className="mt-8 border-t border-slate-100 pt-4">
+        <Button
+          type="submit"
+          size="lg"
+          className="w-full active:scale-[0.99]"
+          isLoading={isPending}
+        >
+          Masuk
+        </Button>
+      </form>
+
+      <p className="mt-6 text-center text-sm text-slate-600">
+        Belum punya PIN?{' '}
+        <Link
+          to={paths.aktivasi}
+          className="focus-ring rounded font-semibold text-brand-700 hover:underline hover:underline-offset-2"
+        >
+          Aktifkan akun Anda
+        </Link>
+      </p>
+
+      {/* `border-t-1`, bukan `border-t`: borderWidth.DEFAULT di tailwind.config
+          di-setel 4px, jadi garis telanjang setebal itu. */}
+      <div className="mt-6 border-t border-slate-200 pt-4 text-center">
         <Link
           to={paths.loginPetugas}
-          className="text-sm text-slate-500 underline underline-offset-2 hover:text-slate-700"
+          className="focus-ring rounded text-sm text-slate-700 underline underline-offset-2 hover:text-slate-900"
         >
           Masuk sebagai pengurus padukuhan
         </Link>
       </div>
-
-      {catatanDemo}
     </AuthLayout>
   );
 }

@@ -4,19 +4,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Brand NIA — nuansa "pemerintahan desa" yang tenang & terpercaya.
+        // Brand NIA — ikut warna lambang (`Logo.tsx`), #3b1368 di stop 900.
         brand: {
-          50: '#eef6ff',
-          100: '#d9eaff',
-          200: '#bcdaff',
-          300: '#8ec2ff',
-          400: '#589fff',
-          500: '#317bff',
-          600: '#1a5cf5',
-          700: '#1546e1',
-          800: '#183bb6',
-          900: '#19388f',
-          950: '#142457',
+          50: '#f6f0fc',
+          100: '#ebdff9',
+          200: '#d2b6f2',
+          300: '#af7ee7',
+          400: '#883ddc',
+          500: '#6721b5',
+          600: '#531b93',
+          700: '#47177d',
+          800: '#411572',
+          900: '#3b1368',
+          950: '#220b3c',
         },
       },
       borderColor: ({ theme }) => ({
@@ -25,6 +25,9 @@ export default {
 
       borderWidth: {
         DEFAULT: '4px',
+        // `border` telanjang di sini 4px (lihat DEFAULT di atas), jadi garis
+        // rambut butuh kelasnya sendiri — Tailwind tidak punya `border-1`.
+        1: '1px',
       },
       fontFamily: {
         sans: ['Open Sans', 'system-ui', 'sans-serif'],

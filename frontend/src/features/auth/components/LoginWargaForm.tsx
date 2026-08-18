@@ -4,19 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { pesanError } from '@/lib/utils';
 import { useLoginWarga } from '../hooks/use-auth';
 import { useRedirectAfterLogin } from '../hooks/use-redirect-after-login';
+import { getNikDiingat, simpanNikDiingat } from '../nik-tersimpan';
 import { wargaLoginSchema, type WargaLoginFormValues } from '../schemas';
-import { DemoAccountsNote } from './DemoAccountsNote';
 import { LoginWargaFormView } from './LoginWargaFormView';
-
-/** Akun contoh yang ikut di-seed di data dummy backend (lihat backend/app/data/akun.py). */
-const AKUN_DEMO = [
-  <span key="aktif">
-    Warga sudah aktif: NIK <b>3204120210750001</b> / PIN <b>112233</b>
-  </span>,
-  <span key="belum-aktif">
-    Warga belum aktif: NIK <b>3204124205790001</b>, lahir <b>02-05-1979</b>
-  </span>,
-];
 
 /**
  * Logika masuk warga: validasi form, mutation, dan tujuan setelah berhasil.
@@ -27,17 +17,29 @@ export function LoginWargaForm() {
   const redirectAfterLogin = useRedirectAfterLogin();
   const [bantuanTerbuka, setBantuanTerbuka] = useState(false);
 
+  // Dibaca sekali saat mount: nilainya cuma dipakai sebagai isian awal, dan
+  // membacanya ulang tiap render akan menimpa yang sedang diketik warga.
+  const [nikAwal] = useState(getNikDiingat);
+  const [ingatNik, setIngatNik] = useState(() => Boolean(nikAwal));
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<WargaLoginFormValues>({
     resolver: zodResolver(wargaLoginSchema),
-    defaultValues: { nik: '', pin: '' },
+    defaultValues: { nik: nikAwal, pin: '' },
   });
 
   const onSubmit = handleSubmit((values) => {
-    login.mutate(values, { onSuccess: redirectAfterLogin });
+    login.mutate(values, {
+      onSuccess: (session) => {
+        // Disimpan setelah backend menerimanya — NIK yang salah ketik tidak
+        // pantas dihafal dan disodorkan lagi di kunjungan berikutnya.
+        simpanNikDiingat(ingatNik ? values.nik : null);
+        redirectAfterLogin(session);
+      },
+    });
   });
 
   return (
@@ -49,7 +51,8 @@ export function LoginWargaForm() {
       errorMessage={pesanError(login.error, 'Gagal masuk. Coba lagi.')}
       bantuanTerbuka={bantuanTerbuka}
       onToggleBantuan={() => setBantuanTerbuka((v) => !v)}
-      catatanDemo={<DemoAccountsNote items={AKUN_DEMO} />}
+      ingatNik={ingatNik}
+      onToggleIngatNik={() => setIngatNik((v) => !v)}
     />
   );
 }

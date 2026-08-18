@@ -1,9 +1,11 @@
-import type { FormEventHandler, ReactNode } from 'react';
+import type { FormEventHandler } from 'react';
 import type { UseFormRegister } from 'react-hook-form';
+import { KeyRound, UserRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import { paths } from '@/routes/paths';
 import type { PetugasLoginFormValues } from '../schemas';
 import { AuthLayout } from '@/components/layout/AuthLayout';
@@ -14,7 +16,6 @@ interface LoginPetugasFormViewProps {
   onSubmit: FormEventHandler<HTMLFormElement>;
   isPending: boolean;
   errorMessage: string | null;
-  catatanDemo?: ReactNode;
 }
 
 /** Tampilan form masuk pengurus. Tanpa hook — lihat `LoginPetugasForm`. */
@@ -24,47 +25,49 @@ export function LoginPetugasFormView({
   onSubmit,
   isPending,
   errorMessage,
-  catatanDemo,
 }: LoginPetugasFormViewProps) {
   return (
-    <AuthLayout
-      title="Masuk sebagai pengurus"
-      description="Untuk Dukuh, RW, dan RT."
-    >
+    <AuthLayout title="Masuk sebagai pengurus">
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         {errorMessage && <Alert tone="error">{errorMessage}</Alert>}
 
         <Input
           label="Username"
+          className="h-12 text-base"
+          icon={<UserRound className="h-4 w-4" />}
           autoComplete="username"
           placeholder="cth. dukuh"
           error={errors.username}
           {...register('username')}
         />
-        <Input
+        <PasswordInput
           label="Password"
-          type="password"
+          className="h-12 text-base"
+          icon={<KeyRound className="h-4 w-4" />}
           autoComplete="current-password"
           placeholder="••••••••"
           error={errors.password}
           {...register('password')}
         />
 
-        <Button type="submit" className="w-full" isLoading={isPending}>
+        <Button
+          type="submit"
+          size="lg"
+          className="w-full active:scale-[0.99]"
+          isLoading={isPending}
+        >
           Masuk
         </Button>
       </form>
 
-      <div className="mt-6 border-t border-slate-100 pt-4">
+      <div className="mt-6 border-t border-slate-200 pt-4 text-center">
         <Link
           to={paths.login}
-          className="text-sm text-slate-500 underline underline-offset-2 hover:text-slate-700"
+          className="text-sm text-slate-700 underline underline-offset-2 hover:text-slate-900"
         >
           Kembali ke halaman masuk warga
         </Link>
       </div>
-
-      {catatanDemo}
     </AuthLayout>
   );
 }

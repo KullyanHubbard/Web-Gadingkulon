@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import ikonKembali from '@/assets/back-navigasi.svg';
 import { paths } from '@/routes/paths';
 import { KreditKkn } from './KreditKkn';
 import { Logo } from './Logo';
@@ -12,66 +12,63 @@ interface AuthLayoutProps {
 }
 
 /**
- * Kerangka halaman publik (masuk & aktivasi): panel brand + kolom form.
+ * Kerangka halaman publik (masuk & aktivasi): satu kartu di tengah layar.
+ *
+ * Dulu split-screen — panel brand kiri, form kanan. Panel itu hilang di bawah
+ * `lg`, jadi separuh pengunjung tidak pernah melihatnya, dan yang melihatnya
+ * membaca paragraf yang tidak membantu mereka masuk. Sekarang satu kolom yang
+ * sama di semua lebar layar.
  *
  * Ketiga halaman yang memakainya adalah jalan buntu tanpa ini: pengunjung
  * datang dari landing, berubah pikiran, dan tidak punya jalan pulang selain
- * mengetik ulang URL. Jalan pulangnya dua — logo (konvensi, tidak terlihat
- * sebagai tombol) dan tautan teks di atas judul (yang benar-benar terbaca).
+ * mengetik ulang URL. Jalan pulangnya satu — tombol "Kembali" di pojok kiri
+ * atas kartu, di atas judul. Logo bukan tautan (navbar penanda merek, bukan
+ * navigasi).
  */
 export function AuthLayout({ title, description, children }: AuthLayoutProps) {
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
-      {/* Panel brand (kiri) — disembunyikan di layar kecil. */}
-      <div className="relative hidden flex-col justify-between bg-brand-700 p-12 text-white lg:flex">
-        <Link
-          to={paths.landing}
-          className="self-start transition-opacity hover:opacity-80"
-        >
-          {/* Latarnya `brand-700` sementara wordmark-nya ungu tua — `text-*`
-              tidak menyentuh berkas SVG, jadi pemutihannya lewat filter. */}
-          <Logo className="h-8 brightness-0 invert" />
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold leading-tight">
-            Portal Data Kependudukan Padukuhan
-          </h1>
-          <p className="mt-3 max-w-md text-brand-100">
-            Warga dapat melihat data dirinya sendiri beserta anggota Kartu
-            Keluarganya. Pengurus padukuhan mengelola seluruh data & infografis.
-          </p>
-        </div>
-        <p className="text-sm text-brand-200">
-          © {new Date().getFullYear()} Pemerintah Padukuhan
-        </p>
-      </div>
+    <div className="flex min-h-screen flex-col bg-slate-50">
+      <header className="border-b border-slate-200 bg-white px-4 py-4 sm:px-6">
+        <Logo className="h-6" />
+      </header>
 
-      {/* Kolom form (kanan). `flex-col` + `my-auto`, bukan `justify-center`:
-          formnya tetap di tengah tapi kredit pembuat bisa duduk di kaki kolom
-          — di bawah `lg` panel brand hilang, jadi ini satu-satunya tempatnya. */}
-      <div className="flex flex-col p-6">
-        <div className="my-auto w-full max-w-sm self-center">
-          <Link to={paths.landing} className="mb-6 block lg:hidden">
-            <Logo />
-          </Link>
+      <div className="flex flex-1 flex-col px-4 py-8 sm:px-6">
+        <div className="my-auto w-full max-w-md self-center">
+          {/* `border-1`, bukan `border`: `borderWidth.DEFAULT` di tailwind.config
+              di-setel 4px, jadi `border` telanjang menggambar bingkai tebal. */}
+          <div className="rounded-2xl border-1 border-slate-200 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-12px_rgba(15,23,42,0.12)] sm:p-8">
+            <Link
+              to={paths.landing}
+              className="focus-ring -ml-3 mb-2 inline-flex w-fit items-center gap-2 rounded-lg px-3 py-2 text-base font-medium text-slate-600 transition-colors hover:bg-brand-50 hover:text-brand-700"
+            >
+              {/* Mask, bukan `<img>` — sama seperti `AccountButton` &
+                  `Sidebar`: berkasnya satu warna, `bg-current` yang mewarnainya
+                  supaya ikut berubah saat hover. */}
+              <span
+                aria-hidden
+                className="h-4 w-4 shrink-0 bg-current"
+                style={{
+                  mask: `url("${ikonKembali}") center / contain no-repeat`,
+                  WebkitMask: `url("${ikonKembali}") center / contain no-repeat`,
+                }}
+              />
+              Kembali
+            </Link>
 
-          <Link
-            to={paths.landing}
-            className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-brand-700"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Kembali ke dashboard
-          </Link>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight text-slate-900">
+                {title}
+              </h1>
+              {description && (
+                <p className="mt-1.5 text-sm text-slate-500">{description}</p>
+              )}
+            </div>
 
-          <h2 className="text-xl font-semibold text-slate-900">{title}</h2>
-          {description && (
-            <p className="mt-1 text-sm text-slate-500">{description}</p>
-          )}
-
-          {children}
+            {children}
+          </div>
         </div>
 
-        <KreditKkn className="pt-8" />
+        <KreditKkn className="shrink-0 pt-8" />
       </div>
     </div>
   );

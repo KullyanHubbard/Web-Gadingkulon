@@ -1,5 +1,6 @@
 import type { FormEventHandler } from 'react';
 import type { UseFormRegister } from 'react-hook-form';
+import { UserRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -27,19 +28,17 @@ export function AktivasiCekView({
   errorMessage,
 }: AktivasiCekViewProps) {
   return (
-    <AuthLayout
-      title="Aktifkan akun"
-      description="Sekali saja, untuk warga yang baru pertama kali masuk."
-    >
+    <AuthLayout title="Aktifkan akun">
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         {errorMessage && <Alert tone="error">{errorMessage}</Alert>}
 
         <Input
           label="NIK"
           className="h-12 text-base"
+          icon={<UserRound className="h-4 w-4" />}
           inputMode="numeric"
           maxLength={16}
-          placeholder="16 digit angka"
+          placeholder="3204xxxxxxxxxxxx"
           error={errors.nik}
           {...register('nik')}
         />
@@ -76,9 +75,9 @@ export function AktivasiCekView({
               aria-label="Bulan"
               defaultValue=""
               className={cn(
-                'focus-ring h-12 w-full rounded-lg border border-slate-300 bg-white px-3 text-base text-slate-900',
+                'focus-ring h-12 w-full rounded-lg border-1 border-slate-300 bg-white px-3 text-base text-slate-900 transition-colors focus:border-brand-500',
                 errors.tanggalLahir &&
-                  'border-red-400 focus-visible:ring-red-500',
+                  'border-red-400 focus:border-red-500 focus-visible:ring-red-500',
               )}
               {...register('bulan')}
             >
@@ -102,30 +101,26 @@ export function AktivasiCekView({
             />
           </div>
 
-          {errors.tanggalLahir ? (
+          {errors.tanggalLahir && (
             <p className="mt-1 text-xs text-red-600">{errors.tanggalLahir}</p>
-          ) : (
-            <p className="mt-1 text-xs text-slate-500">
-              Sesuai yang tertulis di KTP / Kartu Keluarga.
-            </p>
           )}
         </fieldset>
 
         <Button
           type="submit"
           size="lg"
-          className="w-full"
+          className="w-full active:scale-[0.99]"
           isLoading={isPending}
         >
           Lanjut
         </Button>
       </form>
 
-      <p className="mt-6 text-sm text-slate-600">
+      <p className="mt-6 text-center text-sm text-slate-600">
         Sudah punya PIN?{' '}
         <Link
           to={paths.login}
-          className="font-medium text-brand-700 underline underline-offset-2"
+          className="focus-ring rounded font-semibold text-brand-700 hover:underline hover:underline-offset-2"
         >
           Masuk di sini
         </Link>
