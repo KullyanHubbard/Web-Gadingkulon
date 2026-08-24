@@ -29,16 +29,15 @@ export function AktivasiPinView({
   errorMessage,
 }: AktivasiPinViewProps) {
   return (
-    <AuthLayout
-      title="Buat PIN Anda"
-      description="PIN ini yang Anda pakai setiap kali masuk. Jangan beri tahu siapa pun."
-    >
+    <AuthLayout title="Buat PIN Anda">
       <div className="mt-6 rounded-lg border-1 border-brand-200 bg-brand-50 p-3.5 text-sm text-brand-900">
-        Data ditemukan atas nama <b>{nama}</b>.
+        <p>
+          Data ditemukan atas nama <b>{nama}</b>.
+        </p>
         <button
           type="button"
           onClick={onUlangiDariAwal}
-          className="focus-ring ml-1 rounded underline underline-offset-2"
+          className="focus-ring mt-1 rounded underline underline-offset-2"
         >
           Bukan Anda?
         </button>
@@ -54,8 +53,6 @@ export function AktivasiPinView({
           inputMode="numeric"
           maxLength={6}
           autoComplete="new-password"
-          placeholder="••••••"
-          hint="6 angka. Pilih yang mudah Anda ingat, jangan tanggal lahir."
           error={errors.pin}
           {...register('pin')}
         />
@@ -66,7 +63,6 @@ export function AktivasiPinView({
           inputMode="numeric"
           maxLength={6}
           autoComplete="new-password"
-          placeholder="••••••"
           error={errors.ulangiPin}
           {...register('ulangiPin')}
         />
