@@ -24,7 +24,6 @@ export function PendudukDetailView({ detail }: { detail: PendudukDetailData }) {
     <Card>
       <CardHeader
         title={detail.nama}
-        description={`NIK ${detail.nik}`}
         action={<Badge tone="brand">{detail.hubungan}</Badge>}
       />
       <CardContent>

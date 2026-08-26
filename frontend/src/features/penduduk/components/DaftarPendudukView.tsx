@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -8,10 +7,12 @@ import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { QueryBoundary } from '@/components/ui/QueryBoundary';
 import { Table, Td, Th } from '@/components/ui/Table';
+import type { FilterOpsi, FilterPenduduk } from '@/types/penduduk';
 import type {
   PendudukDetailView as PendudukDetailData,
   PendudukRow,
 } from '../view-model';
+import { FilterPendudukBar } from './FilterPendudukBar';
 import { PendudukDetailView } from './PendudukDetailView';
 
 /** Keterangan paginasi yang sudah dihitung container. */
@@ -29,14 +30,15 @@ export interface PaginasiView {
 interface DaftarPendudukViewProps {
   search: string;
   onSearchChange: (value: string) => void;
+  filter: FilterPenduduk;
+  filterOpsi: FilterOpsi | undefined;
+  onFilterChange: (next: FilterPenduduk) => void;
   isLoading: boolean;
   isError: boolean;
   rows: PendudukRow[] | undefined;
   paginasi: PaginasiView | null;
   onPrev: () => void;
   onNext: () => void;
-  /** Kolom aksi tambahan per baris — diisi pemanggil (mis. tombol Reset PIN). */
-  renderAksi?: (row: PendudukRow) => ReactNode;
   onPilih: (row: PendudukRow) => void;
   detail: PendudukDetailData | null;
   onTutupDetail: () => void;
@@ -46,13 +48,15 @@ interface DaftarPendudukViewProps {
 export function DaftarPendudukView({
   search,
   onSearchChange,
+  filter,
+  filterOpsi,
+  onFilterChange,
   isLoading,
   isError,
   rows,
   paginasi,
   onPrev,
   onNext,
-  renderAksi,
   onPilih,
   detail,
   onTutupDetail,
@@ -60,16 +64,21 @@ export function DaftarPendudukView({
   return (
     <>
       <Card>
-        <CardContent className="border-b border-slate-100">
+        <CardContent className="space-y-4 border-b border-slate-100">
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input
               className="pl-9"
-              placeholder="Cari nama, NIK, atau No. KK…"
+              placeholder="Cari nama warga…"
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
             />
           </div>
+          <FilterPendudukBar
+            value={filter}
+            opsi={filterOpsi}
+            onChange={onFilterChange}
+          />
         </CardContent>
 
         <CardContent className="p-0">
@@ -83,7 +92,7 @@ export function DaftarPendudukView({
               <EmptyState
                 icon={Search}
                 title="Tidak ada data"
-                description="Tidak ada penduduk yang cocok dengan pencarian Anda."
+                description="Tidak ada penduduk yang cocok dengan pencarian dan filter Anda."
               />
             }
           >
@@ -92,7 +101,6 @@ export function DaftarPendudukView({
                 <thead>
                   <tr>
                     <Th>Nama</Th>
-                    <Th>NIK</Th>
                     <Th>L/P</Th>
                     <Th>Umur</Th>
                     <Th>Agama</Th>
@@ -103,7 +111,6 @@ export function DaftarPendudukView({
                   {daftar.map((row) => (
                     <tr key={row.id} className="hover:bg-slate-50">
                       <Td className="font-medium text-slate-900">{row.nama}</Td>
-                      <Td className="text-xs tabular-nums">{row.nik}</Td>
                       <Td>
                         <Badge tone={row.jenisKelaminTone}>
                           {row.jenisKelamin}
@@ -112,16 +119,13 @@ export function DaftarPendudukView({
                       <Td>{row.umur}</Td>
                       <Td>{row.agama}</Td>
                       <Td>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => onPilih(row)}
-                          >
-                            Detail
-                          </Button>
-                          {renderAksi?.(row)}
-                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => onPilih(row)}
+                        >
+                          Detail
+                        </Button>
                       </Td>
                     </tr>
                   ))}

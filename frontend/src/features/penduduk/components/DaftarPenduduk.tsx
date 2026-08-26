@@ -1,39 +1,31 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import { useDebounce } from '@/hooks/use-debounce';
-import { usePendudukList } from '../hooks/use-penduduk';
-import {
-  toPendudukDetail,
-  toPendudukRow,
-  type PendudukRow,
-} from '../view-model';
+import type { FilterPenduduk } from '@/types/penduduk';
+import { useFilterOpsi, usePendudukList } from '../hooks/use-penduduk';
+import { toPendudukDetail, toPendudukRow } from '../view-model';
 import { DaftarPendudukView, type PaginasiView } from './DaftarPendudukView';
 
 const PAGE_SIZE = 8;
 
-interface DaftarPendudukProps {
-  /**
-   * Aksi tambahan per baris. Disuntik dari luar supaya fitur penduduk tidak
-   * perlu mengenal fitur lain (mis. tombol Reset PIN milik fitur auth).
-   */
-  renderAksi?: (row: PendudukRow) => ReactNode;
-}
-
 /**
- * Daftar penduduk untuk pengurus: pencarian, paginasi, dan pemilihan detail.
+ * Daftar penduduk untuk pengurus: pencarian nama, filter kategori, paginasi,
+ * dan pemilihan detail.
  *
  * Seluruh state layar dan turunannya berhenti di sini; `DaftarPendudukView`
  * hanya menerima nilai yang sudah jadi.
  */
-export function DaftarPenduduk({ renderAksi }: DaftarPendudukProps) {
+export function DaftarPenduduk() {
   const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<FilterPenduduk>({});
   const [page, setPage] = useState(1);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const debouncedSearch = useDebounce(search);
+  const { data: filterOpsi } = useFilterOpsi();
 
   const params = useMemo(
-    () => ({ page, pageSize: PAGE_SIZE, search: debouncedSearch }),
-    [page, debouncedSearch],
+    () => ({ page, pageSize: PAGE_SIZE, search: debouncedSearch, ...filter }),
+    [page, debouncedSearch, filter],
   );
   const { data, isLoading, isError, isFetching } = usePendudukList(params);
 
@@ -64,17 +56,26 @@ export function DaftarPenduduk({ renderAksi }: DaftarPendudukProps) {
     setPage(1); // reset ke halaman awal saat query berubah
   }
 
+  function onFilterChange(next: FilterPenduduk) {
+    setFilter(next);
+    // Wajib: mengubah filter di halaman 5 akan menghasilkan daftar kosong yang
+    // terlihat seperti bug, padahal datanya cuma tinggal satu halaman.
+    setPage(1);
+  }
+
   return (
     <DaftarPendudukView
       search={search}
       onSearchChange={onSearchChange}
+      filter={filter}
+      filterOpsi={filterOpsi}
+      onFilterChange={onFilterChange}
       isLoading={isLoading}
       isError={isError}
       rows={rows}
       paginasi={paginasi}
       onPrev={() => setPage((p) => Math.max(1, p - 1))}
       onNext={() => setPage((p) => p + 1)}
-      renderAksi={renderAksi}
       onPilih={(row) => setSelectedId(row.id)}
       detail={detail}
       onTutupDetail={() => setSelectedId(null)}
