@@ -1,13 +1,11 @@
 import { apiClient } from '@/lib/api-client';
-import type { Kandidat, Pengajuan } from '../types';
+import type { Pengajuan } from '../types';
 
 /** Kontrak pergantian jabatan. Pembagiannya tegas: Admin mengajukan & melihat,
  *  pengurus menjawab. Backend menolak yang salah pintu. */
 export interface PergantianApi {
   /** ADMIN — seluruh pengajuan beserta riwayatnya. */
   daftar(): Promise<Pengajuan[]>;
-  /** ADMIN — cari warga untuk dropdown kandidat (minimal 2 huruf). */
-  cariKandidat(q: string): Promise<Kandidat[]>;
   /** ADMIN — usulkan pergantian penghuni sebuah kursi. */
   ajukan(kursi: string, kandidatId: string): Promise<Pengajuan>;
   /** PENGURUS — pengajuan yang menunggu jawaban saya. */
@@ -19,12 +17,6 @@ export interface PergantianApi {
 export const pergantianApi: PergantianApi = {
   async daftar() {
     const { data } = await apiClient.get<Pengajuan[]>('/pergantian');
-    return data;
-  },
-  async cariKandidat(q) {
-    const { data } = await apiClient.get<Kandidat[]>('/pergantian/kandidat', {
-      params: { q },
-    });
     return data;
   },
   async ajukan(kursi, kandidatId) {

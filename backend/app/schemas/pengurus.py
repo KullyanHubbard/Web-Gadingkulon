@@ -42,6 +42,15 @@ class KursiOut(BaseModel):
     calon: Optional[CalonOut] = None
 
 
+class WargaPilihan(BaseModel):
+    """Sepotong data warga sekadar untuk dropdown pemilihan: nama + RT/RW."""
+
+    id: str
+    nama: str
+    rt: str
+    rw: str
+
+
 class PengurusBaru(BaseModel):
     """Mengisi satu kursi kosong. `role`/`rw`/`rt` menunjuk kursi mana."""
 

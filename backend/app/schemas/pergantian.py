@@ -43,18 +43,3 @@ class PengajuanBaru(BaseModel):
 
 class Jawaban(BaseModel):
     setuju: bool
-
-
-class KandidatOut(BaseModel):
-    """Sepotong data warga sekadar untuk dropdown pemilihan kandidat.
-
-    Admin buta terhadap data warga, dan ini satu-satunya celahnya: nama + RT/RW
-    saja, tidak ada tanggal lahir, agama, pekerjaan, maupun alamat jalan.
-    Celah ini tidak terhindarkan — Admin harus bisa menunjuk orang — jadi yang
-    bisa dilakukan adalah membuatnya sesempit mungkin.
-    """
-
-    id: str
-    nama: str
-    rt: str
-    rw: str

@@ -419,10 +419,10 @@ Kontrak endpoint yang **sudah diimplementasikan** (bentuknya sinkron dengan
 | GET    | `/infografis`                    | agregat lengkap — semua pengurus                        |
 | GET    | `/publik/statistik`              | cacah per RW — **tanpa auth**                           |
 | GET    | `/pengurus`                      | daftar **kursi** (terisi & kosong) — ADMIN              |
+| GET    | `/pengurus/warga`                | cari warga buat dropdown (nama + RT/RW saja) — ADMIN    |
 | POST   | `/pengurus`                      | isi satu kursi **kosong** — ADMIN                       |
 | POST   | `/pengurus/{id}/reset-password`  | ganti password akun — ADMIN                             |
 | GET    | `/pergantian`                    | riwayat pengajuan — ADMIN                               |
-| GET    | `/pergantian/kandidat`           | cari warga buat dropdown (nama + RT/RW saja) — ADMIN    |
 | POST   | `/pergantian`                    | ajukan pergantian kursi **terisi** — ADMIN              |
 | GET    | `/pergantian/menunggu`           | pengajuan yang menunggu jawaban saya — PENGURUS         |
 | POST   | `/pergantian/{id}/jawab`         | satu suara, tidak bisa diubah — PENGURUS                |
@@ -431,6 +431,14 @@ Filter `GET /penduduk` (semua opsional, digabung AND, disaring di memori oleh
 `penduduk.saring`): `jenisKelamin`, `agama`, `golonganDarah`, `pendidikan`,
 `statusPerkawinan`, `statusHubunganKeluarga`, `pekerjaan`, `rt`, `rw`,
 `kelompokUmur`.
+
+**Admin memilih warga lewat `GET /pengurus/warga`, bukan mengetik namanya.** Ia
+buta terhadap data kependudukan, jadi tidak punya cara tahu nama siapa yang
+benar. Endpoint itu satu-satunya celahnya — nama + RT/RW saja, minimal 2 huruf,
+maksimal 20 hasil — dan dipakai dua tempat: mengisi kursi kosong dan memilih
+kandidat pergantian. Klien bersamanya di `lib/warga-api.ts` +
+`hooks/use-cari-warga.ts` + `components/ui/PilihWarga.tsx`, bukan di dalam
+salah satu fitur (§4).
 
 **Rute statis ditulis sebelum rute ber-parameter** — `/penduduk/filter-opsi`
 harus di atas `/penduduk/{id}`, kalau tidak ia terbaca sebagai sebuah id.

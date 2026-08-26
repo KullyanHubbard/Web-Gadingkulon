@@ -15,15 +15,17 @@ langsung — dan seluruh mekanisme persetujuan jadi hiasan yang bisa dilewati
 dalam dua klik.
 """
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.api.routers.auth import current_admin, ke_auth_user
 from app.core.audit import catat_audit
 from app.data import pengurus as data
+from app.data.store import DAFTAR_PENDUDUK
 from app.schemas.auth import AuthUser
 from app.schemas.pengurus import (
     CalonOut,
     KursiOut,
+    WargaPilihan,
     PasswordBaru,
     PengurusBaru,
     PengurusOut,
@@ -58,6 +60,41 @@ def daftar_kursi() -> list[KursiOut]:
             calon=CalonOut(id=k.calon.id, nama=k.calon.nama) if k.calon else None,
         )
         for k in data.daftar_kursi()
+    ]
+
+
+# Dropdown tidak pernah menampilkan seluruh warga sekaligus: Admin mengetik
+# dulu, dan hasilnya dipotong. Tidak menutup celahnya, tapi membuat "unduh
+# seluruh daftar warga" bukan sesuatu yang terjadi dengan satu klik.
+MIN_CARI = 2
+MAKS_HASIL = 20
+
+
+@router.get("/warga", response_model=list[WargaPilihan])
+def cari_warga(
+    q: str = Query(""), _admin: AuthUser = Depends(current_admin)
+) -> list[WargaPilihan]:
+    """Cari warga untuk dipilih Admin — mengisi kursi kosong maupun mengajukan
+    pergantian. Nama + RT/RW saja.
+
+    Ini satu-satunya celah Admin ke data warga, dan tidak terhindarkan: ia harus
+    bisa menunjuk orang. Yang bisa dilakukan adalah membuatnya sesempit
+    mungkin — tidak ada tanggal lahir, agama, pekerjaan, maupun alamat jalan.
+
+    Ditulis SEBELUM rute ber-parameter mana pun di router ini supaya "warga"
+    tidak terbaca sebagai sebuah id.
+    """
+    kata = q.strip().lower()
+    if len(kata) < MIN_CARI:
+        return []
+    cocok = [
+        w
+        for w in DAFTAR_PENDUDUK
+        if kata in w.nama.lower() and w.statusKependudukan == "AKTIF"
+    ]
+    return [
+        WargaPilihan(id=w.id, nama=w.nama, rt=w.alamat.rt, rw=w.alamat.rw)
+        for w in cocok[:MAKS_HASIL]
     ]
 
 

@@ -39,11 +39,3 @@ export interface Pengajuan {
   sebab?: string | null;
   suara: Suara[];
 }
-
-/** Sepotong data warga sekadar untuk dropdown kandidat: nama + RT/RW saja. */
-export interface Kandidat {
-  id: string;
-  nama: string;
-  rt: string;
-  rw: string;
-}

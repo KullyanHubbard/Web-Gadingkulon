@@ -6,7 +6,6 @@ export const pergantianKeys = {
   all: ['pergantian'] as const,
   daftar: () => [...pergantianKeys.all, 'daftar'] as const,
   menunggu: () => [...pergantianKeys.all, 'menunggu'] as const,
-  kandidat: (q: string) => [...pergantianKeys.all, 'kandidat', q] as const,
 };
 
 /** ADMIN — seluruh pengajuan beserta riwayatnya. */
@@ -28,16 +27,6 @@ export function useMenungguJawaban(enabled: boolean) {
     queryKey: pergantianKeys.menunggu(),
     queryFn: () => pergantianApi.menunggu(),
     enabled,
-  });
-}
-
-/** ADMIN — pencarian warga untuk dropdown kandidat. */
-export function useCariKandidat(q: string) {
-  return useQuery({
-    queryKey: pergantianKeys.kandidat(q),
-    queryFn: () => pergantianApi.cariKandidat(q),
-    // Backend mengembalikan kosong di bawah 2 huruf; jangan menanyakannya.
-    enabled: q.trim().length >= 2,
   });
 }
 

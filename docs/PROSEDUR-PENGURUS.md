@@ -151,12 +151,17 @@ jangan hapus barisnya. Datanya tetap tercatat.
 Dilakukan **Admin**, lewat menu **Akun Pengurus**:
 
 1. Cari baris kursinya (mis. "Ketua RT 003"), yang statusnya **Kosong**.
-2. Klik **Buatkan Akun**. Kalau kolom Jabatan di Excel sudah menandai orangnya,
-   **namanya sudah terisi otomatis** — tinggal periksa. Isi **username** dan
-   **password awal** (minimal 8 karakter).
-3. **Serahkan password awal secara tatap muka.**
+2. Klik **Buatkan Akun**, lalu **cari nama orangnya** di kotak pencarian —
+   ketik minimal 2 huruf, pilih dari daftar yang muncul. Tiap baris tertulis
+   "Nama — RT/RW" supaya tidak salah pilih kalau ada nama kembar.
+   Kalau kolom Jabatan di Excel sudah menandai orangnya, ia **sudah terpilih
+   otomatis** — tinggal diperiksa.
+3. Isi **username** dan **password awal** (minimal 8 karakter).
+4. **Serahkan password awal secara tatap muka.**
 
 Jabatan tidak perlu dipilih — sudah ditentukan oleh baris kursi yang diklik.
+Namanya juga tidak diketik: Admin tidak boleh melihat data warga, jadi ia
+memilih dari daftar, bukan mengarang dari ingatan.
 
 ### Password awal hanya sekali pakai
 

@@ -7,10 +7,12 @@ import { z } from 'zod';
  */
 const password = z.string().min(8, 'Minimal 8 karakter');
 
-/** Mengisi kursi kosong. Kursinya sudah ditentukan barisnya, jadi form ini
- *  cuma menanyakan siapa orangnya dan password awalnya. */
+/**
+ * Mengisi kursi kosong. Kursinya sudah ditentukan barisnya, dan orangnya
+ * dipilih dari data warga (bukan diketik), jadi form ini cuma menanyakan
+ * username dan password awal.
+ */
 export const isiKursiSchema = z.object({
-  nama: z.string().min(1, 'Nama wajib diisi'),
   username: z
     .string()
     .min(3, 'Minimal 3 karakter')

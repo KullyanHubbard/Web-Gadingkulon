@@ -1,16 +1,13 @@
 import { useState } from 'react';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
+import { PilihWarga } from '@/components/ui/PilihWarga';
+import { useCariWarga } from '@/hooks/use-cari-warga';
 import { useDebounce } from '@/hooks/use-debounce';
-import { cn } from '@/lib/utils';
 import { pesanError } from '@/lib/utils';
-import {
-  useAjukanPergantian,
-  useCariKandidat,
-} from '../hooks/use-pergantian';
-import type { Kandidat } from '../types';
+import type { WargaPilihan } from '@/lib/warga-api';
+import { useAjukanPergantian } from '../hooks/use-pergantian';
 
 interface AjukanPergantianDialogProps {
   /** Kursi yang diganti penghuninya; `null` = dialog tertutup. */
@@ -30,9 +27,9 @@ export function AjukanPergantianDialog({
   onClose,
 }: AjukanPergantianDialogProps) {
   const [cari, setCari] = useState('');
-  const [terpilih, setTerpilih] = useState<Kandidat | null>(null);
+  const [terpilih, setTerpilih] = useState<WargaPilihan | null>(null);
   const debounced = useDebounce(cari);
-  const { data: kandidat, isFetching } = useCariKandidat(debounced);
+  const { data: hasil, isFetching } = useCariWarga(debounced);
   const ajukan = useAjukanPergantian();
 
   function tutup() {
@@ -63,44 +60,15 @@ export function AjukanPergantianDialog({
           mengajukan, mereka yang memutuskan.
         </p>
 
-        <Input
+        <PilihWarga
           label="Cari warga pengganti"
-          placeholder="Ketik nama, minimal 2 huruf…"
-          value={cari}
-          onChange={(e) => {
-            setCari(e.target.value);
-            setTerpilih(null);
-          }}
+          cari={cari}
+          onCariChange={setCari}
+          hasil={hasil}
+          sedangMencari={isFetching}
+          terpilih={terpilih}
+          onPilih={setTerpilih}
         />
-
-        {debounced.trim().length >= 2 && (
-          <div className="max-h-56 overflow-y-auto rounded-lg border-1 border-slate-200">
-            {isFetching && (
-              <p className="px-3 py-2 text-sm text-slate-500">Mencari…</p>
-            )}
-            {!isFetching && kandidat?.length === 0 && (
-              <p className="px-3 py-2 text-sm text-slate-500">
-                Tidak ada warga bernama itu.
-              </p>
-            )}
-            {kandidat?.map((k) => (
-              <button
-                key={k.id}
-                type="button"
-                onClick={() => setTerpilih(k)}
-                className={cn(
-                  'flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-slate-50',
-                  terpilih?.id === k.id && 'bg-brand-50 font-medium',
-                )}
-              >
-                <span>{k.nama}</span>
-                <span className="text-xs text-slate-500">
-                  RT {k.rt}/RW {k.rw}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
 
         {ajukan.error && (
           <Alert tone="error">
