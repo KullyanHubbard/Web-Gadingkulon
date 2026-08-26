@@ -7,9 +7,16 @@ aktivasi, maupun kontak di sini.
 
 from typing import Literal, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-Role = Literal["ADMIN", "PENGURUS"]
+# Empat peran, dan yang membedakannya bukan tingkat melainkan ARAH kewenangan:
+# ADMIN mengelola akun dan tidak boleh membaca data warga; tiga sisanya membaca
+# data warga dan tidak bisa menyentuh akun siapa pun. Berpotongan kosong —
+# lihat spec 2026-08-26-empat-peran-pergantian-pengurus-design.md.
+Role = Literal["ADMIN", "DUKUH", "RW", "RT"]
+
+# Peran yang boleh membaca data warga.
+ROLE_PENGURUS: tuple[str, ...] = ("DUKUH", "RW", "RT")
 
 
 class AuthUser(BaseModel):
@@ -22,11 +29,19 @@ class AuthUser(BaseModel):
     rt: Optional[str] = None
     # Diturunkan dari role+rw+rt, tidak disimpan di DB.
     jabatan: str
+    # Password awal dari Admin masih berlaku: akun belum boleh melakukan apa pun
+    # selain menggantinya.
+    harusGantiPassword: bool = False
 
 
 class PetugasCredentials(BaseModel):
     username: str
     password: str
+
+
+class GantiPassword(BaseModel):
+    passwordLama: str
+    passwordBaru: str = Field(min_length=8)
 
 
 class Session(BaseModel):

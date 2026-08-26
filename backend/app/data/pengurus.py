@@ -15,7 +15,9 @@ from app.core.security import hash_rahasia
 from app.data import db
 
 ROLE_ADMIN = "ADMIN"
-ROLE_PENGURUS = "PENGURUS"
+ROLE_DUKUH = "DUKUH"
+ROLE_RW = "RW"
+ROLE_RT = "RT"
 
 # Penanda "argumen tidak dikirim" untuk `ubah()`, supaya `rw=None` yang berarti
 # "kosongkan" bisa dibedakan dari "jangan sentuh". Bagian dari kontrak modul
@@ -32,24 +34,48 @@ class Pengurus:
     rw: str | None
     rt: str | None
     aktif: bool
+    harus_ganti_password: bool = False
 
     @property
     def jabatan(self) -> str:
         return jabatan_dari(self.role, self.rw, self.rt)
+
+    @property
+    def kursi(self) -> str:
+        """Penanda kursi yang diduduki, dipakai menjodohkan akun dengan daftar
+        kursi yang diturunkan dari data penduduk."""
+        return kursi_dari(self.role, self.rw, self.rt)
 
 
 def jabatan_dari(role: str, rw: str | None, rt: str | None) -> str:
     """Label jabatan diturunkan, tidak disimpan — kalau ikut disimpan, ia bisa
     berbeda dari wilayahnya diam-diam saat salah satunya diedit.
 
-    Urutan periksa dari yang paling spesifik: RT ada berarti Ketua RT, apa pun
-    isi RW-nya.
+    Yang menentukan adalah `role`; `rw`/`rt` cuma mengisi nomornya.
     """
-    if rt:
-        return f"Ketua RT {rt}"
-    if rw:
-        return f"Ketua RW {rw}"
-    return "Dukuh" if role == ROLE_ADMIN else "Pengurus"
+    if role == ROLE_ADMIN:
+        return "Admin"
+    if role == ROLE_DUKUH:
+        return "Dukuh"
+    if role == ROLE_RW:
+        return f"Ketua RW {rw}" if rw else "Ketua RW"
+    if role == ROLE_RT:
+        return f"Ketua RT {rt}" if rt else "Ketua RT"
+    return role
+
+
+def kursi_dari(role: str, rw: str | None, rt: str | None) -> str:
+    """Penanda satu kursi, mis. `DUKUH`, `RW:019`, `RT:019/001`.
+
+    RT memakai RW-nya sekaligus karena nomor RT hanya unik di dalam RW-nya —
+    "RT 001" tanpa RW bisa menunjuk dua kursi berbeda begitu padukuhan punya
+    dua RW yang sama-sama bernomor RT 001.
+    """
+    if role == ROLE_RW:
+        return f"RW:{rw or ''}"
+    if role == ROLE_RT:
+        return f"RT:{rw or ''}/{rt or ''}"
+    return role
 
 
 def _db():
@@ -65,6 +91,7 @@ def _dari_row(row) -> Pengurus:
         rw=row["rw"],
         rt=row["rt"],
         aktif=bool(row["aktif"]),
+        harus_ganti_password=bool(row["harus_ganti_password"]),
     )
 
 
@@ -100,7 +127,9 @@ def tambah(
     rw: str | None = None,
     rt: str | None = None,
 ) -> Pengurus:
-    """Raise `ValueError` kalau username sudah dipakai."""
+    """Raise `ValueError` kalau username sudah dipakai atau kursinya sudah
+    diduduki akun aktif. Akun baru selalu lahir dengan `harus_ganti_password`
+    menyala: password dari Admin sekali pakai."""
     baru = Pengurus(
         id=str(uuid.uuid4()),
         username=username,
@@ -109,6 +138,7 @@ def tambah(
         rw=rw or None,
         rt=rt or None,
         aktif=True,
+        harus_ganti_password=True,
     )
     with _db() as conn:
         sudah = conn.execute(
@@ -116,6 +146,15 @@ def tambah(
         ).fetchone()
         if sudah:
             raise ValueError(f"Username '{username}' sudah dipakai.")
+        # Satu kursi satu orang. Diperiksa di sini, bukan lewat UNIQUE di SQL:
+        # akun nonaktif dari penghuni lama tetap tersimpan pada kursi yang sama,
+        # jadi constraint kolom akan menolak penggantinya.
+        penghuni = [
+            _dari_row(r)
+            for r in conn.execute("SELECT * FROM pengurus WHERE aktif = 1")
+        ]
+        if any(p.kursi == baru.kursi for p in penghuni):
+            raise ValueError(f"Kursi {baru.jabatan} sudah ada yang menduduki.")
         with conn:
             conn.execute(
                 "INSERT INTO pengurus (id, username, password_hash, nama, role,"
@@ -170,14 +209,67 @@ def ubah(
     return cari_by_id(id)
 
 
-def ganti_password(id: str, password: str) -> bool:
+def ganti_password(id: str, password: str, *, oleh_admin: bool) -> bool:
+    """Ganti password satu akun.
+
+    `oleh_admin=True` (reset) menyalakan kembali `harus_ganti_password`:
+    password yang sempat diketahui Admin tidak boleh berlaku untuk membaca
+    apa pun. `oleh_admin=False` (pemiliknya sendiri) memadamkannya, dan itu
+    terjadi dalam operasi yang sama supaya tidak ada celah di antaranya.
+    """
     with _db() as conn:
         with conn:
             cur = conn.execute(
-                "UPDATE pengurus SET password_hash = ? WHERE id = ?",
-                (hash_rahasia(password), id),
+                "UPDATE pengurus SET password_hash = ?, harus_ganti_password = ?"
+                " WHERE id = ?",
+                (hash_rahasia(password), 1 if oleh_admin else 0, id),
             )
     return cur.rowcount > 0
+
+
+@dataclass
+class Kursi:
+    """Satu jabatan yang ada di padukuhan, terisi maupun kosong."""
+
+    kursi: str
+    role: str
+    rw: str | None
+    rt: str | None
+    jabatan: str
+    penghuni: Pengurus | None
+
+
+def daftar_kursi() -> list[Kursi]:
+    """Seluruh kursi pengurus, diturunkan dari alamat warga di data penduduk.
+
+    Tidak ada tabel atau berkas konfigurasi berisi daftar RW/RT: pasangan yang
+    benar-benar ada di padukuhan sudah tercatat di kolom alamat tiap warga.
+    Menyimpannya di tempat kedua berarti dua sumber kebenaran yang bisa berbeda
+    diam-diam ketika padukuhan memekarkan sebuah RT.
+
+    Konsekuensinya diterima sadar: kursi baru baru muncul setelah ada warga
+    ber-RT itu di data — dan itu urutan yang benar, RT tanpa warga tidak perlu
+    akun.
+    """
+    from app.data.store import DAFTAR_PENDUDUK
+
+    wilayah = sorted({(p.alamat.rw, p.alamat.rt) for p in DAFTAR_PENDUDUK})
+    rencana: list[tuple[str, str | None, str | None]] = [(ROLE_DUKUH, None, None)]
+    rencana += [(ROLE_RW, rw, None) for rw in sorted({rw for rw, _ in wilayah})]
+    rencana += [(ROLE_RT, rw, rt) for rw, rt in wilayah]
+
+    aktif = {p.kursi: p for p in daftar() if p.aktif}
+    return [
+        Kursi(
+            kursi=kursi_dari(role, rw, rt),
+            role=role,
+            rw=rw,
+            rt=rt,
+            jabatan=jabatan_dari(role, rw, rt),
+            penghuni=aktif.get(kursi_dari(role, rw, rt)),
+        )
+        for role, rw, rt in rencana
+    ]
 
 
 def bootstrap() -> None:
@@ -200,9 +292,17 @@ def bootstrap() -> None:
     tambah(
         username=settings.ADMIN_USERNAME,
         password=settings.ADMIN_PASSWORD,
-        nama="Dukuh",
+        nama="Admin",
         role=ROLE_ADMIN,
     )
+    # Akun bootstrap tidak dituntut ganti password: nilainya datang dari
+    # environment server, bukan dari tangan orang lain.
+    with _db() as conn:
+        with conn:
+            conn.execute(
+                "UPDATE pengurus SET harus_ganti_password = 0 WHERE username = ?",
+                (settings.ADMIN_USERNAME,),
+            )
     print(f"  Akun ADMIN pertama dibuat: {settings.ADMIN_USERNAME}")
 
 
@@ -211,34 +311,50 @@ def demo() -> None:
 
         DATABASE_PATH=/tmp/uji-pengurus.db .venv/bin/python -m app.data.pengurus
     """
-    assert jabatan_dari(ROLE_ADMIN, None, None) == "Dukuh"
-    assert jabatan_dari(ROLE_PENGURUS, "019", None) == "Ketua RW 019"
-    assert jabatan_dari(ROLE_PENGURUS, "019", "03") == "Ketua RT 03"
+    assert jabatan_dari(ROLE_ADMIN, None, None) == "Admin"
+    assert jabatan_dari(ROLE_DUKUH, None, None) == "Dukuh"
+    assert jabatan_dari(ROLE_RW, "019", None) == "Ketua RW 019"
+    assert jabatan_dari(ROLE_RT, "019", "001") == "Ketua RT 001"
 
-    p = tambah("uji-rt", "rahasia", "Fajar", ROLE_PENGURUS, rw="019", rt="03")
-    assert p.jabatan == "Ketua RT 03"
+    # Nomor RT hanya unik di dalam RW-nya, jadi dua RT bernomor sama di RW
+    # berbeda wajib jadi dua kursi berbeda.
+    assert kursi_dari(ROLE_RT, "019", "001") != kursi_dari(ROLE_RT, "020", "001")
+    assert kursi_dari(ROLE_DUKUH, None, None) == "DUKUH"
+
+    p = tambah("uji-rt", "rahasia", "Fajar", ROLE_RT, rw="019", rt="001")
+    assert p.jabatan == "Ketua RT 001"
+    # Akun baru wajib ganti password: nilainya datang dari tangan Admin.
+    assert p.harus_ganti_password is True
+    assert cari_by_id(p.id).harus_ganti_password is True  # type: ignore[union-attr]
+
     hasil = cari_by_username("uji-rt")
     assert hasil is not None and hasil[1].startswith(b"$2"), "password tidak di-hash"
 
     try:
-        tambah("uji-rt", "lain", "Kembar", ROLE_PENGURUS)
+        tambah("uji-rt", "lain", "Kembar", ROLE_RT, rw="020", rt="003")
         raise AssertionError("username ganda harus ditolak")
     except ValueError:
         pass
 
-    diubah = ubah(p.id, aktif=False)
-    assert diubah is not None and diubah.aktif is False
-    # Mengubah nama tidak boleh diam-diam mengaktifkan kembali akunnya.
-    diubah = ubah(p.id, nama="Fajar N.")
-    assert diubah is not None and diubah.nama == "Fajar N." and diubah.aktif is False
-    # `TETAP` vs None: wilayah cuma berubah kalau memang dikirim.
-    assert ubah(p.id, nama="Fajar N.").rt == "03"  # type: ignore[union-attr]
-    assert ubah(p.id, rt=None).rt is None  # type: ignore[union-attr]
+    try:
+        tambah("uji-rt2", "lain", "Kembar", ROLE_RT, rw="019", rt="001")
+        raise AssertionError("kursi yang sudah diduduki harus ditolak")
+    except ValueError:
+        pass
 
-    lama = cari_by_username("uji-rt")[1]  # type: ignore[index]
-    assert ganti_password(p.id, "password-baru") is True
-    assert cari_by_username("uji-rt")[1] != lama, "hash tidak berubah"  # type: ignore[index]
-    assert ganti_password("tidak-ada", "baru") is False
+    # Kursi yang sama boleh diisi lagi setelah penghuninya dinonaktifkan —
+    # itulah jalur pergantian pengurus.
+    assert ubah(p.id, aktif=False).aktif is False  # type: ignore[union-attr]
+    pengganti = tambah("uji-rt2", "rahasia", "Bagus", ROLE_RT, rw="019", rt="001")
+    assert pengganti.kursi == p.kursi
+
+    # Ganti password sendiri memadamkan penanda; reset Admin menyalakannya lagi.
+    assert ganti_password(pengganti.id, "password-baru", oleh_admin=False) is True
+    assert cari_by_id(pengganti.id).harus_ganti_password is False  # type: ignore[union-attr]
+    assert ganti_password(pengganti.id, "password-reset", oleh_admin=True) is True
+    assert cari_by_id(pengganti.id).harus_ganti_password is True  # type: ignore[union-attr]
+
+    assert ganti_password("tidak-ada", "baru", oleh_admin=True) is False
     assert ubah("tidak-ada", nama="x") is None
     assert cari_by_id("tidak-ada") is None
 

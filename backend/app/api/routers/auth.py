@@ -3,13 +3,22 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.core.security import buat_token, cocok_rahasia, urai_token
 from app.data import pengurus as data_pengurus
-from app.schemas.auth import AuthUser, PetugasCredentials, Session
+from app.schemas.auth import (
+    ROLE_PENGURUS,
+    AuthUser,
+    GantiPassword,
+    PetugasCredentials,
+    Session,
+)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 _bearer = HTTPBearer(auto_error=False)
 
 PESAN_NONAKTIF = (
-    "Akun Anda sudah dinonaktifkan. Hubungi Dukuh untuk mengaktifkannya kembali."
+    "Akun Anda sudah dinonaktifkan. Hubungi Admin untuk mengaktifkannya kembali."
+)
+PESAN_HARUS_GANTI = (
+    "Ganti password Anda dulu sebelum memakai aplikasi."
 )
 
 
@@ -22,6 +31,7 @@ def ke_auth_user(p: data_pengurus.Pengurus) -> AuthUser:
         rw=p.rw,
         rt=p.rt,
         jabatan=p.jabatan,
+        harusGantiPassword=p.harus_ganti_password,
     )
 
 
@@ -51,11 +61,29 @@ async def current_user(
     return ke_auth_user(p)
 
 
+def _tolak_kalau_belum_ganti(user: AuthUser) -> None:
+    """Password awal dari Admin sekali pakai: selama belum diganti, akun tidak
+    boleh melakukan apa pun selain menggantinya. Ditegakkan di sini, bukan di
+    layar — kalau tidak, password yang sempat diketahui Admin tetap bisa
+    dipakai membaca data lewat panggilan langsung."""
+    if user.harusGantiPassword:
+        raise HTTPException(403, PESAN_HARUS_GANTI)
+
+
 async def current_admin(user: AuthUser = Depends(current_user)) -> AuthUser:
-    """Kelola akun pengurus. Sengaja dipisah dari `current_user`: membaca data
-    warga dan mengelola akun adalah dua kewenangan berbeda."""
+    """Kelola akun pengurus. ADMIN saja."""
     if user.role != "ADMIN":
-        raise HTTPException(403, "Hanya untuk Dukuh.")
+        raise HTTPException(403, "Hanya untuk Admin.")
+    _tolak_kalau_belum_ganti(user)
+    return user
+
+
+async def current_pengurus(user: AuthUser = Depends(current_user)) -> AuthUser:
+    """Baca data warga. Arah kebalikan `current_admin`: ADMIN ditolak — dia
+    mengelola akun, bukan membaca isi data penduduk & infografis."""
+    if user.role not in ROLE_PENGURUS:
+        raise HTTPException(403, "Admin tidak memiliki akses data warga.")
+    _tolak_kalau_belum_ganti(user)
     return user
 
 
@@ -71,6 +99,34 @@ async def login(payload: PetugasCredentials) -> Session:
         raise HTTPException(403, PESAN_NONAKTIF)
     user = ke_auth_user(p)
     return Session(token=buat_token(user.id), user=user)
+
+
+@router.post("/ganti-password", response_model=AuthUser)
+async def ganti_password_sendiri(
+    payload: GantiPassword, user: AuthUser = Depends(current_user)
+) -> AuthUser:
+    """Ganti password akun sendiri.
+
+    Sengaja bergantung pada `current_user`, bukan `current_pengurus`/
+    `current_admin`: ini satu-satunya pintu yang harus tetap terbuka selagi
+    penanda `harusGantiPassword` menyala.
+    """
+    hasil = data_pengurus.cari_by_username(user.username)
+    if hasil is None:
+        raise HTTPException(401, "Sesi tidak valid atau sudah kedaluwarsa.")
+    _, hash_lama = hasil
+    if not cocok_rahasia(payload.passwordLama, hash_lama):
+        raise HTTPException(401, "Password lama salah.")
+    # Kalau boleh sama, tuntutan mengganti password bisa dipenuhi tanpa
+    # mengganti apa pun.
+    if cocok_rahasia(payload.passwordBaru, hash_lama):
+        raise HTTPException(400, "Password baru harus berbeda dari yang lama.")
+
+    data_pengurus.ganti_password(user.id, payload.passwordBaru, oleh_admin=False)
+    baru = data_pengurus.cari_by_id(user.id)
+    if baru is None:
+        raise HTTPException(401, "Sesi tidak valid atau sudah kedaluwarsa.")
+    return ke_auth_user(baru)
 
 
 @router.post("/logout", status_code=204)

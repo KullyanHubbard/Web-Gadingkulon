@@ -18,7 +18,24 @@ class PengurusOut(AuthUser):
     aktif: bool
 
 
+class KursiOut(BaseModel):
+    """Satu jabatan di padukuhan, terisi maupun kosong.
+
+    Daftarnya diturunkan dari alamat warga, bukan disimpan — lihat
+    `app/data/pengurus.py:daftar_kursi`.
+    """
+
+    kursi: str
+    role: Role
+    rw: Optional[str] = None
+    rt: Optional[str] = None
+    jabatan: str
+    penghuni: Optional[PengurusOut] = None
+
+
 class PengurusBaru(BaseModel):
+    """Mengisi satu kursi kosong. `role`/`rw`/`rt` menunjuk kursi mana."""
+
     username: str = Field(min_length=3, max_length=32)
     password: str = Field(min_length=8)
     nama: str = Field(min_length=1)

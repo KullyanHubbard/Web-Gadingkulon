@@ -1,8 +1,16 @@
 """Kelola akun perangkat desa. ADMIN saja.
 
+Yang dikelola adalah **kursi** (Dukuh, Ketua RW 019, Ketua RT 001, …), bukan
+sekadar daftar akun: satu kursi dihuni satu orang, dan orangnya berganti
+sewaktu-waktu. Daftar kursinya diturunkan dari alamat warga di data penduduk.
+
 Tidak ada DELETE: akun yang pernah dipakai tidak dihapus, cukup dinonaktifkan
 (`aktif = 0`). Menghapusnya membuat jejak audit menunjuk ke akun yang tidak
 ada lagi.
+
+ponytail: `PATCH` dengan `aktif=false` adalah pintu darurat sementara. Di Tahap
+2 pelepasan kursi terjadi otomatis saat pengganti disetujui — cabut endpoint
+itu begitu alur pengajuan jalan (spec 2026-08-26-empat-peran).
 """
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -12,6 +20,7 @@ from app.core.audit import catat_audit
 from app.data import pengurus as data
 from app.schemas.auth import AuthUser
 from app.schemas.pengurus import (
+    KursiOut,
     PasswordBaru,
     PengurusBaru,
     PengurusOut,
@@ -29,9 +38,24 @@ def _keluaran(p: data.Pengurus) -> PengurusOut:
     return PengurusOut(**ke_auth_user(p).model_dump(), aktif=p.aktif)
 
 
-@router.get("", response_model=list[PengurusOut])
-def daftar_pengurus() -> list[PengurusOut]:
-    return [_keluaran(p) for p in data.daftar()]
+@router.get("", response_model=list[KursiOut])
+def daftar_kursi() -> list[KursiOut]:
+    """Seluruh kursi padukuhan, terisi maupun kosong.
+
+    Yang dikembalikan kursi, bukan akun: halaman Admin memang menampilkan
+    jabatan yang ada di padukuhan, termasuk yang belum ada penghuninya.
+    """
+    return [
+        KursiOut(
+            kursi=k.kursi,
+            role=k.role,  # type: ignore[arg-type]
+            rw=k.rw,
+            rt=k.rt,
+            jabatan=k.jabatan,
+            penghuni=_keluaran(k.penghuni) if k.penghuni else None,
+        )
+        for k in data.daftar_kursi()
+    ]
 
 
 @router.post("", response_model=PengurusOut, status_code=201)
@@ -81,6 +105,8 @@ def reset_password(
     id: str, payload: PasswordBaru, admin: AuthUser = Depends(current_admin)
 ) -> None:
     target = data.cari_by_id(id)
-    if target is None or not data.ganti_password(id, payload.password):
+    if target is None or not data.ganti_password(
+        id, payload.password, oleh_admin=True
+    ):
         raise HTTPException(404, "Akun pengurus tidak ditemukan.")
     catat_audit(aktor=admin.username, aksi="reset-password", target=target.username)

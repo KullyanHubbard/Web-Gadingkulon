@@ -27,7 +27,6 @@ Pakai:
 """
 
 import sys
-import uuid
 
 from openpyxl import load_workbook
 
@@ -42,6 +41,7 @@ BARIS_HEADER = 2  # baris 1 = judul
 # Pembangkit file Excel di `backend/tools/` membaca daftar ini juga, supaya
 # bentuk file dan pembacanya tidak mungkin melenceng sendiri-sendiri.
 KOLOM: list[tuple[str, str, int]] = [
+    ("id", "Kode Warga", 14),
     ("nama", "Nama Lengkap", 24),
     ("jenisKelamin", "Jenis Kelamin", 14),
     ("tempatLahir", "Tempat Lahir", 16),
@@ -108,9 +108,10 @@ def petakan_kolom(baris_header: tuple) -> dict[str, int]:
 def baris_ke_penduduk(nilai: dict[str, str]) -> Penduduk:
     inti = {k: v for k, v in nilai.items() if k not in _ALAMAT}
     alamat = {k: v for k, v in nilai.items() if k in _ALAMAT}
-    # `id` dibangkitkan, bukan diturunkan dari data: NIK tidak lagi disimpan
-    # (spec 2026-08-26), dan tidak ada field lain yang dijamin unik.
-    return Penduduk(id=str(uuid.uuid4()), alamat=Alamat(**alamat), **inti)
+    # `id` = kolom "Kode Warga", kunci yang dijaga pengurus. Bukan dibangkitkan
+    # acak: jabatan pengurus menunjuk ke warga tertentu, dan impor menimpa
+    # seluruh tabel — id acak akan memutus tautan itu tiap kali impor.
+    return Penduduk(alamat=Alamat(**alamat), **inti)
 
 
 def baca_xlsx(path: str) -> list[Penduduk]:
@@ -118,16 +119,47 @@ def baca_xlsx(path: str) -> list[Penduduk]:
     baris = list(ws.iter_rows(min_row=BARIS_HEADER, values_only=True))
     peta = petakan_kolom(baris[0])
 
-    daftar = []
-    for r in baris[1:]:
-        if not r[peta["nama"]]:  # nama kosong = baris belum diisi, lewati
-            continue
+    daftar: list[Penduduk] = []
+    kosong: list[int] = []
+    baris_ke_nomor: dict[str, list[int]] = {}
+    # +1 karena `baris` dimulai dari baris header, dan Excel menghitung dari 1.
+    for nomor, r in enumerate(baris[1:], start=BARIS_HEADER + 1):
+        if not r[peta["nama"]] and not r[peta["id"]]:
+            continue  # dua-duanya kosong = baris belum diisi, lewati
         nilai = {
             field: ("" if r[i] is None else str(r[i]).strip())
             for field, i in peta.items()
         }
+        baris_ke_nomor.setdefault(nilai["id"], []).append(nomor)
+        if not nilai["id"]:
+            kosong.append(nomor)
+            continue
         daftar.append(baris_ke_penduduk(nilai))
+
+    if kosong:
+        sys.exit(
+            "Kolom 'Kode Warga' kosong di baris: "
+            + ", ".join(str(b) for b in kosong)
+            + "\n\nKode Warga adalah identitas warga di sistem — tanpa itu barisnya "
+            "tidak bisa dipakai. Isi dulu, lalu jalankan ulang."
+        )
+
+    ganda = {k: b for k, b in _cari_ganda(daftar, baris_ke_nomor).items()}
+    if ganda:
+        sys.exit(
+            "Kode Warga berikut dipakai lebih dari satu baris:\n  "
+            + "\n  ".join(f"{kode} (baris {', '.join(map(str, b))})" for kode, b in ganda.items())
+            + "\n\nSatu kode = satu orang. Dua warga bertukar kode berarti dua orang "
+            "bertukar jabatan tanpa ada yang menyadarinya. Betulkan dulu."
+        )
     return daftar
+
+
+def _cari_ganda(
+    daftar: list[Penduduk], nomor_baris: dict[str, list[int]]
+) -> dict[str, list[int]]:
+    """Kode yang muncul lebih dari sekali, beserta nomor barisnya."""
+    return {p.id: nomor_baris[p.id] for p in daftar if len(nomor_baris[p.id]) > 1}
 
 
 def main(path_xlsx: str) -> None:

@@ -113,6 +113,7 @@ def pekerjaan_utk(u: int, perempuan: bool, pendidikan: str) -> str:
 
 
 baris_semua = []
+urut_kode = 1
 
 for i in range(JUMLAH_KK):
     rw = list(RW_RT)[i % 3]
@@ -174,6 +175,7 @@ for i in range(JUMLAH_KK):
 
     for a in anggota:
         baris_semua.append({
+            "id": f"W{urut_kode:04d}",
             "nama": a["nama"],
             "jenisKelamin": "PEREMPUAN" if a["perempuan"] else "LAKI_LAKI",
             "tempatLahir": random.choice(
@@ -191,8 +193,10 @@ for i in range(JUMLAH_KK):
             "desa": DESA, "kecamatan": KECAMATAN, "kabupaten": KABUPATEN,
             "provinsi": PROVINSI, "kodePos": KODE_POS,
         })
+        urut_kode += 1
 
 assert baris_semua, "tidak ada baris terbangkitkan"
+assert len({b["id"] for b in baris_semua}) == len(baris_semua), "Kode Warga dobel"
 
 # --- tulis ke xlsx, bentuknya sama persis dengan template kosong ------------
 

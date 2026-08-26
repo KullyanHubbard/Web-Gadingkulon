@@ -14,8 +14,9 @@ Bentuknya sengaja sedatar mungkin:
   KKN (CLAUDE.md §11).
 
 NIK & Nomor KK tidak disimpan sama sekali — desa tidak mengizinkannya. `id`
-penduduk adalah UUID yang dibangkitkan saat impor, bukan turunan data apa pun.
-Lihat `docs/superpowers/specs/2026-08-26-hapus-nik-kk-auth-pengurus-design.md`.
+penduduk diambil dari kolom **Kode Warga** di Excel: kunci yang dijaga manusia,
+satu-satunya yang bertahan melewati impor yang menimpa. Lihat dua spec
+bertanggal 2026-08-26 di `docs/superpowers/specs/`.
 
 Baris ber-`deletedAt` **tetap disimpan** — sebabnya ada di `store.py`:
 penyaringan itu keputusan baca, bukan alasan membuang data.
@@ -73,7 +74,10 @@ CREATE TABLE IF NOT EXISTS pengurus (
     role          TEXT NOT NULL,
     rw            TEXT,
     rt            TEXT,
-    aktif         INTEGER NOT NULL DEFAULT 1
+    aktif         INTEGER NOT NULL DEFAULT 1,
+    -- Password awal dari Admin sekali pakai: selama 1, akun cuma boleh
+    -- mengganti passwordnya sendiri. Padam begitu password diganti.
+    harus_ganti_password INTEGER NOT NULL DEFAULT 1
 );
 """
 
@@ -132,9 +136,9 @@ def _ke_penduduk(row: sqlite3.Row) -> Penduduk:
 def simpan(conn: sqlite3.Connection, daftar: Iterable[Penduduk]) -> int:
     """Sisipkan penduduk. Mengembalikan jumlah baris yang masuk.
 
-    Tidak ada pemeriksaan duplikat: `id` dibangkitkan saat impor, dan impor
-    selalu mengosongkan tabel lebih dulu (`kosongkan`). Excel adalah sumber
-    kebenaran tunggal.
+    Tidak ada pemeriksaan duplikat di sini: impor selalu mengosongkan tabel
+    lebih dulu (`kosongkan`), dan Kode Warga ganda sudah ditolak importer
+    sebelum satu baris pun ditulis. Excel adalah sumber kebenaran tunggal.
     """
     rows = [_ke_row(p) for p in daftar]
     if not rows:

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from app.api.routers.auth import current_user
+from app.api.routers.auth import current_pengurus
 from app.data.agregat import kelompok_umur, umur
 from app.data.store import DAFTAR_PENDUDUK
 from app.schemas.auth import AuthUser
@@ -75,7 +75,7 @@ def list_penduduk(
     rt: str = "",
     rw: str = "",
     kelompokUmur: str = "",
-    _user: AuthUser = Depends(current_user),
+    _user: AuthUser = Depends(current_pengurus),
 ) -> PaginatedPenduduk:
     hasil = saring(
         DAFTAR_PENDUDUK,
@@ -103,7 +103,7 @@ def list_penduduk(
 # Ditulis SEBELUM `/penduduk/{id}`: rute statis harus menang atas rute
 # ber-parameter, kalau tidak "filter-opsi" akan terbaca sebagai sebuah id.
 @router.get("/penduduk/filter-opsi", response_model=FilterOpsi)
-def filter_opsi(_user: AuthUser = Depends(current_user)) -> FilterOpsi:
+def filter_opsi(_user: AuthUser = Depends(current_pengurus)) -> FilterOpsi:
     """Pilihan filter yang bukan enum — hanya bisa diketahui dari isi data.
 
     `pekerjaan` teks bebas di Excel, jadi daftarnya ikut kotor kalau pengurus
@@ -118,7 +118,7 @@ def filter_opsi(_user: AuthUser = Depends(current_user)) -> FilterOpsi:
 
 
 @router.get("/penduduk/{id}", response_model=Penduduk)
-def get_by_id(id: str, _user: AuthUser = Depends(current_user)) -> Penduduk:
+def get_by_id(id: str, _user: AuthUser = Depends(current_pengurus)) -> Penduduk:
     for p in DAFTAR_PENDUDUK:
         if p.id == id:
             return p
