@@ -1,7 +1,10 @@
-"""Log audit di memori — CLAUDE.md §11: reset-pin wajib tercatat (siapa,
-kapan, NIK siapa). Belum ada endpoint buat membacanya; baru dicetak ke
-console. Upgrade path: tulis ke tabel `audit_log` di SQLite (lihat CLAUDE.md
-§11) begitu databasenya terpasang.
+"""Log audit di memori — kelola akun pengurus wajib tercatat (siapa, kapan,
+akun siapa).
+
+ponytail: `print()` + list di memori, hilang tiap restart, belum ada endpoint
+buat membacanya. Memadai selagi yang tercatat cuma kelola akun. Naikkan ke
+tabel `audit_log` di SQLite + `GET /audit` begitu ada endpoint mutasi data
+warga — sejak itu jejaknya harus awet.
 """
 
 import time
@@ -10,12 +13,16 @@ import time
 _log: list[dict] = []
 
 
-def catat_audit(*, aktor: str, aksi: str, target_nik: str) -> None:
+def catat_audit(*, aktor: str, aksi: str, target: str, catatan: str = "") -> None:
+    """`target` = username akun yang dikenai tindakan, bukan id — id UUID tidak
+    berarti apa-apa buat orang yang membaca log."""
     entri = {
         "aktor": aktor,
         "aksi": aksi,
-        "targetNik": target_nik,
+        "target": target,
+        "catatan": catatan,
         "waktu": time.time(),
     }
     _log.append(entri)
-    print(f"[AUDIT] {aktor} melakukan '{aksi}' pada NIK {target_nik}")
+    ekor = f" ({catatan})" if catatan else ""
+    print(f"[AUDIT] {aktor} melakukan '{aksi}' pada {target}{ekor}")
