@@ -6,12 +6,10 @@ cd /d "%~dp0"
 REM Diperiksa SEBELUM apa pun dinyalakan. Kalau tidak, backend mati di
 REM jendelanya sendiri sementara frontend & ngrok tetap jalan — yang terlihat
 REM halaman terbuka normal dengan login yang gagal terus.
-if not exist backend\.env (
-    echo backend\.env belum ada, backend tidak akan bisa jalan.
-    echo.
-    echo     copy backend\.env.example backend\.env
-    echo.
-    echo lalu isi ADMIN_USERNAME dan ADMIN_PASSWORD dengan nilai sungguhan.
+findstr /r /c:"^ADMIN_PASSWORD=..*" backend\.env >nul 2>&1
+if errorlevel 1 (
+    echo backend\.env belum siap — ADMIN_USERNAME dan ADMIN_PASSWORD harus diisi dulu.
+    echo Jalankan backend\start.bat sekali untuk membuatkan kerangkanya.
     pause
     exit /b 1
 )

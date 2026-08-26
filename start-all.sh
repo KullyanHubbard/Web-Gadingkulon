@@ -7,13 +7,10 @@ cd "$(dirname "$0")"
 # Diperiksa SEBELUM apa pun dinyalakan. Kalau tidak, backend mati sendirian
 # sementara frontend & ngrok tetap jalan — yang terlihat halaman terbuka
 # normal dengan login yang gagal terus, dan sebabnya tertimbun output Vite.
-if [ ! -f backend/.env ]; then
+if ! grep -qE '^ADMIN_PASSWORD=.+' backend/.env 2>/dev/null; then
   cat >&2 <<'PESAN'
-backend/.env belum ada, backend tidak akan bisa jalan.
-
-  cp backend/.env.example backend/.env
-
-lalu isi ADMIN_USERNAME dan ADMIN_PASSWORD dengan nilai sungguhan.
+backend/.env belum siap — ADMIN_USERNAME dan ADMIN_PASSWORD harus diisi dulu.
+Jalankan ./backend/start.sh sekali untuk membuatkan kerangkanya.
 PESAN
   exit 1
 fi

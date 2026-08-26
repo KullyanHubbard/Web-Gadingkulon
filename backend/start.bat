@@ -2,16 +2,29 @@
 cd /d "%~dp0"
 
 REM Backend menolak jalan tanpa ADMIN_USERNAME & ADMIN_PASSWORD pada database
-REM kosong. Diperiksa di sini supaya pesannya terbaca sebagai petunjuk.
-REM .env.example sengaja TIDAK disalin otomatis: isinya password contoh yang
-REM akan berlaku sungguhan kalau disalin diam-diam.
+REM kosong. Kerangka .env dibuatkan di sini kalau belum ada — dengan nilai
+REM KOSONG, bukan contoh yang berlaku.
 if not exist .env (
-    echo backend\.env belum ada.
+    > .env echo # SIDUK Backend — environment variables. Berkas ini TIDAK ikut repo.
+    >> .env echo # Daftar lengkap beserta penjelasannya ada di backend/README.md.
+    >> .env echo.
+    >> .env echo # Akun Admin pertama. WAJIB diisi sebelum backend pertama kali dijalankan.
+    >> .env echo # Dipakai sekali — setelah akunnya terbentuk, mengubahnya tidak berpengaruh.
+    >> .env echo ADMIN_USERNAME=
+    >> .env echo ADMIN_PASSWORD=
+    >> .env echo.
+    >> .env echo # Path file SQLite, relatif dari folder backend/. Jangan pernah di-commit.
+    >> .env echo DATABASE_PATH=./data/siduk.db
+    >> .env echo.
+    >> .env echo # Umur sesi login, dalam jam.
+    >> .env echo SESI_TTL_JAM=12
+    >> .env echo.
+    >> .env echo # Asal yang boleh memanggil API, dipisah koma ^(bukan JSON^).
+    >> .env echo CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+    echo backend\.env baru saja dibuatkan, tapi ADMIN_USERNAME dan ADMIN_PASSWORD
+    echo masih kosong — backend tidak akan jalan sebelum keduanya diisi.
     echo.
-    echo     copy backend\.env.example backend\.env
-    echo.
-    echo lalu isi ADMIN_USERNAME dan ADMIN_PASSWORD dengan nilai sungguhan.
-    echo Dua nilai itu dipakai sekali, untuk membuat akun Admin pertama.
+    echo Buka backend\.env, isi dua baris itu, lalu jalankan lagi.
     pause
     exit /b 1
 )

@@ -49,14 +49,27 @@ login.
 ## Jalankan
 
 ```bash
-cp .env.example .env      # WAJIB: isi ADMIN_USERNAME & ADMIN_PASSWORD
-./start.sh                # bikin venv, pasang dependensi, jalankan uvicorn
+./start.sh    # jalankan sekali: kerangka .env dibuatkan, lalu berhenti
+              # isi ADMIN_USERNAME & ADMIN_PASSWORD di backend/.env
+./start.sh    # jalankan lagi: bikin venv, pasang dependensi, nyalakan uvicorn
 ```
 
-`start.sh` berhenti dengan petunjuk kalau `.env` belum ada. Berkas itu **tidak
-disalin otomatis**: `.env.example` berisi `ADMIN_PASSWORD=ganti-password-ini`,
-dan menyalinnya diam-diam mengubah contoh itu jadi password Admin yang
-sungguhan dan berlaku.
+Tidak ada `.env.example`. Kerangkanya dibuatkan `start.sh` dengan **nilai
+kosong**, bukan contoh yang berlaku — password contoh yang tersalin diam-diam
+berhenti jadi contoh dan berubah jadi password Admin yang sungguhan.
+
+### Isi `backend/.env`
+
+| Variabel | Wajib | Guna |
+| -------- | ----- | ---- |
+| `ADMIN_USERNAME` | ✅ | Username akun Admin pertama. Dipakai sekali, saat tabel `pengurus` masih kosong. |
+| `ADMIN_PASSWORD` | ✅ | Passwordnya. **Mengubahnya setelah akunnya terbentuk tidak berpengaruh apa-apa** — isi yang benar sejak awal. |
+| `DATABASE_PATH` | — | Path file SQLite, relatif dari `backend/`. Bawaan `./data/siduk.db`. |
+| `SESI_TTL_JAM` | — | Umur sesi login. Bawaan 12. |
+| `CORS_ORIGINS` | — | Asal yang boleh memanggil API, dipisah koma. Tidak terpakai kalau frontend diproksikan lewat Vite (`/api`). |
+
+Berkas itu **tidak ikut repo** (`.gitignore`). Definisi yang berlaku ada di
+`app/core/config.py`; tabel di atas cuma penjelasannya.
 
 Manual, kalau lebih suka:
 
