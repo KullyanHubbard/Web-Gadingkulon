@@ -2,7 +2,14 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.routers import auth, infografis, penduduk, pengurus, publik
+from app.api.routers import (
+    auth,
+    infografis,
+    penduduk,
+    pergantian,
+    pengurus,
+    publik,
+)
 from app.core.config import settings
 from app.data.pengurus import bootstrap
 from app.data.pengurus import daftar as daftar_pengurus
@@ -30,6 +37,7 @@ app.include_router(publik.router)
 app.include_router(auth.router)
 app.include_router(infografis.router)
 app.include_router(pengurus.router)
+app.include_router(pergantian.router)
 
 
 @app.get("/health")

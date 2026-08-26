@@ -1,10 +1,11 @@
-"""SQLite: penyimpanan penduduk & akun pengurus. Satu-satunya modul yang
-menulis SQL.
+"""SQLite: penyimpanan penduduk, akun pengurus, dan pergantian jabatan.
+Satu-satunya modul yang menulis SQL.
 
 Bentuknya sengaja sedatar mungkin:
 
-- **Dua tabel.** `penduduk` (`Alamat` diratakan jadi kolom `alamat_*`;
-  Pydantic yang menyusunnya balik) dan `pengurus` (akun perangkat desa).
+- **Empat tabel.** `penduduk` (`Alamat` diratakan jadi kolom `alamat_*`;
+  Pydantic yang menyusunnya balik), `pengurus` (akun perangkat desa), serta
+  `pengajuan` + `persetujuan` (pergantian jabatan dan suara atasnya).
 - **Nama kolom = nama field Pydantic**, jadi `camelCase` (`jenisKelamin`,
   `tanggalLahir`). Melanggar kebiasaan SQL, tapi menghapus seluruh tabel
   pemetaan nama: satu baris masuk ke `Penduduk(**row)` apa adanya. SQLite
@@ -78,6 +79,42 @@ CREATE TABLE IF NOT EXISTS pengurus (
     -- Password awal dari Admin sekali pakai: selama 1, akun cuma boleh
     -- mengganti passwordnya sendiri. Padam begitu password diganti.
     harus_ganti_password INTEGER NOT NULL DEFAULT 1
+);
+
+-- Usulan pergantian penghuni satu kursi. TIDAK PERNAH DIHAPUS: riwayat inilah
+-- catatan permanen perpindahan jabatan, sekaligus alasan tabel audit_log
+-- terpisah belum diperlukan.
+-- Identitas kandidat ikut DISALIN (nama/rt/rw) di samping `kandidat_id`: impor
+-- Excel berikutnya bisa mengubah nama atau alamat orang itu, sementara riwayat
+-- harus tetap terbaca sebagaimana keadaannya saat itu.
+CREATE TABLE IF NOT EXISTS pengajuan (
+    id             TEXT PRIMARY KEY,
+    kursi          TEXT NOT NULL,
+    role           TEXT NOT NULL,
+    rw             TEXT,
+    rt             TEXT,
+    kandidat_id    TEXT NOT NULL,
+    kandidat_nama  TEXT NOT NULL,
+    kandidat_rt    TEXT NOT NULL,
+    kandidat_rw    TEXT NOT NULL,
+    status         TEXT NOT NULL DEFAULT 'MENUNGGU',
+    diajukan_oleh  TEXT NOT NULL,
+    diajukan_pada  TEXT NOT NULL,
+    selesai_pada   TEXT,
+    -- Sebab selesainya, buat dibaca manusia: "ditolak Ketua RW 019",
+    -- "kandidat sudah pindah", "lewat 30 hari".
+    sebab          TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_pengajuan_kursi ON pengajuan(kursi, status);
+
+-- Satu penyetuju satu suara per pengajuan, dan suaranya tidak bisa diubah.
+CREATE TABLE IF NOT EXISTS persetujuan (
+    pengajuan_id TEXT NOT NULL REFERENCES pengajuan(id),
+    pengurus_id  TEXT NOT NULL REFERENCES pengurus(id),
+    setuju       INTEGER NOT NULL,
+    pada         TEXT NOT NULL,
+    PRIMARY KEY (pengajuan_id, pengurus_id)
 );
 """
 

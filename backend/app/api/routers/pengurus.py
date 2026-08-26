@@ -8,9 +8,11 @@ Tidak ada DELETE: akun yang pernah dipakai tidak dihapus, cukup dinonaktifkan
 (`aktif = 0`). Menghapusnya membuat jejak audit menunjuk ke akun yang tidak
 ada lagi.
 
-ponytail: `PATCH` dengan `aktif=false` adalah pintu darurat sementara. Di Tahap
-2 pelepasan kursi terjadi otomatis saat pengganti disetujui — cabut endpoint
-itu begitu alur pengajuan jalan (spec 2026-08-26-empat-peran).
+**Tidak ada cara mengosongkan kursi dari sini.** Kursi hanya menjadi kosong
+lewat pergantian yang disetujui (`app/api/routers/pergantian.py`). Kalau Admin
+masih bisa mencabut akses sendiri, ia bisa mengosongkan kursi lalu mengisinya
+langsung — dan seluruh mekanisme persetujuan jadi hiasan yang bisa dilewati
+dalam dua klik.
 """
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -24,7 +26,6 @@ from app.schemas.pengurus import (
     PasswordBaru,
     PengurusBaru,
     PengurusOut,
-    PengurusUbah,
 )
 
 router = APIRouter(
@@ -75,29 +76,6 @@ def tambah_pengurus(
         raise HTTPException(409, str(e))
     catat_audit(aktor=admin.username, aksi="tambah-pengurus", target=baru.username)
     return _keluaran(baru)
-
-
-@router.patch("/{id}", response_model=PengurusOut)
-def ubah_pengurus(
-    id: str, payload: PengurusUbah, admin: AuthUser = Depends(current_admin)
-) -> PengurusOut:
-    dikirim = payload.model_fields_set
-    hasil = data.ubah(
-        id,
-        nama=payload.nama,
-        rw=payload.rw if "rw" in dikirim else data.TETAP,
-        rt=payload.rt if "rt" in dikirim else data.TETAP,
-        aktif=payload.aktif,
-    )
-    if hasil is None:
-        raise HTTPException(404, "Akun pengurus tidak ditemukan.")
-    catat_audit(
-        aktor=admin.username,
-        aksi="ubah-pengurus",
-        target=hasil.username,
-        catatan=", ".join(sorted(dikirim)),
-    )
-    return _keluaran(hasil)
 
 
 @router.post("/{id}/reset-password", status_code=204)
