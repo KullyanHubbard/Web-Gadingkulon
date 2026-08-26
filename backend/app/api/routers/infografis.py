@@ -7,7 +7,7 @@ from app.data.agregat import (
     distribusi_pendidikan,
     format_rw,
 )
-from app.data.store import DAFTAR_PENDUDUK
+from app.data.store import penduduk_untuk
 from app.schemas.auth import AuthUser
 from app.schemas.infografis import InfografisData
 
@@ -15,20 +15,26 @@ router = APIRouter(tags=["infografis"])
 
 
 @router.get("/infografis", response_model=InfografisData)
-async def infografis(_user: AuthUser = Depends(current_pengurus)) -> InfografisData:
+async def infografis(user: AuthUser = Depends(current_pengurus)) -> InfografisData:
+    """Agregat wilayah pemanggilnya, bukan seluruh padukuhan.
+
+    Grafik Ketua RT 004 jadi tentang RT 004 saja — termasuk `perDusun`, yang
+    karena itu cuma berisi satu batang. Wajar, bukan cacat.
+    """
+    warga = penduduk_untuk(user)
     return InfografisData(
-        totalPenduduk=len(DAFTAR_PENDUDUK),
+        totalPenduduk=len(warga),
         totalLakiLaki=sum(
-            1 for p in DAFTAR_PENDUDUK if p.jenisKelamin == "LAKI_LAKI"
+            1 for p in warga if p.jenisKelamin == "LAKI_LAKI"
         ),
         totalPerempuan=sum(
-            1 for p in DAFTAR_PENDUDUK if p.jenisKelamin == "PEREMPUAN"
+            1 for p in warga if p.jenisKelamin == "PEREMPUAN"
         ),
-        perAgama=distribusi_by(DAFTAR_PENDUDUK, lambda p: p.agama),
-        perPendidikan=distribusi_pendidikan(DAFTAR_PENDUDUK),
+        perAgama=distribusi_by(warga, lambda p: p.agama),
+        perPendidikan=distribusi_pendidikan(warga),
         perStatusPerkawinan=distribusi_by(
-            DAFTAR_PENDUDUK, lambda p: p.statusPerkawinan
+            warga, lambda p: p.statusPerkawinan
         ),
-        perDusun=distribusi_by(DAFTAR_PENDUDUK, lambda p: format_rw(p.alamat.rw)),
-        perKelompokUmur=distribusi_kelompok_umur(DAFTAR_PENDUDUK),
+        perDusun=distribusi_by(warga, lambda p: format_rw(p.alamat.rw)),
+        perKelompokUmur=distribusi_kelompok_umur(warga),
     )

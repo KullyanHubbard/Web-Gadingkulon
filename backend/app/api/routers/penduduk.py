@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.api.routers.auth import current_pengurus
 from app.data.agregat import kelompok_umur, umur
-from app.data.store import DAFTAR_PENDUDUK
+from app.data.store import penduduk_untuk
 from app.schemas.auth import AuthUser
 from app.schemas.penduduk import FilterOpsi, PaginatedPenduduk, Penduduk
 
@@ -75,10 +75,10 @@ def list_penduduk(
     rt: str = "",
     rw: str = "",
     kelompokUmur: str = "",
-    _user: AuthUser = Depends(current_pengurus),
+    user: AuthUser = Depends(current_pengurus),
 ) -> PaginatedPenduduk:
     hasil = saring(
-        DAFTAR_PENDUDUK,
+        penduduk_untuk(user),
         search=search,
         pekerjaan=pekerjaan,
         rt=rt,
@@ -103,23 +103,29 @@ def list_penduduk(
 # Ditulis SEBELUM `/penduduk/{id}`: rute statis harus menang atas rute
 # ber-parameter, kalau tidak "filter-opsi" akan terbaca sebagai sebuah id.
 @router.get("/penduduk/filter-opsi", response_model=FilterOpsi)
-def filter_opsi(_user: AuthUser = Depends(current_pengurus)) -> FilterOpsi:
+def filter_opsi(user: AuthUser = Depends(current_pengurus)) -> FilterOpsi:
     """Pilihan filter yang bukan enum — hanya bisa diketahui dari isi data.
+
+    Ikut menyempit sesuai wilayah pemanggilnya: Ketua RT 004 tidak melihat
+    daftar RT lain di dropdown-nya.
 
     `pekerjaan` teks bebas di Excel, jadi daftarnya ikut kotor kalau pengurus
     mengetik tidak konsisten. Diterima sadar: daftar pekerjaan satu padukuhan
     tidak bisa dijadikan enum tertutup dari awal.
     """
+    milik_saya = penduduk_untuk(user)
     return FilterOpsi(
-        rt=sorted({p.alamat.rt for p in DAFTAR_PENDUDUK}),
-        rw=sorted({p.alamat.rw for p in DAFTAR_PENDUDUK}),
-        pekerjaan=sorted({p.pekerjaan for p in DAFTAR_PENDUDUK if p.pekerjaan}),
+        rt=sorted({p.alamat.rt for p in milik_saya}),
+        rw=sorted({p.alamat.rw for p in milik_saya}),
+        pekerjaan=sorted({p.pekerjaan for p in milik_saya if p.pekerjaan}),
     )
 
 
 @router.get("/penduduk/{id}", response_model=Penduduk)
-def get_by_id(id: str, _user: AuthUser = Depends(current_pengurus)) -> Penduduk:
-    for p in DAFTAR_PENDUDUK:
+def get_by_id(id: str, user: AuthUser = Depends(current_pengurus)) -> Penduduk:
+    """404 — bukan 403 — untuk warga di luar wilayahnya. 403 memberi tahu bahwa
+    orang itu ada; 404 tidak memberi tahu apa-apa."""
+    for p in penduduk_untuk(user):
         if p.id == id:
             return p
     raise HTTPException(status_code=404, detail="Penduduk tidak ditemukan")

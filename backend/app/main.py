@@ -13,7 +13,7 @@ from app.api.routers import (
 from app.core.config import BAWAAN_JWT_SECRET, settings
 from app.data.pengurus import bootstrap
 from app.data.pengurus import daftar as daftar_pengurus
-from app.data.store import DAFTAR_PENDUDUK
+from app.data.store import semua_penduduk
 
 app = FastAPI(title="SIDUK API", description="Data penduduk dari pendataan Excel — lihat CLAUDE.md §11")
 
@@ -72,8 +72,9 @@ def _startup() -> None:
     bootstrap()
     print("=== SIDUK backend ===")
     print(f"  Akun pengurus: {len(daftar_pengurus())} akun terdaftar")
-    if DAFTAR_PENDUDUK:
-        print(f"  Data penduduk: {len(DAFTAR_PENDUDUK)} jiwa terbaca dari DB")
+    jumlah = len(semua_penduduk())
+    if jumlah:
+        print(f"  Data penduduk: {jumlah} jiwa terbaca dari DB")
     else:
         print("  Data penduduk: KOSONG — impor dulu:")
         print("    .venv/bin/python -m app.data.impor_excel ../docs/data-penduduk.xlsx")

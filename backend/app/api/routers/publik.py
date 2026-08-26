@@ -10,7 +10,7 @@ from app.data.agregat import (
     format_rt,
     format_rw,
 )
-from app.data.store import DAFTAR_PENDUDUK
+from app.data.store import semua_penduduk
 from app.schemas.penduduk import Penduduk, RincianRw, StatistikPublik
 
 router = APIRouter(tags=["publik"])
@@ -48,13 +48,14 @@ def statistik_publik() -> StatistikPublik:
     autentikasi (lihat CLAUDE.md §11), jadi apa pun yang ditambahkan di sini
     otomatis jadi konsumsi publik: boleh angka agregat, tidak boleh data orang.
     """
+    semua = semua_penduduk()
     return StatistikPublik(
-        totalPenduduk=len(DAFTAR_PENDUDUK),
+        totalPenduduk=len(semua),
         totalLakiLaki=sum(
-            1 for p in DAFTAR_PENDUDUK if p.jenisKelamin == "LAKI_LAKI"
+            1 for p in semua if p.jenisKelamin == "LAKI_LAKI"
         ),
         totalPerempuan=sum(
-            1 for p in DAFTAR_PENDUDUK if p.jenisKelamin == "PEREMPUAN"
+            1 for p in semua if p.jenisKelamin == "PEREMPUAN"
         ),
         perRw=[
             _rincian(
@@ -65,6 +66,6 @@ def statistik_publik() -> StatistikPublik:
                     for rt, warga_rt in _kelompokkan(warga, lambda p: p.alamat.rt)
                 ],
             )
-            for rw, warga in _kelompokkan(DAFTAR_PENDUDUK, lambda p: p.alamat.rw)
+            for rw, warga in _kelompokkan(semua, lambda p: p.alamat.rw)
         ],
     )

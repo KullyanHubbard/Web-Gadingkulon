@@ -77,9 +77,23 @@ tersimpan dalam keadaan nonaktif supaya jejaknya tidak hilang.
 
 ## Siapa boleh melihat apa
 
-**Melihat data tidak dibatasi wilayah.** Dukuh, Ketua RW, dan Ketua RT
-sama-sama melihat seluruh data padukuhan dan seluruh infografis. Ketua RT 001
-juga melihat warga RT 006.
+**Melihat data dibatasi wilayah masing-masing:**
+
+| Siapa | Melihat |
+| ----- | ------- |
+| Pak Dukuh | seluruh padukuhan |
+| Ketua RW 020 | warga RW 020 saja (RT 003 & 004) |
+| Ketua RT 004 | warga RT 004 saja |
+
+Angka di halaman Infografis ikut menyempit — grafik Ketua RT 004 adalah tentang
+RT 004, bukan padukuhan. Judul halamannya menyebutkan wilayah yang sedang
+ditampilkan supaya tidak salah baca.
+
+Konsekuensinya: **Ketua RT tidak bisa lagi mengecek data warga RT sebelah.**
+Kalau perlu, minta bantuan Ketua RW atau Pak Dukuh.
+
+Halaman depan yang terbuka untuk umum tetap menampilkan angka se-padukuhan —
+isinya cuma cacah, tanpa nama maupun alamat.
 
 Admin tidak melihat satu pun dari itu. Menu di layarnya hanya **Akun Pengurus**
 dan **Statistik Desa** (halaman depan yang terbuka untuk umum).

@@ -299,9 +299,10 @@ def daftar_kursi() -> list[Kursi]:
     ber-RT itu di data — dan itu urutan yang benar, RT tanpa warga tidak perlu
     akun.
     """
-    from app.data.store import DAFTAR_PENDUDUK
+    from app.data.store import semua_penduduk
 
-    wilayah = sorted({(p.alamat.rw, p.alamat.rt) for p in DAFTAR_PENDUDUK})
+    warga = semua_penduduk()
+    wilayah = sorted({(p.alamat.rw, p.alamat.rt) for p in warga})
     rencana: list[tuple[str, str | None, str | None]] = [(ROLE_DUKUH, None, None)]
     rencana += [(ROLE_RW, rw, None) for rw in sorted({rw for rw, _ in wilayah})]
     rencana += [(ROLE_RT, rw, rt) for rw, rt in wilayah]
@@ -310,7 +311,7 @@ def daftar_kursi() -> list[Kursi]:
 
     # Calon dari kolom "Jabatan" Excel, dipetakan ke kursi yang sama bentuknya.
     calon: dict[str, Calon] = {}
-    for w in DAFTAR_PENDUDUK:
+    for w in warga:
         if w.jabatan == "WARGA" or w.statusKependudukan != "AKTIF":
             continue
         kunci = kursi_dari(w.jabatan, w.alamat.rw, w.alamat.rt)

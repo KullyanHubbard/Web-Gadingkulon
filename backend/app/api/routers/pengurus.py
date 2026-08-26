@@ -20,7 +20,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from app.api.routers.auth import current_admin, ke_auth_user
 from app.core.audit import catat_audit
 from app.data import pengurus as data
-from app.data.store import DAFTAR_PENDUDUK
+from app.data.store import semua_penduduk
 from app.schemas.auth import AuthUser
 from app.schemas.pengurus import (
     CalonOut,
@@ -73,7 +73,7 @@ MAKS_HASIL = 20
 def _warga_untuk_kursi(warga_id: str, role: str, rw: str | None, rt: str | None):
     """Warga yang sah menduduki kursi ini, atau `HTTPException` yang menjelaskan
     kenapa tidak."""
-    warga = next((w for w in DAFTAR_PENDUDUK if w.id == warga_id), None)
+    warga = next((w for w in semua_penduduk() if w.id == warga_id), None)
     if warga is None or warga.statusKependudukan != "AKTIF":
         raise HTTPException(404, "Warga tidak ditemukan atau sudah tidak aktif.")
     if not data.cocok_wilayah(role, rw, rt, warga.alamat.rw, warga.alamat.rt):
@@ -113,7 +113,7 @@ def cari_warga(
     target = next((k for k in data.daftar_kursi() if k.kursi == kursi), None)
     cocok = [
         w
-        for w in DAFTAR_PENDUDUK
+        for w in semua_penduduk()
         if kata in w.nama.lower()
         and w.statusKependudukan == "AKTIF"
         and (

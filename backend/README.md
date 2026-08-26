@@ -15,9 +15,9 @@ di `docs/superpowers/specs/`.
 | Peran   | Bisa apa |
 | ------- | -------- |
 | `ADMIN` | Kelola akun pengurus. **Nol akses data warga.** |
-| `DUKUH` | Baca seluruh data warga + infografis |
-| `RW`    | sama (satu akun per nomor RW) |
-| `RT`    | sama (satu akun per nomor RT) |
+| `DUKUH` | Baca data warga + infografis **seluruh padukuhan** |
+| `RW`    | sama, tapi **warga RW-nya saja** |
+| `RT`    | sama, tapi **warga RT-nya saja** |
 
 Akun berbentuk **kursi**: daftar jabatannya diturunkan dari alamat warga di
 data penduduk, bukan disimpan di tabel kedua, jadi kursi RT baru muncul sendiri
@@ -38,7 +38,13 @@ semua endpoint lain sampai menggantinya lewat `POST /auth/ganti-password`.
 | `deletedAt`          | ISO date atau `null` — salah input, **tidak pernah** ikut daftar & statistik |
 
 Penyaringan `deletedAt` ada di `app/data/store.py`, satu tempat, bukan di tiap
-router.
+router. **Batas wilayah juga**: `store.penduduk_untuk(user)` dipanggil setiap
+endpoint baca, dan `GET /penduduk/{id}` menjawab 404 (bukan 403) untuk warga di
+luar wilayah — 403 memberi tahu bahwa orangnya ada.
+
+`store.py` tidak menyimpan cache: tiap panggilan query database. Statistik
+publik (`/publik/statistik`) tetap se-padukuhan karena memang terbuka tanpa
+login.
 
 ## Jalankan
 

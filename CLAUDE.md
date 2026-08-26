@@ -35,14 +35,14 @@ warga tidak punya akun.
 | Peran     | Hak akses                                                                    |
 | --------- | ---------------------------------------------------------------------------- |
 | **ADMIN** | Kelola akun pengurus. **Nol akses data warga** — bukan pembatasan simbolis     |
-| **DUKUH** | Baca seluruh data penduduk & infografis                                       |
-| **RW**    | sama (satu akun per nomor RW)                                                 |
-| **RT**    | sama (satu akun per nomor RT)                                                 |
+| **DUKUH** | Baca data penduduk & infografis **seluruh padukuhan**                         |
+| **RW**    | sama, tapi **warga RW-nya saja** (satu akun per nomor RW)                     |
+| **RT**    | sama, tapi **warga RT-nya saja** (satu akun per nomor RT)                     |
 
 Kewenangan ADMIN dan tiga peran lain **berpotongan kosong**: yang memegang
 tombol pemberian akses tidak membaca isi datanya, dan yang membaca data tidak
-bisa menyentuh akun siapa pun termasuk akunnya sendiri. Baca **tidak dibatasi
-wilayah** — RT 001 tetap melihat seluruh padukuhan.
+bisa menyentuh akun siapa pun termasuk akunnya sendiri. Baca **dibatasi
+wilayah** sejak Tahap 3a — Ketua RT 004 hanya melihat warga RT 004.
 
 Halaman depan (`/publik/statistik`) terbuka tanpa login, isinya cacah saja.
 
@@ -51,7 +51,9 @@ Desain berlaku, tiga dokumen dan ketiganya masih hidup:
 `2026-08-26-empat-peran-pergantian-pengurus-design.md` (peran, kursi, Kode
 Warga, ganti password wajib), dan
 `2026-08-26-tahap-2-pengajuan-persetujuan-design.md` (pengajuan, persetujuan,
-aturan "kursi kosong dilewati").
+aturan "kursi kosong dilewati"), dan
+`2026-08-26-tahap-3-wilayah-dan-mutasi-design.md` (batas wilayah — 3a selesai,
+mutasi data warga 3b belum).
 Spec lama (`2026-08-12-auth-warga-pin-design.md`) disimpan sebagai catatan
 alasan — terutama bagian "Rancangan awal yang dibatalkan" yang masih berlaku —
 tapi seluruh jalur autentikasi warga di dalamnya **sudah dicabut**.
@@ -388,10 +390,17 @@ yang ada muat di satu layar, dan SQLAlchemy cuma menambah dependensi yang harus
 dirawat orang lain setelah KKN. **Tidak ada `models/` atau `services/`** —
 skema Pydantic di `app/schemas/` sudah merangkap model.
 
-`app/data/store.py` membaca seluruh tabel penduduk ke memori sekali saat impor,
-jadi router tidak perlu query. Ini punya ceiling dan sudah ditandai `ponytail:`
-di file itu — begitu ada endpoint tulis penduduk, cache itu basi dan router
-harus query `db.py` langsung.
+**Batas wilayah ditegakkan di satu tempat:** `store.penduduk_untuk(user)`,
+dipanggil SETIAP endpoint baca. Router tidak pernah menyaring sendiri — satu
+endpoint yang lupa jadi lubang yang tidak kelihatan. Aturannya dipinjam dari
+`pengurus.cocok_wilayah`, predikat yang sama yang menentukan siapa boleh
+menduduki sebuah kursi. `GET /penduduk/{id}` menjawab **404, bukan 403**, untuk
+warga di luar wilayah: 403 memberi tahu bahwa orangnya ada.
+
+`app/data/store.py` **tidak lagi menyimpan cache**. Konstanta `DAFTAR_PENDUDUK`
+dicabut di Tahap 3a dan diganti `semua_penduduk()` + `penduduk_untuk(user)`,
+yang query database tiap dipanggil. Ditandai `ponytail:` — pindahkan
+penyaringannya ke `WHERE` di SQL kalau datanya nanti puluhan ribu baris.
 
 **Data penduduk read-only dari sisi aplikasi.** Satu-satunya jalur masuk data
 adalah `app/data/impor_excel.py`, dan **tiap impor menimpa seluruh tabel**
@@ -497,11 +506,11 @@ harus di atas `/penduduk/{id}`, kalau tidak ia terbaca sebagai sebuah id.
 **Utang yang masih terbuka** — tercatat di spec 2026-08-26, jangan dianggap
 kondisi final:
 
-- ⬜ **Endpoint mutasi data warga** (`POST`/`PATCH`/`DELETE /penduduk`) beserta
-  helper `boleh_akses(pengurus, warga)` dan pembatasan wilayah. Sengaja ditunda
-  — data penduduk sekarang read-only dari Excel. Rencananya menempel di
-  `app/api/routers/penduduk.py` sebagai `APIRouter` kedua ber-`dependencies`,
-  bukan file router baru.
+- ⬜ **Endpoint mutasi data warga** (Tahap 3b): ubah data, tandai
+  PINDAH/MENINGGAL, tambah warga baru — semuanya dibatasi wilayah lewat
+  `cocok_wilayah` yang sudah ada. Ikut wajib di tahap itu: **impor Excel
+  dikunci** (menolak jalan kalau tabel sudah berisi, kecuali `--timpa-semua`)
+  dan **audit log jadi tabel sungguhan**.
 - ⬜ **Sesi server-side menggantikan JWT.** Sekarang pencabutan sudah berlaku
   seketika lewat pemeriksaan `aktif` tiap request, jadi prioritasnya turun —
   tapi token yang sah sampai TTL habis tetap bukan model yang benar.
