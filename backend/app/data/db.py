@@ -3,9 +3,10 @@ Satu-satunya modul yang menulis SQL.
 
 Bentuknya sengaja sedatar mungkin:
 
-- **Empat tabel.** `penduduk` (`Alamat` diratakan jadi kolom `alamat_*`;
+- **Lima tabel.** `penduduk` (`Alamat` diratakan jadi kolom `alamat_*`;
   Pydantic yang menyusunnya balik), `pengurus` (akun perangkat desa), serta
-  `pengajuan` + `persetujuan` (pergantian jabatan dan suara atasnya).
+  `pengajuan` + `persetujuan` (pergantian jabatan dan suara atasnya), serta
+  `audit_log` (jejak perubahan, tidak pernah dihapus).
 - **Nama kolom = nama field Pydantic**, jadi `camelCase` (`jenisKelamin`,
   `tanggalLahir`). Melanggar kebiasaan SQL, tapi menghapus seluruh tabel
   pemetaan nama: satu baris masuk ke `Penduduk(**row)` apa adanya. SQLite
@@ -124,6 +125,21 @@ CREATE TABLE IF NOT EXISTS persetujuan (
     pada         TEXT NOT NULL,
     PRIMARY KEY (pengajuan_id, pengurus_id)
 );
+
+-- Jejak perubahan data warga & akun. TIDAK PERNAH DIHAPUS.
+-- `perubahan` menyimpan kolom apa berubah dari apa ke apa, sebagai teks siap
+-- baca — bukan JSON: yang membacanya manusia yang menelusuri sengketa data,
+-- bukan program.
+CREATE TABLE IF NOT EXISTS audit_log (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    waktu       TEXT NOT NULL,
+    aktor       TEXT NOT NULL,
+    aksi        TEXT NOT NULL,
+    sasaran     TEXT NOT NULL,
+    perubahan   TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_waktu ON audit_log(waktu);
 """
 
 
@@ -229,6 +245,27 @@ def kosongkan(conn: sqlite3.Connection) -> int:
     with conn:
         conn.execute("DELETE FROM penduduk")
     return int(jumlah)
+
+
+def perbarui(conn: sqlite3.Connection, p: Penduduk) -> bool:
+    """Timpa satu baris penduduk. `False` kalau `id`-nya tidak ada."""
+    row = _ke_row(p)
+    id_ = row.pop("id")
+    setter = ", ".join(f"{k} = :{k}" for k in row)
+    with conn:
+        cur = conn.execute(
+            f"UPDATE penduduk SET {setter} WHERE id = :id", {**row, "id": id_}
+        )
+    return cur.rowcount > 0
+
+
+def id_terpakai(conn: sqlite3.Connection) -> set[str]:
+    """Seluruh Kode Warga yang sudah ada, termasuk baris ber-`deletedAt`.
+
+    Termasuk yang terhapus: kode milik baris salah input tidak boleh dipakai
+    ulang, kalau tidak riwayat audit menunjuk ke dua orang berbeda.
+    """
+    return {r["id"] for r in conn.execute("SELECT id FROM penduduk")}
 
 
 def muat(conn: sqlite3.Connection) -> list[Penduduk]:

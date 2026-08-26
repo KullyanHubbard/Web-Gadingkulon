@@ -2,9 +2,12 @@
 dibaca lewat app/schemas/penduduk.py, disimpan lewat app/data/db.py (sudah
 tervalidasi self-check-nya sendiri).
 
-File Excel adalah sumber kebenaran tunggal. Setiap impor MENIMPA seluruh
-tabel penduduk — file yang diimpor harus selalu lengkap, bukan berisi warga
-baru saja, atau warga lama akan terhapus.
+Dipakai untuk **mengisi data pertama kali**. Sejak Tahap 3b, sumber kebenaran
+data warga adalah aplikasi — pengurus mengubah dan menambah lewat layar, bukan
+lewat file ini.
+
+Setiap impor MENIMPA seluruh tabel penduduk, jadi skrip ini **menolak jalan
+kalau database sudah berisi** kecuali diberi `--timpa-semua`.
 
 Tidak ada dedup: tanpa NIK tidak ada kunci yang bisa dipercaya untuk mengenali
 orang yang sama antar-impor, dan kandidat penggantinya (nama + tanggal lahir +
@@ -16,10 +19,8 @@ menggeser, jadi mengandalkan urutan berarti data masuk ke kolom yang salah
 tanpa ada yang menyadarinya.
 
 Backend boleh tetap menyala saat skrip ini jalan — SQLite aman ditulis
-sementara proses lain membacanya. Yang TIDAK terjadi otomatis: proses backend
-yang sedang jalan sudah memuat seluruh tabel ke memori saat start
-(app/data/store.py), jadi warga baru baru kelihatan di API setelah backend
-di-restart.
+sementara proses lain membacanya, dan sejak Tahap 3a tidak ada cache: hasilnya
+langsung kelihatan di API tanpa restart.
 
 Pakai:
     .venv/bin/pip install openpyxl   # sekali, alat ini saja yang butuh
@@ -196,22 +197,43 @@ def _cari_ganda(
     return {p.id: nomor_baris[p.id] for p in daftar if len(nomor_baris[p.id]) > 1}
 
 
-def main(path_xlsx: str) -> None:
+def main(path_xlsx: str, timpa: bool = False) -> None:
     daftar = baca_xlsx(path_xlsx)
     if not daftar:
         sys.exit("Tidak ada baris terisi — cek lagi apakah baris contoh sudah dihapus.")
 
     conn = db.buka(settings.DATABASE_FILE)
+
+    # Sejak Tahap 3b aplikasi adalah sumber kebenaran data warga, bukan Excel.
+    # Tanpa kunci ini, satu perintah impor yang dijalankan karena kebiasaan
+    # menghapus seluruh hasil pendataan yang dikerjakan pengurus di aplikasi.
+    if not db.kosong(conn) and not timpa:
+        jumlah = len(db.muat(conn))
+        conn.close()
+        sys.exit(
+            f"Database sudah berisi {jumlah} warga, dan impor MENIMPA semuanya.\n\n"
+            "Sejak pengurus bisa mengubah data lewat aplikasi, isi database bisa "
+            "lebih baru daripada file Excel — termasuk warga baru dan koreksi "
+            "yang tidak ada di file ini.\n\n"
+            "Kalau memang mau membuang seluruh isi database dan menggantinya "
+            "dengan file ini, ulangi dengan:\n"
+            f"  .venv/bin/python -m app.data.impor_excel {path_xlsx} --timpa-semua\n\n"
+            "Salin dulu file databasenya sebelum itu."
+        )
+
     lama = db.kosongkan(conn)
     masuk = db.simpan(conn, daftar)
     conn.close()
     if lama:
         print(f"PERHATIAN: {lama} baris lama dihapus dan diganti seluruhnya.")
     print(f"OK: {masuk} warga masuk ke {settings.DATABASE_FILE}")
-    print("Restart backend supaya data ini kepakai — store.py baca tabel sekali saat start.")
+    print("Langsung kepakai — backend query database tiap request, tidak ada cache.")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        sys.exit("Pakai: python -m app.data.impor_excel <path-ke-file.xlsx>")
-    main(sys.argv[1])
+    arg = [a for a in sys.argv[1:] if a != "--timpa-semua"]
+    if len(arg) != 1:
+        sys.exit(
+            "Pakai: python -m app.data.impor_excel <path-ke-file.xlsx> [--timpa-semua]"
+        )
+    main(arg[0], timpa="--timpa-semua" in sys.argv)

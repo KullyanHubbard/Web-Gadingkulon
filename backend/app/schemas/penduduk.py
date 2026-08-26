@@ -85,6 +85,61 @@ class PaginatedPenduduk(BaseModel):
     pageSize: int
 
 
+class AlamatUbah(BaseModel):
+    """Bagian alamat yang mau diganti. Yang tidak dikirim tidak disentuh.
+
+    `rt`/`rw` hanya boleh diisi Dukuh — ditegakkan `app/data/store.py`, bukan di
+    sini, supaya aturannya satu tempat dengan yang menegakkan batas wilayah.
+    """
+
+    jalan: Optional[str] = None
+    rt: Optional[str] = None
+    rw: Optional[str] = None
+    desa: Optional[str] = None
+    kecamatan: Optional[str] = None
+    kabupaten: Optional[str] = None
+    provinsi: Optional[str] = None
+    kodePos: Optional[str] = None
+
+
+class PendudukUbah(BaseModel):
+    """Field yang tidak dikirim tidak diubah. `id` tidak pernah bisa diganti —
+    itu Kode Warga, satu-satunya kunci yang bertahan melewati impor."""
+
+    nama: Optional[str] = None
+    jenisKelamin: Optional[JenisKelamin] = None
+    tempatLahir: Optional[str] = None
+    tanggalLahir: Optional[str] = None
+    agama: Optional[Agama] = None
+    statusPerkawinan: Optional[StatusPerkawinan] = None
+    pendidikan: Optional[Pendidikan] = None
+    pekerjaan: Optional[str] = None
+    golonganDarah: Optional[GolonganDarah] = None
+    statusHubunganKeluarga: Optional[StatusHubunganKeluarga] = None
+    kewarganegaraan: Optional[str] = None
+    jabatan: Optional[JabatanWarga] = None
+    statusKependudukan: Optional[StatusKependudukan] = None
+    alamat: Optional[AlamatUbah] = None
+
+
+class PendudukBaru(BaseModel):
+    """Warga baru. `id` (Kode Warga) TIDAK ada di sini — dibangkitkan aplikasi,
+    karena pengurus tidak punya cara tahu kode mana yang belum terpakai."""
+
+    nama: str
+    jenisKelamin: JenisKelamin
+    tempatLahir: str
+    tanggalLahir: str
+    agama: Agama
+    statusPerkawinan: StatusPerkawinan
+    pendidikan: Pendidikan
+    pekerjaan: str
+    golonganDarah: GolonganDarah
+    statusHubunganKeluarga: StatusHubunganKeluarga
+    kewarganegaraan: str = "WNI"
+    alamat: Alamat
+
+
 class FilterOpsi(BaseModel):
     """Pilihan filter yang BUKAN enum — nilainya cuma bisa diketahui dari isi
     data. Enum (agama, pendidikan, ...) sudah ada di frontend `labels.ts`, jadi

@@ -2,9 +2,16 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.api.routers.auth import current_pengurus
 from app.data.agregat import kelompok_umur, umur
+from app.data import store
 from app.data.store import penduduk_untuk
 from app.schemas.auth import AuthUser
-from app.schemas.penduduk import FilterOpsi, PaginatedPenduduk, Penduduk
+from app.schemas.penduduk import (
+    FilterOpsi,
+    PaginatedPenduduk,
+    Penduduk,
+    PendudukBaru,
+    PendudukUbah,
+)
 
 router = APIRouter(tags=["penduduk"])
 
@@ -129,3 +136,37 @@ def get_by_id(id: str, user: AuthUser = Depends(current_pengurus)) -> Penduduk:
         if p.id == id:
             return p
     raise HTTPException(status_code=404, detail="Penduduk tidak ditemukan")
+
+
+@router.post("/penduduk", response_model=Penduduk, status_code=201)
+def tambah_penduduk(
+    payload: PendudukBaru, user: AuthUser = Depends(current_pengurus)
+) -> Penduduk:
+    """Tambah warga baru di wilayah pengurus ini. Kode Warganya dibangkitkan
+    aplikasi."""
+    try:
+        return store.tambah_warga(user, payload.model_dump())
+    except store.TidakBoleh as e:
+        raise HTTPException(403, str(e))
+
+
+@router.patch("/penduduk/{id}", response_model=Penduduk)
+def ubah_penduduk(
+    id: str, payload: PendudukUbah, user: AuthUser = Depends(current_pengurus)
+) -> Penduduk:
+    """Ubah data satu warga. Field yang tidak dikirim tidak disentuh.
+
+    Mengubah RT/RW (memindahkan warga) hanya boleh Dukuh — lihat
+    `app/data/store.py:ubah_warga`.
+    """
+    ubahan = payload.model_dump(exclude_unset=True)
+    if "alamat" in ubahan and ubahan["alamat"] is not None:
+        ubahan["alamat"] = {
+            k: v for k, v in ubahan["alamat"].items() if v is not None
+        }
+    try:
+        return store.ubah_warga(user, id, ubahan)
+    except store.TidakBoleh as e:
+        # 404 kalau memang tidak terlihat olehnya; 403 kalau terlihat tapi
+        # tindakannya yang dilarang.
+        raise HTTPException(404 if "tidak ditemukan" in str(e) else 403, str(e))

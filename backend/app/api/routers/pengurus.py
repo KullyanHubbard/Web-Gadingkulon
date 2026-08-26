@@ -148,7 +148,9 @@ def tambah_pengurus(
         )
     except ValueError as e:
         raise HTTPException(409, str(e))
-    catat_audit(aktor=admin.username, aksi="tambah-pengurus", target=baru.username)
+    catat_audit(
+        aktor=admin.username, aksi="tambah-pengurus", sasaran=baru.username
+    )
     return _keluaran(baru)
 
 
@@ -161,4 +163,6 @@ def reset_password(
         id, payload.password, oleh_admin=True
     ):
         raise HTTPException(404, "Akun pengurus tidak ditemukan.")
-    catat_audit(aktor=admin.username, aksi="reset-password", target=target.username)
+    catat_audit(
+        aktor=admin.username, aksi="reset-password", sasaran=target.username
+    )
