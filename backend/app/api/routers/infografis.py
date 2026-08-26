@@ -7,7 +7,7 @@ from app.data.agregat import (
     distribusi_pendidikan,
     format_rw,
 )
-from app.data.store import penduduk_untuk
+from app.data.store import hanya_aktif, penduduk_untuk
 from app.schemas.auth import AuthUser
 from app.schemas.infografis import InfografisData
 
@@ -21,7 +21,9 @@ async def infografis(user: AuthUser = Depends(current_pengurus)) -> InfografisDa
     Grafik Ketua RT 004 jadi tentang RT 004 saja — termasuk `perDusun`, yang
     karena itu cuma berisi satu batang. Wajar, bukan cacat.
     """
-    warga = penduduk_untuk(user)
+    # Yang pindah & meninggal tidak ikut dihitung: ini gambaran siapa yang
+    # tinggal di sini sekarang, bukan siapa yang pernah tercatat.
+    warga = hanya_aktif(penduduk_untuk(user))
     return InfografisData(
         totalPenduduk=len(warga),
         totalLakiLaki=sum(

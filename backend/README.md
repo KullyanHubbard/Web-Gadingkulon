@@ -1,8 +1,8 @@
 # Backend SIDUK
 
-FastAPI + SQLite (`sqlite3` stdlib, tanpa ORM). Empat tabel: `penduduk`,
-`pengurus`, serta `pengajuan` + `persetujuan` (riwayat perpindahan jabatan,
-tidak pernah dihapus).
+FastAPI + SQLite (`sqlite3` stdlib, tanpa ORM). Enam tabel: `penduduk`,
+`pengurus`, `sesi`, `pengajuan` + `persetujuan` (riwayat perpindahan jabatan),
+dan `audit_log`. Tiga yang terakhir tidak pernah dihapus.
 
 **NIK dan Nomor Kartu Keluarga tidak disimpan sama sekali** — desa tidak
 mengizinkannya. `id` penduduk diambil dari kolom **Kode Warga** di Excel: kunci
@@ -56,13 +56,8 @@ cp .env.example .env      # WAJIB: isi ADMIN_USERNAME & ADMIN_PASSWORD
 .venv/bin/uvicorn app.main:app --reload --port 8000
 ```
 
-**Backend menolak jalan kalau `JWT_SECRET` masih bernilai bawaan**, atau kalau
-tabel `pengurus` kosong sementara `ADMIN_USERNAME` / `ADMIN_PASSWORD` belum
-diisi.
-
-`JWT_SECRET` bawaan tertulis di kode yang bisa dibaca siapa saja — dengan nilai
-itu siapa pun bisa membuat token masuk palsu untuk akun mana pun. Bangkitkan
-sekali: `python3 -c "import secrets; print(secrets.token_urlsafe(48))"`.
+**Backend menolak jalan kalau tabel `pengurus` kosong sementara
+`ADMIN_USERNAME` / `ADMIN_PASSWORD` belum diisi.**
 
 `ADMIN_USERNAME` / `ADMIN_PASSWORD` dipakai sekali, untuk membuat akun `ADMIN`
 pertama; setelah akun itu ada, nilainya tidak dipakai lagi — **mengubahnya
@@ -145,9 +140,9 @@ Filter `GET /penduduk` (semua opsional, digabung AND): `jenisKelamin`, `agama`,
 `golonganDarah`, `pendidikan`, `statusPerkawinan`, `statusHubunganKeluarga`,
 `pekerjaan`, `rt`, `rw`, `kelompokUmur`.
 
-Token JWT dikirim lewat header `Authorization: Bearer <token>`. Status `aktif`
-dan `harus_ganti_password` diperiksa tiap request, jadi akun yang dicabut
-aksesnya langsung tertolak walaupun tokennya belum kedaluwarsa.
+Token sesi dikirim lewat header `Authorization: Bearer <token>`. Sesi, status
+`aktif`, dan `harus_ganti_password` diperiksa tiap request — pencabutan berlaku
+seketika, tidak ada yang tetap sah sampai umurnya habis.
 
 **Tidak ada `PATCH` maupun `DELETE /pengurus`.** Kursi hanya menjadi kosong
 lewat pergantian yang disetujui — kalau Admin bisa mengosongkannya sendiri, ia
@@ -176,6 +171,7 @@ adalah membuatnya sesempit mungkin.
 .venv/bin/python -m app.data.agregat                               # kelompok umur & distribusi
 DATABASE_PATH=/tmp/uji.db .venv/bin/python -m app.data.pengurus     # kelola akun
 DATABASE_PATH=/tmp/uji2.db .venv/bin/python -m app.data.pergantian  # aturan penyetuju
+DATABASE_PATH=/tmp/uji3.db .venv/bin/python -m app.data.sesi        # sesi login
 .venv/bin/python -m app.core.ratelimit                             # batas login
 ```
 
@@ -191,6 +187,11 @@ kapan, dan nilai sebelum → sesudah tiap kolom. Dibaca lewat `GET /audit`, dan
 isinya mengikuti kewenangan: pengurus mendapat riwayat data warga di
 wilayahnya, Admin hanya riwayat kelola akun.
 
-**Login dibatasi** (`app/core/ratelimit.py`): 5 percobaan gagal per username
-dan 20 per IP dalam 15 menit, lalu 429 beserta `Retry-After`. Batas per-IP
-sengaja longgar — satu jaringan balai desa dipakai banyak pengurus sekaligus.
+**Login dibatasi** (`app/core/ratelimit.py`): 5 percobaan gagal **per
+username** dalam 15 menit, lalu 429 beserta `Retry-After`. Tidak ada batas
+per-IP — satu jaringan balai desa dipakai banyak pengurus sekaligus, jadi
+menghitung per IP bisa mengunci seluruh ruangan.
+
+**Sesi tersimpan di server** (tabel `sesi`), bukan JWT. Token cuma nomor acak;
+"Keluar" benar-benar mencabut, ganti password memutus sesi lain milik akun itu,
+dan reset oleh Admin mencabut seluruh sesinya. Tidak ada `JWT_SECRET`.

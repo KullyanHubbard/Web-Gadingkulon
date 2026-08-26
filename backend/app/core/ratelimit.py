@@ -1,110 +1,84 @@
-"""Batas percobaan login.
+"""Batas percobaan login: 5 gagal per username dalam 15 menit.
 
-Dua ember terpisah, dan longgarnya berbeda dengan sengaja:
+**Per username saja, bukan per IP.** Batas per-IP sempat ada lalu dicabut: di
+padukuhan seluruh pengurus kemungkinan besar memakai satu jaringan yang sama —
+balai desa, atau satu tethering — sehingga menghitung per IP berarti beberapa
+orang yang masing-masing salah ketik sekali bisa mengunci seluruh ruangan, dan
+tidak ada seorang pun yang bisa membukanya.
 
-- **Per username** — ketat (5 per 15 menit). Ini yang menahan orang menebak
-  password satu akun tertentu.
-- **Per IP** — longgar (20 per 15 menit). Ini menahan penebakan yang berpindah-
-  pindah username dari satu tempat.
-
-Kenapa yang per-IP tidak ikut ketat: di padukuhan, seluruh pengurus kemungkinan
-besar memakai satu jaringan yang sama — balai desa, atau satu tethering. Kalau
-batas per-IP disamakan 5, tiga orang yang sama-sama salah ketik sekali bisa
-mengunci semua orang di ruangan itu sekaligus, dan tidak ada seorang pun yang
-bisa membukanya.
+Yang ditahan batas ini: orang menebak-nebak password satu akun tertentu.
+Yang TIDAK ditahan: penebakan yang berpindah-pindah username dari satu tempat.
+Itu diterima sadar — jumlah akunnya sedikit dan usernamenya tidak diumumkan.
 
 ponytail: hitungannya di memori proses, hilang tiap restart, dan tidak dibagi
 antar-proses. Serangan tebak-password berlangsung dalam hitungan menit
-sedangkan restart jarang, jadi ini memadai. Pindahkan ke tabel atau Redis
-begitu backend jalan lebih dari satu proses — kalau tidak, batasnya terkalikan
-sebanyak jumlah proses.
+sedangkan restart jarang, jadi ini memadai. Pindahkan ke tabel begitu backend
+jalan lebih dari satu proses — kalau tidak, batasnya terkalikan sebanyak
+jumlah proses.
 """
 
 import time
 
 JENDELA_DETIK = 15 * 60
-BATAS_USERNAME = 5
-BATAS_IP = 20
+BATAS_GAGAL = 5
 
-# kunci -> daftar waktu gagal (monotonic). Hanya percobaan GAGAL yang dicatat.
+# username -> daftar waktu gagal (monotonic). Hanya percobaan GAGAL yang dicatat.
 _gagal: dict[str, list[float]] = {}
 
 
-def _bersihkan(kunci: str, sekarang: float) -> list[float]:
-    tersisa = [w for w in _gagal.get(kunci, []) if sekarang - w < JENDELA_DETIK]
+def _bersihkan(username: str, sekarang: float) -> list[float]:
+    tersisa = [w for w in _gagal.get(username, []) if sekarang - w < JENDELA_DETIK]
     if tersisa:
-        _gagal[kunci] = tersisa
+        _gagal[username] = tersisa
     else:
-        _gagal.pop(kunci, None)
+        _gagal.pop(username, None)
     return tersisa
 
 
-def sisa_tunggu(username: str, ip: str) -> int:
-    """Detik yang harus ditunggu sebelum boleh mencoba lagi; 0 kalau boleh.
-
-    Yang dikembalikan waktu tunggu ember yang paling lama, supaya pesannya
-    tidak menyuruh orang mencoba lagi padahal masih akan ditolak.
-    """
+def sisa_tunggu(username: str) -> int:
+    """Detik yang harus ditunggu sebelum boleh mencoba lagi; 0 kalau boleh."""
     sekarang = time.monotonic()
-    tunggu = 0
-    for kunci, batas in ((f"u:{username}", BATAS_USERNAME), (f"i:{ip}", BATAS_IP)):
-        waktu = _bersihkan(kunci, sekarang)
-        if len(waktu) >= batas:
-            # Terbuka lagi begitu percobaan tertua keluar dari jendela.
-            tunggu = max(tunggu, int(JENDELA_DETIK - (sekarang - waktu[0])) + 1)
-    return tunggu
+    waktu = _bersihkan(username, sekarang)
+    if len(waktu) < BATAS_GAGAL:
+        return 0
+    # Terbuka lagi begitu percobaan tertua keluar dari jendela.
+    return int(JENDELA_DETIK - (sekarang - waktu[0])) + 1
 
 
-def catat_gagal(username: str, ip: str) -> None:
+def catat_gagal(username: str) -> None:
     sekarang = time.monotonic()
-    for kunci in (f"u:{username}", f"i:{ip}"):
-        _bersihkan(kunci, sekarang)
-        _gagal.setdefault(kunci, []).append(sekarang)
+    _bersihkan(username, sekarang)
+    _gagal.setdefault(username, []).append(sekarang)
 
 
 def reset(username: str) -> None:
-    """Login berhasil: hitungan username itu dinolkan.
-
-    Ember IP sengaja TIDAK ikut dinolkan — kalau ikut, orang yang memegang satu
-    kredensial sah bisa membersihkan jejaknya setiap kali hampir kena batas,
-    dan batas per-IP jadi tidak berarti.
-    """
-    _gagal.pop(f"u:{username}", None)
+    """Login berhasil: hitungannya dinolkan."""
+    _gagal.pop(username, None)
 
 
 def demo() -> None:
     """Self-check. Jalankan: .venv/bin/python -m app.core.ratelimit"""
     _gagal.clear()
-    assert sisa_tunggu("budi", "1.1.1.1") == 0
+    assert sisa_tunggu("budi") == 0
 
-    for _ in range(BATAS_USERNAME - 1):
-        catat_gagal("budi", "1.1.1.1")
-    assert sisa_tunggu("budi", "1.1.1.1") == 0, "belum sampai batas"
+    for _ in range(BATAS_GAGAL - 1):
+        catat_gagal("budi")
+    assert sisa_tunggu("budi") == 0, "belum sampai batas"
 
-    catat_gagal("budi", "1.1.1.1")
-    tunggu = sisa_tunggu("budi", "1.1.1.1")
+    catat_gagal("budi")
+    tunggu = sisa_tunggu("budi")
     assert 0 < tunggu <= JENDELA_DETIK + 1, tunggu
 
-    # Username lain dari IP yang sama masih boleh — batas per-IP lebih longgar,
-    # supaya satu ruangan tidak terkunci gara-gara satu orang salah ketik.
-    assert sisa_tunggu("siti", "1.1.1.1") == 0, "IP ikut terkunci terlalu dini"
-    # Username yang sama dari IP lain tetap terkunci.
-    assert sisa_tunggu("budi", "2.2.2.2") > 0, "kunci username harus ikut orangnya"
+    # Akun lain tidak ikut terkunci — itulah alasan hitungannya per username.
+    assert sisa_tunggu("siti") == 0, "akun lain ikut terkunci"
 
     reset("budi")
-    assert sisa_tunggu("budi", "1.1.1.1") == 0, "login berhasil harus menolkan"
-
-    # Ember IP: penebakan yang berpindah-pindah username tetap tertahan.
-    _gagal.clear()
-    for i in range(BATAS_IP):
-        catat_gagal(f"orang{i}", "3.3.3.3")
-    assert sisa_tunggu("orang-baru", "3.3.3.3") > 0, "ember IP tidak jalan"
+    assert sisa_tunggu("budi") == 0, "login berhasil harus menolkan"
 
     # Percobaan lama keluar dari jendela dengan sendirinya.
     _gagal.clear()
-    lampau = time.monotonic() - JENDELA_DETIK - 1
-    _gagal["u:lama"] = [lampau] * BATAS_USERNAME
-    assert sisa_tunggu("lama", "4.4.4.4") == 0, "jendela tidak bergeser"
+    _gagal["lama"] = [time.monotonic() - JENDELA_DETIK - 1] * BATAS_GAGAL
+    assert sisa_tunggu("lama") == 0, "jendela tidak bergeser"
 
     _gagal.clear()
     print("OK: app/core/ratelimit.py")

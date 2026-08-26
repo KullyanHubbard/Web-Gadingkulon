@@ -5,7 +5,7 @@ import type { Session } from './types';
  * Dipisah dari store agar bisa dipakai interceptor api-client tanpa
  * membuat dependensi lingkaran ke store Zustand.
  *
- * Catatan keamanan: menyimpan JWT di localStorage rawan XSS. Untuk produksi,
+ * Catatan keamanan: menyimpan token di localStorage rawan XSS. Untuk produksi,
  * pertimbangkan httpOnly cookie yang di-set oleh FastAPI.
  */
 

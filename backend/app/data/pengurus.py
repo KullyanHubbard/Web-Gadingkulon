@@ -302,7 +302,11 @@ def daftar_kursi() -> list[Kursi]:
     from app.data.store import semua_penduduk
 
     warga = semua_penduduk()
-    wilayah = sorted({(p.alamat.rw, p.alamat.rt) for p in warga})
+    # Wilayah diturunkan dari warga AKTIF saja: satu orang yang sudah pindah
+    # tidak boleh memunculkan kursi RT yang sebenarnya sudah tidak berpenghuni.
+    wilayah = sorted(
+        {(p.alamat.rw, p.alamat.rt) for p in warga if p.statusKependudukan == "AKTIF"}
+    )
     rencana: list[tuple[str, str | None, str | None]] = [(ROLE_DUKUH, None, None)]
     rencana += [(ROLE_RW, rw, None) for rw in sorted({rw for rw, _ in wilayah})]
     rencana += [(ROLE_RT, rw, rt) for rw, rt in wilayah]

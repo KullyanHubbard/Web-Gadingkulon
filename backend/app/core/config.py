@@ -17,10 +17,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _BACKEND_DIR = Path(__file__).resolve().parents[2]
 
-# Sengaja bertuliskan "dev-only": kalau nilai ini sampai terbaca di produksi,
-# artinya `.env` belum dipasang — dan backend menolak jalan.
-BAWAAN_JWT_SECRET = "dev-only-ganti-di-produksi"
-
 
 def _pisah_koma(nilai: str) -> list[str]:
     return [bagian.strip() for bagian in nilai.split(",") if bagian.strip()]
@@ -38,11 +34,10 @@ class Settings(BaseSettings):
     # cuma mau path. Relatif dihitung dari `backend/`, jadi hasilnya sama dari
     # direktori kerja mana pun uvicorn dijalankan; lihat `DATABASE_FILE`.
     DATABASE_PATH: str = "./data/siduk.db"
-    # Nilai bawaan ini DITOLAK saat startup (`app/main.py:_wajib_diisi`).
-    # Ada defaultnya supaya perkakas baris perintah tetap bisa jalan tanpa
-    # `.env`; yang menolaknya adalah backend saat mau melayani permintaan.
-    JWT_SECRET: str = BAWAAN_JWT_SECRET
-    JWT_TTL_JAM: int = 12
+    # Umur sesi login. Tidak ada rahasia yang perlu dipasang: sejak sesi
+    # tersimpan di server, token cuma nomor acak dan tidak ada yang
+    # ditandatangani — jadi tidak ada nilai bawaan yang bisa salah terpakai.
+    SESI_TTL_JAM: int = 12
 
     # --- Bootstrap ADMIN pertama -------------------------------------------
     # Dipakai HANYA saat tabel `pengurus` masih kosong. Kalau kosong dan dua

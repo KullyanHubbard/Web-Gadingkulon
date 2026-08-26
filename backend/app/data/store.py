@@ -31,11 +31,29 @@ def semua_penduduk() -> list[Penduduk]:
     tempat, supaya tiap router tidak perlu mengingatnya. Tetap tersimpan di DB —
     yang menyaring adalah pembacaan, bukan penyimpanan.
 
-    `statusKependudukan` PINDAH/MENINGGAL sengaja TIDAK disaring: datanya sah,
-    yang berubah statusnya, dan untuk sementara tetap ikut dihitung.
+    `statusKependudukan` PINDAH/MENINGGAL **ikut dikembalikan** di sini: mereka
+    masih harus tampil di daftar penduduk, kalau tidak pengurus tidak punya cara
+    membatalkan penandaan yang keliru. Yang mengeluarkannya dari HITUNGAN adalah
+    `hanya_aktif`, dipanggil di jalur statistik.
     """
     with db.koneksi(settings.DATABASE_FILE) as conn:
         return [p for p in db.muat(conn) if p.deletedAt is None]
+
+
+def hanya_aktif(daftar: list[Penduduk]) -> list[Penduduk]:
+    """Buang warga yang sudah pindah atau meninggal.
+
+    Dipakai **hanya di jalur statistik** — total penduduk, demografi,
+    infografis, statistik publik. Angka "jumlah penduduk" harus berarti orang
+    yang benar-benar tinggal di sini sekarang; kalau yang pindah dan meninggal
+    ikut dihitung, angkanya makin jauh dari kenyataan tiap tahun tanpa ada yang
+    menyadarinya.
+
+    Daftar penduduk sengaja TIDAK memakai ini: warga bertanda PINDAH/MENINGGAL
+    tetap harus terlihat dan bisa diubah, kalau tidak penandaan yang keliru
+    tidak bisa dibatalkan.
+    """
+    return [w for w in daftar if w.statusKependudukan == "AKTIF"]
 
 
 def penduduk_untuk(user: AuthUser) -> list[Penduduk]:

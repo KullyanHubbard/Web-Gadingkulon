@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.core import ratelimit
-from app.core.security import buat_token, cocok_rahasia, urai_token
+from app.core.security import cocok_rahasia
 from app.data import pengurus as data_pengurus
+from app.data import sesi as data_sesi
 from app.schemas.auth import (
     ROLE_PENGURUS,
     AuthUser,
@@ -36,25 +37,28 @@ def ke_auth_user(p: data_pengurus.Pengurus) -> AuthUser:
     )
 
 
-async def current_user(
+def token_sesi(
     creds: HTTPAuthorizationCredentials | None = Depends(_bearer),
-) -> AuthUser:
-    """Semua pengurus yang sudah masuk.
-
-    Dibangun ulang dari DB tiap request, bukan dari klaim token — supaya
-    perubahan nama, wilayah, atau status aktif langsung berlaku tanpa login
-    ulang.
-
-    ponytail: akun yang dinonaktifkan tetap punya token yang secara kriptografi
-    sah sampai TTL habis; yang menolaknya adalah pemeriksaan `aktif` di sini.
-    Pindah ke sesi server-side kalau pencabutan harus lebih tegas dari itu.
-    """
+) -> str:
+    """Token mentah dari header. Dipakai endpoint yang perlu mencabut sesinya
+    sendiri (keluar, ganti password)."""
     if creds is None:
         raise HTTPException(401, "Sesi tidak ditemukan. Silakan masuk.")
-    user_id = urai_token(creds.credentials)
-    if user_id is None:
+    return creds.credentials
+
+
+async def current_user(token: str = Depends(token_sesi)) -> AuthUser:
+    """Semua pengurus yang sudah masuk.
+
+    Sesi dicari di tabel `sesi`, lalu akunnya dibaca ulang dari DB. Dua-duanya
+    tiap request, dan itu yang membuat pencabutan berlaku seketika: sesi yang
+    dihapus langsung tidak dikenali, dan akun yang dinonaktifkan langsung
+    tertolak — tidak ada tanda tangan yang tetap sah sampai umurnya habis.
+    """
+    pengurus_id = data_sesi.pemilik(token)
+    if pengurus_id is None:
         raise HTTPException(401, "Sesi tidak valid atau sudah kedaluwarsa.")
-    p = data_pengurus.cari_by_id(user_id)
+    p = data_pengurus.cari_by_id(pengurus_id)
     if p is None:
         raise HTTPException(401, "Sesi tidak valid atau sudah kedaluwarsa.")
     if not p.aktif:
@@ -95,10 +99,8 @@ def _lama(detik: int) -> str:
 
 
 @router.post("/login", response_model=Session)
-async def login(payload: PetugasCredentials, request: Request) -> Session:
-    ip = request.client.host if request.client else "tidak diketahui"
-
-    tunggu = ratelimit.sisa_tunggu(payload.username, ip)
+async def login(payload: PetugasCredentials) -> Session:
+    tunggu = ratelimit.sisa_tunggu(payload.username)
     if tunggu:
         # `Retry-After` supaya perkakas yang membacanya tahu kapan boleh lagi;
         # pesannya untuk orang yang membacanya di layar.
@@ -112,7 +114,7 @@ async def login(payload: PetugasCredentials, request: Request) -> Session:
 
     hasil = data_pengurus.cari_by_username(payload.username)
     if hasil is None or not cocok_rahasia(payload.password, hasil[1]):
-        ratelimit.catat_gagal(payload.username, ip)
+        ratelimit.catat_gagal(payload.username)
         raise HTTPException(401, "Username atau password salah.")
     p, _ = hasil
     # Dibedakan dari salah password: pengurus yang akunnya dimatikan perlu tahu
@@ -124,12 +126,14 @@ async def login(payload: PetugasCredentials, request: Request) -> Session:
     # akun yang kebetulan sudah dicabut.
     ratelimit.reset(payload.username)
     user = ke_auth_user(p)
-    return Session(token=buat_token(user.id), user=user)
+    return Session(token=data_sesi.buat(p.id), user=user)
 
 
 @router.post("/ganti-password", response_model=AuthUser)
 async def ganti_password_sendiri(
-    payload: GantiPassword, user: AuthUser = Depends(current_user)
+    payload: GantiPassword,
+    user: AuthUser = Depends(current_user),
+    token: str = Depends(token_sesi),
 ) -> AuthUser:
     """Ganti password akun sendiri.
 
@@ -149,6 +153,11 @@ async def ganti_password_sendiri(
         raise HTTPException(400, "Password baru harus berbeda dari yang lama.")
 
     data_pengurus.ganti_password(user.id, payload.passwordBaru, oleh_admin=False)
+    # Sesi lain milik akun ini diputus: orang yang mengganti password karena
+    # curiga passwordnya bocor perlu cara menutup pintu, bukan cuma mengganti
+    # kuncinya. Sesinya sendiri disisakan supaya ia tidak terlempar keluar oleh
+    # perbuatannya sendiri.
+    data_sesi.akhiri_semua(user.id, kecuali=token)
     baru = data_pengurus.cari_by_id(user.id)
     if baru is None:
         raise HTTPException(401, "Sesi tidak valid atau sudah kedaluwarsa.")
@@ -156,5 +165,7 @@ async def ganti_password_sendiri(
 
 
 @router.post("/logout", status_code=204)
-async def logout() -> None:
-    return None
+async def logout(token: str = Depends(token_sesi)) -> None:
+    """Cabut sesi ini. Sejak sesi tersimpan di server, ini benar-benar mencabut
+    — bukan sekadar melupakan token di browser seperti dulu."""
+    data_sesi.akhiri(token)

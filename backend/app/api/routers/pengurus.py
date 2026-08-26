@@ -20,6 +20,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from app.api.routers.auth import current_admin, ke_auth_user
 from app.core.audit import catat_audit
 from app.data import pengurus as data
+from app.data import sesi as data_sesi
 from app.data.store import semua_penduduk
 from app.schemas.auth import AuthUser
 from app.schemas.pengurus import (
@@ -166,6 +167,10 @@ def reset_password(
         id, payload.password, oleh_admin=True
     ):
         raise HTTPException(404, "Akun pengurus tidak ditemukan.")
+    # Sesi lama dicabut: kalau tidak, orang yang masih memegang sesi berjalan
+    # tetap bisa memakai akun itu walau passwordnya sudah diganti — dan reset
+    # password justru dilakukan ketika ada kecurigaan seperti itu.
+    data_sesi.akhiri_semua(id)
     catat_audit(
         aktor=admin.username,
         aksi="reset-password",

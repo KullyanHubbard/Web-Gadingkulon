@@ -143,7 +143,12 @@ Tekan **+ Tambah Warga**. RT dan RW-nya otomatis wilayah Anda sendiri. Nomor
 ### Warga pindah atau meninggal
 
 Ubah **Status Kependudukan** menjadi Pindah atau Meninggal. **Datanya tidak
-pernah dihapus** — barisnya tetap ada, statusnya saja yang berubah.
+pernah dihapus** — barisnya tetap ada di daftar dengan penanda, statusnya saja
+yang berubah.
+
+Sejak ditandai, orang itu **tidak lagi ikut dihitung** dalam jumlah penduduk
+dan seluruh grafik, termasuk di halaman depan. Kalau ternyata salah tandai,
+kembalikan saja statusnya jadi Aktif — barisnya masih ada di daftar.
 
 ### Warga pindah antar-RT: hanya Pak Dukuh
 
@@ -232,10 +237,17 @@ Admin. Klik gambar orang di pojok kanan atas → **Ganti Password**.
 **JANGAN mereset password atas permintaan lewat telepon, SMS, atau WhatsApp.**
 Verifikasi tatap muka adalah satu-satunya pengaman yang dimiliki sistem ini.
 
+Reset password juga **memutus semua sesi** akun itu: kalau ada yang sedang
+memakai akunnya di perangkat lain, ia langsung terlempar keluar.
+
 ### Kalau muncul "Terlalu banyak percobaan masuk yang gagal"
 
 Aplikasi mengunci sebuah username selama **15 menit** setelah 5 kali salah
 password. Ini menahan orang menebak-nebak password dari luar.
+
+Yang terkunci **hanya username itu**, bukan seluruh orang yang memakai jaringan
+yang sama. Jadi kalau satu pengurus terkunci, yang lain tetap bisa masuk seperti
+biasa.
 
 Yang harus dilakukan: **tunggu**, jangan mencoba terus — tiap percobaan baru
 tidak memperpanjang kuncinya, tapi juga tidak mempercepatnya. Kalau memang

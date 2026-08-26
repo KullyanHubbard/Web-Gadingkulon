@@ -88,6 +88,7 @@ nama yang **dibaca user** — itu selalu SIDUK.
 | Charts      | Recharts                                                             |
 | Backend     | Python + FastAPI                                                     |
 | Database    | SQLite (`sqlite3` stdlib, tanpa ORM) — data penduduk                 |
+| Auth        | Sesi server-side (tabel `sesi`) + bcrypt. **Bukan JWT**              |
 
 ## 3. Struktur Direktori
 
@@ -252,19 +253,25 @@ untuk alasan lengkapnya):**
   (`pengurus.jabatan_dari`). Menyimpannya berarti dua sumber kebenaran yang
   bisa berbeda diam-diam. `kursi_dari()` memakai RW **dan** RT sekaligus: nomor
   RT cuma unik di dalam RW-nya.
-- **Status `aktif` diperiksa tiap request** (`current_user` query DB, bukan
-  baca klaim token), jadi menonaktifkan akun langsung berlaku tanpa menunggu
-  TTL JWT habis.
+- **Status `aktif` diperiksa tiap request**, bersama pencarian sesinya. Dua
+  query per request, dan itu yang membuat pencabutan berlaku seketika.
 - **Tidak ada OTP, SMS, WhatsApp, atau email di jalur autentikasi.** Syarat nol
   biaya bersifat mutlak. Password baru disampaikan tatap muka; itu satu-satunya
   jalur, dan disengaja.
-- **Rate limit login: dua ember, longgarnya sengaja berbeda.** Per username
-  ketat (5 per 15 menit); per IP longgar (20 per 15 menit). Kalau per-IP ikut
-  ketat, satu jaringan balai desa bisa terkunci seluruhnya gara-gara tiga orang
-  salah ketik. Login berhasil menolkan ember username saja — kalau ember IP
-  ikut dinolkan, pemegang satu kredensial sah bisa membersihkan jejaknya tiap
-  kali hampir kena batas. Hitungannya di memori proses (`ponytail:` di
+- **Rate limit login: per username saja**, 5 gagal per 15 menit. Batas per-IP
+  sempat ada lalu **dicabut**: satu jaringan balai desa dipakai banyak pengurus
+  sekaligus, jadi menghitung per IP berarti beberapa orang yang masing-masing
+  salah ketik sekali bisa mengunci seluruh ruangan. Konsekuensi yang diterima
+  sadar: penebakan yang berpindah-pindah username dari satu tempat tidak
+  tertahan. Hitungannya di memori proses (`ponytail:` di
   `app/core/ratelimit.py`).
+- **Sesi tersimpan di server** (tabel `sesi`, `app/data/sesi.py`), bukan JWT.
+  Token cuma nomor acak tanpa arti; yang menentukan sah atau tidak adalah
+  ADANYA baris di tabel. Akibatnya "Keluar" benar-benar mencabut, ganti
+  password memutus sesi lain milik akun itu, dan reset oleh Admin mencabut
+  seluruh sesinya. Tidak ada `JWT_SECRET` lagi — tidak ada yang ditandatangani,
+  jadi tidak ada rahasia yang bisa salah dipasang. `pyjwt` ikut dicabut dari
+  `requirements.txt`.
 
 **Mekanik:**
 
@@ -309,6 +316,7 @@ dependensinya:
 .venv/bin/python -m app.data.db         # self-check SQLite (skema + impor menimpa)
 .venv/bin/python -m app.data.agregat    # self-check kelompok umur & distribusi
 DATABASE_PATH=/tmp/uji.db .venv/bin/python -m app.data.pengurus   # self-check kelola akun
+DATABASE_PATH=/tmp/uji.db .venv/bin/python -m app.data.sesi       # self-check sesi login
 .venv/bin/python -m app.core.ratelimit  # self-check batas percobaan login
 .venv/bin/python -m app.data.impor_excel ../docs/data-penduduk.xlsx   # isi data (MENIMPA)
 ```
@@ -359,7 +367,8 @@ backend/
 │   ├── api/routers/       # auth, penduduk, pengurus, pergantian, audit, publik, infografis
 │   ├── schemas/           # Pydantic — cerminan tipe frontend, harus sinkron manual
 │   └── data/              # db.py (SQLite) + store.py (cache penduduk, dibaca router)
-│                          # + pengurus.py (akun & kursi) + pergantian.py (usulan)
+│                          # + pengurus.py (akun & kursi) + sesi.py (sesi login)
+│                          # + pergantian.py (usulan)
 │                          # + agregat.py
 │                          # + impor_excel.py (isi tabel dari Excel)
 ├── tools/                 # pembangkit template & data contoh Excel (bukan bagian app)
@@ -514,24 +523,17 @@ harus di atas `/penduduk/{id}`, kalau tidak ia terbaca sebagai sebuah id.
   menyetujui.
 - ✅ Penyetuju hanya menerima pengajuan yang ditujukan kepadanya; yang lain
   memang tidak ikut dikembalikan, bukan disembunyikan di layar.
-- ✅ Backend menolak jalan kalau `JWT_SECRET` masih bernilai bawaan
-  (`app/main.py:_wajib_diisi`), atau kalau tabel `pengurus` kosong tapi
-  `ADMIN_USERNAME`/`ADMIN_PASSWORD` belum diisi. Defaultnya tetap ada supaya
-  perkakas baris perintah jalan tanpa `.env`; yang menolak adalah startup.
+- ✅ Backend menolak jalan kalau tabel `pengurus` kosong tapi
+  `ADMIN_USERNAME`/`ADMIN_PASSWORD` belum diisi.
 - ✅ Riwayat perubahan mengikuti kewenangan: PENGURUS melihat riwayat data
   warga **di wilayahnya**, ADMIN hanya riwayat kelola akun. Dua daftar aksinya
   (`audit.AKSI_WARGA` / `AKSI_AKUN`) berpotongan kosong, sama seperti
   kewenangan yang menghasilkannya.
-- ✅ `deletedAt` (salah input) disaring di `app/data/store.py`, satu tempat.
-  `PINDAH`/`MENINGGAL` sengaja **tidak** disaring: datanya sah, dan keputusan
-  sementaranya tetap dihitung.
+- ✅ `deletedAt` (salah input) disaring di `store.semua_penduduk`, satu tempat.
+  `PINDAH`/`MENINGGAL` dikeluarkan dari **hitungan** oleh `store.hanya_aktif`,
+  dipanggil di jalur statistik saja — daftar penduduk tetap menampilkannya,
+  kalau tidak penandaan yang keliru tidak bisa dibatalkan.
 
 **Utang yang masih terbuka** — tercatat di spec 2026-08-26, jangan dianggap
 kondisi final:
 
-- ⬜ **Sesi server-side menggantikan JWT.** Sekarang pencabutan sudah berlaku
-  seketika lewat pemeriksaan `aktif` tiap request, jadi prioritasnya turun —
-  tapi token yang sah sampai TTL habis tetap bukan model yang benar.
-- ⬜ **Status kependudukan (`PINDAH`/`MENINGGAL`)** ikut disaring dari daftar
-  atau statistik. Sekarang tetap dihitung, sesuai keputusan sementara di
-  `docs/PROSEDUR-PENGURUS.md`.

@@ -3,6 +3,7 @@ import type { Penduduk } from '@/types/penduduk';
 import {
   agamaLabel,
   golonganDarahLabel,
+  statusKependudukanLabel,
   jenisKelaminLabel,
   pendidikanLabel,
   statusHubunganLabel,
@@ -27,6 +28,15 @@ export interface PendudukRow {
   hubungan: string;
   umur: string;
   agama: string;
+  /**
+   * Diisi hanya untuk warga yang sudah pindah atau meninggal.
+   *
+   * Mereka masih tampil di daftar supaya penandaan yang keliru bisa
+   * dibatalkan, tapi TIDAK ikut dihitung di statistik — tanpa penanda ini, dua
+   * baris yang kelihatan sama menghasilkan angka yang berbeda dan tidak ada
+   * yang tahu kenapa.
+   */
+  statusTidakAktif: string | null;
 }
 
 export function toPendudukRow(p: Penduduk): PendudukRow {
@@ -38,6 +48,10 @@ export function toPendudukRow(p: Penduduk): PendudukRow {
     hubungan: statusHubunganLabel[p.statusHubunganKeluarga],
     umur: `${hitungUmur(p.tanggalLahir)} th`,
     agama: agamaLabel[p.agama],
+    statusTidakAktif:
+      p.statusKependudukan === 'AKTIF'
+        ? null
+        : statusKependudukanLabel[p.statusKependudukan],
   };
 }
 

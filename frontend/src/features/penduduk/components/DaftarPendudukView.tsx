@@ -120,7 +120,14 @@ export function DaftarPendudukView({
                 <tbody>
                   {daftar.map((row) => (
                     <tr key={row.id} className="hover:bg-slate-50">
-                      <Td className="font-medium text-slate-900">{row.nama}</Td>
+                      <Td className="font-medium text-slate-900">
+                        {row.nama}
+                        {row.statusTidakAktif && (
+                          <Badge tone="slate" className="ml-2">
+                            {row.statusTidakAktif}
+                          </Badge>
+                        )}
+                      </Td>
                       <Td>
                         <Badge tone={row.jenisKelaminTone}>
                           {row.jenisKelamin}

@@ -3,10 +3,11 @@ Satu-satunya modul yang menulis SQL.
 
 Bentuknya sengaja sedatar mungkin:
 
-- **Lima tabel.** `penduduk` (`Alamat` diratakan jadi kolom `alamat_*`;
+- **Enam tabel.** `penduduk` (`Alamat` diratakan jadi kolom `alamat_*`;
   Pydantic yang menyusunnya balik), `pengurus` (akun perangkat desa), serta
   `pengajuan` + `persetujuan` (pergantian jabatan dan suara atasnya), serta
-  `audit_log` (jejak perubahan, tidak pernah dihapus).
+  `audit_log` (jejak perubahan, tidak pernah dihapus), dan `sesi` (sesi login
+  yang sedang berjalan).
 - **Nama kolom = nama field Pydantic**, jadi `camelCase` (`jenisKelamin`,
   `tanggalLahir`). Melanggar kebiasaan SQL, tapi menghapus seluruh tabel
   pemetaan nama: satu baris masuk ke `Penduduk(**row)` apa adanya. SQLite
@@ -143,6 +144,19 @@ CREATE TABLE IF NOT EXISTS audit_log (
 );
 
 CREATE INDEX IF NOT EXISTS idx_audit_waktu ON audit_log(waktu);
+
+-- Sesi yang sedang berjalan. Menggantikan JWT: token di sini cuma nomor acak
+-- tanpa arti, dan yang menentukan sah atau tidak adalah ADANYA baris ini —
+-- bukan tanda tangan yang tetap berlaku sampai TTL-nya habis. Akibatnya
+-- "Keluar" benar-benar mencabut, bukan sekadar melupakan token di browser.
+CREATE TABLE IF NOT EXISTS sesi (
+    token            TEXT PRIMARY KEY,
+    pengurus_id      TEXT NOT NULL REFERENCES pengurus(id),
+    dibuat_pada      TEXT NOT NULL,
+    kedaluwarsa_pada TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_sesi_pengurus ON sesi(pengurus_id);
 """
 
 
