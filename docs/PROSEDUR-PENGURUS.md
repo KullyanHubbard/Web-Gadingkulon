@@ -3,10 +3,13 @@
 Dokumen ini untuk **pengurus padukuhan** (Dukuh, RW, RT), bukan untuk
 programmer. **Simpan salinan cetaknya di rumah Dukuh.**
 
-> **Diperbarui 26 Agustus 2026.** Desa memutuskan aplikasi **tidak boleh
-> menyimpan NIK dan Nomor Kartu Keluarga**. Akibatnya warga tidak lagi punya
-> akun sama sekali, dan seluruh prosedur PIN warga di versi sebelumnya sudah
-> tidak berlaku. Yang bisa masuk ke aplikasi sekarang hanya perangkat desa.
+> **Diperbarui 26 Agustus 2026.** Dua perubahan besar:
+>
+> 1. Aplikasi **tidak boleh menyimpan NIK dan Nomor Kartu Keluarga**. Warga
+>    tidak lagi punya akun sama sekali; seluruh prosedur PIN warga di versi
+>    sebelumnya sudah tidak berlaku.
+> 2. Ada **empat tingkat akun**, dan kewenangan kelola akun dipegang **Admin**
+>    yang justru tidak bisa melihat data warga sama sekali.
 
 ---
 
@@ -30,35 +33,54 @@ menjalankannya.
 
 ---
 
-## Dua tingkat akun
+## Empat tingkat akun
 
-| Tingkat      | Siapa                     | Bisa apa                                                       |
-| ------------ | ------------------------- | -------------------------------------------------------------- |
-| **Pengurus** | Ketua RW, Ketua RT        | melihat seluruh data warga padukuhan & seluruh infografis       |
-| **Dukuh**    | Dukuh                     | semua yang bisa Pengurus, **ditambah** membuat, menonaktifkan, dan mereset password akun pengurus |
+| Tingkat      | Siapa                | Bisa apa                                                     |
+| ------------ | -------------------- | ------------------------------------------------------------ |
+| **Admin**    | pemegang akun layanan | Membuatkan akun untuk kursi yang kosong, reset password, cabut akses. **Tidak bisa melihat data warga sama sekali.** |
+| **Dukuh**    | Pak Dukuh            | Melihat seluruh data warga & infografis                       |
+| **Ketua RW** | satu per RW (sekarang RW 019, 020, 021) | sama                       |
+| **Ketua RT** | satu per RT (sekarang RT 001–006)       | sama                       |
+
+Dua sisi ini **tidak saling menyentuh**, dan itu disengaja:
+
+- **Admin memberi akses tapi buta terhadap isinya.** Orang yang memegang tombol
+  pemberian akses tidak perlu — dan karena itu tidak boleh — membaca data
+  warganya. Kalau Admin bisa keduanya, satu akun saja cukup untuk membuka
+  seluruh data sedesa tanpa ada yang bisa menghalangi.
+- **Dukuh, RW, dan RT membaca data tapi tidak bisa menyentuh akun siapa pun**,
+  termasuk akunnya sendiri. Orang yang bisa dicabut haknya tidak boleh memegang
+  tombol pencabutannya.
 
 **Warga tidak punya akun.** Tidak ada halaman masuk untuk warga, tidak ada PIN,
 tidak ada aktivasi. Yang bisa dilihat warga tanpa masuk hanyalah **halaman
-depan** — angka statistik padukuhan (jumlah jiwa, laki-laki/perempuan, rincian
-per RW), tanpa satu pun nama atau alamat.
+depan** — angka statistik padukuhan, tanpa satu pun nama atau alamat.
 
-**Pengurus tidak bisa membuat atau menonaktifkan akun mana pun, termasuk
-akunnya sendiri.** Itu hanya bisa dilakukan Dukuh. Ini disengaja: orang yang
-bisa dicabut haknya tidak boleh memegang tombol pencabutannya.
+---
 
-> **Perubahan dari versi sebelumnya.** Dulu peran "Admin" dipegang orang yang
-> memelihara aplikasi secara teknis, bukan Dukuh. Sekarang kewenangan kelola
-> akun ada pada Dukuh. Alasannya: setelah masa KKN selesai, tidak ada jaminan
-> ada orang teknis yang bisa dihubungi, dan padukuhan tidak boleh kehilangan
-> kemampuan mengganti akun pengurusnya sendiri karena menunggu orang luar.
+## Akun berbentuk kursi, bukan milik orang
+
+Yang terdaftar di aplikasi bukan "Pak Slamet", melainkan **kursi** "Ketua RT
+001". Kursi itu dihuni satu orang, dan orangnya berganti sewaktu-waktu.
+
+Daftar kursinya **mengikuti data warga**: begitu ada warga ber-RT 007 di file
+Excel, kursi "Ketua RT 007" muncul sendiri di halaman Admin. Tidak ada daftar
+RW/RT yang perlu diurus terpisah — dan RT yang belum punya warga memang belum
+perlu akun.
+
+Satu kursi hanya boleh dihuni **satu akun aktif**. Akun penghuni lama tetap
+tersimpan dalam keadaan nonaktif supaya jejaknya tidak hilang.
 
 ---
 
 ## Siapa boleh melihat apa
 
-**Melihat data tidak dibatasi wilayah.** Semua pengurus — Dukuh, Ketua RW, dan
-Ketua RT — bisa melihat seluruh data padukuhan dan seluruh infografis. Yang
-membedakan Dukuh hanyalah menu **Akun Pengurus**.
+**Melihat data tidak dibatasi wilayah.** Dukuh, Ketua RW, dan Ketua RT
+sama-sama melihat seluruh data padukuhan dan seluruh infografis. Ketua RT 001
+juga melihat warga RT 006.
+
+Admin tidak melihat satu pun dari itu. Menu di layarnya hanya **Akun Pengurus**
+dan **Statistik Desa** (halaman depan yang terbuka untuk umum).
 
 Aplikasi ini **tidak bisa dipakai mengubah data warga.** Menambah, mengoreksi,
 dan menghapus semuanya dilakukan di file Excel pendataan, lalu diimpor ulang —
@@ -111,19 +133,27 @@ jangan hapus barisnya. Datanya tetap tercatat.
 
 ---
 
-## Menambah akun pengurus
+## Membuatkan akun untuk kursi kosong
 
-Dilakukan **Dukuh**, lewat menu **Akun Pengurus**:
+Dilakukan **Admin**, lewat menu **Akun Pengurus**:
 
-1. Isi **nama lengkap**, **username**, dan **password awal** (minimal 8
-   karakter).
-2. Pilih peran: **Pengurus** untuk Ketua RW/RT, **Dukuh** hanya untuk yang
-   memang perlu mengelola akun.
-3. Isi **RW** dan **RT** sesuai jabatannya. Jabatannya dihitung sendiri oleh
-   aplikasi: RW+RT terisi = "Ketua RT 03", RW saja = "Ketua RW 019", keduanya
-   kosong = "Dukuh".
-4. **Serahkan password awal secara tatap muka**, dan dampingi ia masuk sekali
-   untuk memastikan akunnya bisa dipakai.
+1. Cari baris kursinya (mis. "Ketua RT 003"), yang statusnya **Kosong**.
+2. Klik **Buatkan Akun**, isi **nama lengkap**, **username**, dan **password
+   awal** (minimal 8 karakter).
+3. **Serahkan password awal secara tatap muka.**
+
+Jabatan tidak perlu dipilih — sudah ditentukan oleh baris kursi yang diklik.
+
+### Password awal hanya sekali pakai
+
+Password yang dibuat Admin **tidak bisa dipakai untuk melihat apa pun.** Saat
+pemiliknya masuk pertama kali, aplikasi langsung menuntut ia mengganti password
+itu dengan pilihannya sendiri, dan tidak ada halaman lain yang bisa dibuka
+sebelum itu selesai. Setelah diganti, password dari Admin mati.
+
+Artinya: **Admin tidak pernah tahu password yang benar-benar dipakai pengurus**,
+walaupun dialah yang membuatkan akunnya. Statusnya terlihat di tabel sebagai
+"Belum ganti password" selama itu belum dilakukan.
 
 Tidak ada pengiriman password lewat SMS, WhatsApp, atau email — aplikasi ini
 memang tidak punya jalur itu, dan itu disengaja supaya tidak ada biaya bulanan
@@ -133,14 +163,13 @@ dan tidak ada yang bisa mati diam-diam.
 
 ## Pengurus lupa password
 
-1. Pengurus **datang langsung** menemui Dukuh.
-2. Dukuh masuk ke menu **Akun Pengurus** → cari namanya → **Reset Password**.
-3. Dukuh mengetik password baru, lalu menyampaikannya **langsung** kepada yang
-   bersangkutan.
+1. Pengurus **datang langsung** menemui Admin.
+2. Admin membuka menu **Akun Pengurus** → cari barisnya → **Reset Password**.
+3. Admin mengetik password baru, lalu menyampaikannya **langsung**.
+4. Pengurus masuk, dan aplikasi kembali menuntutnya mengganti password itu.
 
 **JANGAN mereset password atas permintaan lewat telepon, SMS, atau WhatsApp.**
 Verifikasi tatap muka adalah satu-satunya pengaman yang dimiliki sistem ini.
-Kalau itu dilanggar, tidak ada lapisan pengaman lain di belakangnya.
 
 ---
 
@@ -177,40 +206,51 @@ dibuat. Urutannya sengaja dibalik untuk kasus ini.
 
 ### Langkah konkret
 
-Dilakukan oleh **Dukuh**:
+Dilakukan oleh **Admin**, atas permintaan Dukuh:
 
-1. **Buat akun baru** untuk pengurus pengganti — lihat
-   [Menambah akun pengurus](#menambah-akun-pengurus).
-2. **Pastikan ia sudah bisa masuk** dengan akun itu.
-3. **Nonaktifkan akun lama:** menu **Akun Pengurus** → cari namanya →
-   **Nonaktifkan**. Akun tidak dihapus, hanya dimatikan.
+1. **Cabut akses pengurus lama:** menu **Akun Pengurus** → cari barisnya →
+   **Cabut Akses**. Akunnya langsung mati dan kursinya jadi kosong. Akun tidak
+   dihapus, hanya dimatikan.
+2. **Buatkan akun untuk penggantinya** di baris kursi yang sekarang kosong —
+   lihat [Membuatkan akun untuk kursi kosong](#membuatkan-akun-untuk-kursi-kosong).
+3. **Pastikan ia sudah bisa masuk** dan sudah mengganti password awalnya.
 4. **Catat pergantiannya** di buku administrasi padukuhan: tanggal, nama lama,
    nama baru, dan siapa yang melakukan langkah 1–3.
 
-> Langkah 2 harus terbukti berhasil sebelum langkah 3 dijalankan — kecuali
-> untuk kasus konflik di atas, di mana langkah 3 didahulukan.
-
-**Akun yang dinonaktifkan langsung tertolak saat masuk**, dengan pesan yang
-menyuruh menghubungi Dukuh. Kalau orangnya sedang membuka aplikasi saat itu,
+**Akun yang dicabut aksesnya langsung tertolak saat masuk**, dengan pesan yang
+menyuruh menghubungi Admin. Kalau orangnya sedang membuka aplikasi saat itu,
 akses berikutnya juga langsung tertutup.
+
+> **Yang akan berubah.** Ke depan pergantian pengurus tidak lagi ditentukan
+> Admin sendiri, melainkan lewat **pengajuan yang harus disetujui** — ganti
+> Dukuh disetujui para Ketua RW, ganti Ketua RW disetujui Dukuh, ganti Ketua RT
+> disetujui Ketua RW-nya dan Dukuh. Selama itu belum ada, langkah di atas
+> berlaku dan Admin dipercaya menjalankannya sesuai keputusan padukuhan.
 
 ---
 
-## Pemeriksaan berkala oleh Dukuh
+## Pemeriksaan berkala oleh Dukuh bersama Admin
 
 **Setiap 3 bulan**, dan **wajib** setiap kali ada pergantian pengurus di tingkat
 mana pun. Ini satu-satunya cara mengetahui ada akun yang tertinggal aktif.
 
-1. Buka menu **Akun Pengurus**, cetak atau foto **daftar akun yang statusnya
-   Aktif**.
+Dilakukan **berdua**: hanya Admin yang bisa membuka daftar kursi, dan hanya
+Dukuh yang tahu siapa yang sebenarnya sedang menjabat. Tidak ada satu orang pun
+yang bisa memeriksa ini sendirian — itu memang bentuk yang diinginkan.
+
+1. Minta Admin membuka menu **Akun Pengurus**, lalu cetak atau foto daftar
+   kursinya beserta nama penghuni tiap kursi.
 2. Bandingkan baris per baris dengan **daftar pengurus yang benar-benar sedang
    menjabat**, sesuai buku administrasi padukuhan.
 3. Untuk setiap baris, jawab dua pertanyaan:
    - Apakah orang ini masih menjabat? Kalau tidak → **nonaktifkan hari itu juga.**
-   - Apakah RW/RT-nya masih sesuai jabatannya sekarang? Kalau tidak → betulkan.
-4. Periksa juga arah sebaliknya: adakah pengurus yang menjabat tapi **tidak
-   punya akun**? Kalau ada, itu tandanya ada pergantian yang tidak pernah
-   dilaporkan — telusuri kapan terjadinya.
+   - Apakah ia masih ada di kursi yang benar? Kalau tidak → cabut akses, lalu
+     buatkan akun di kursi yang tepat.
+4. Periksa juga arah sebaliknya: adakah kursi yang statusnya **Kosong** padahal
+   orangnya sedang menjabat? Kalau ada, itu tandanya ada pergantian yang tidak
+   pernah dilaporkan — telusuri kapan terjadinya.
+5. Perhatikan kursi yang lama bertanda **"Belum ganti password"**: berarti
+   penghuninya belum pernah masuk sejak akunnya dibuat.
 5. **Tulis hasil pemeriksaan di buku administrasi**, walaupun hasilnya "semua
    sesuai". Catatan bahwa pemeriksaan pernah dilakukan sama pentingnya dengan
    hasilnya — tanpa itu, tidak ada yang tahu pemeriksaan terakhir kapan.
@@ -222,23 +262,26 @@ mana pun. Ini satu-satunya cara mengetahui ada akun yang tertinggal aktif.
 
 ---
 
-## Kalau tidak ada satu pun akun Dukuh yang bisa dipakai
+## Kalau tidak ada satu pun akun Admin yang bisa dipakai
 
-Tanpa akun ber-peran Dukuh, tidak ada yang bisa membuat akun pengurus baru
-maupun menonaktifkan akun lama. Pengurus yang sudah berhenti akan tetap bisa
-masuk, dan pengurus baru tidak bisa diberi akun.
+Tanpa akun Admin, tidak ada yang bisa membuatkan akun pengurus baru maupun
+mencabut akses akun lama. Pengurus yang sudah berhenti akan tetap bisa masuk,
+dan pengurus baru tidak bisa diberi akun.
 
 **Cara menghindarinya — lakukan sekarang, bukan nanti:** buat **dua akun
-ber-peran Dukuh** yang hidup bersamaan, dipegang dua orang berbeda (misalnya
-Dukuh dan satu Ketua RW senior yang dipercaya). Kalau yang satu hilang, yang
-lain masih bisa membuat penggantinya.
+Admin** yang hidup bersamaan, dipegang dua orang berbeda. Kalau yang satu
+hilang, yang lain masih bisa membuat penggantinya.
 
-**Kalau sudah terlanjur tidak ada:** akun Dukuh pertama hanya bisa dibuat ulang
+Perhatikan: karena Admin buta terhadap data warga, menambah satu akun Admin
+cadangan **tidak** menambah satu orang lagi yang bisa membaca data warga. Yang
+bertambah cuma kemampuan mengelola akun. Itu sebabnya cadangan ini murah.
+
+**Kalau sudah terlanjur tidak ada:** akun Admin pertama hanya bisa dibuat ulang
 dari sisi server oleh yang mengurus teknis (mengosongkan daftar akun, lalu
 menyalakan ulang aplikasi dengan username & password awal yang baru). Itu
 berarti bergantung pada orang luar — persis keadaan yang ingin dihindari.
 
-- Akun Dukuh cadangan dipegang oleh: ............................................
+- Akun Admin cadangan dipegang oleh: ............................................
 - Catatan password disimpan di: ............................................
 
 ---
@@ -251,7 +294,11 @@ berarti bergantung pada orang luar — persis keadaan yang ingin dihindari.
   disembunyikan — memang tidak ada kolomnya. Karena itu tidak ada lagi halaman
   Kartu Keluarga, dan angka "jumlah KK" hilang dari halaman depan.
 - **Warga tidak punya akun.** Yang bisa masuk hanya perangkat desa.
-- **Kewenangan kelola akun ada pada Dukuh**, bukan pada pemelihara teknis.
+- **Kewenangan kelola akun ada pada Admin**, yang justru buta terhadap data
+  warga. Dukuh, RW, dan RT membaca data tapi tidak bisa menyentuh akun.
+- **Akun berbentuk kursi**, dan daftar kursinya mengikuti RW/RT di data warga.
+- **Password awal dari Admin sekali pakai** — wajib diganti pemiliknya sebelum
+  bisa membuka apa pun.
 - **File Excel adalah sumber data satu-satunya**, dan impor menimpa seluruh
   isinya.
 
@@ -308,25 +355,23 @@ dan catat siapa saja.
 
 ---
 
-## Mengalihkan akun Dukuh
+## Mengalihkan akun Admin
 
-Dilakukan **sebelum** Dukuh yang sekarang berhenti menjabat — bukan sesudahnya.
+Dilakukan **sebelum** pemegang Admin yang sekarang berhenti terlibat — bukan
+sesudahnya.
 
 Peran ini berpindah lewat **pembuatan akun baru, bukan penyerahan password.**
 Password akun lama tidak pernah diberikan ke penggantinya: kalau dua orang
 memakai akun yang sama, catatan perubahan tidak bisa lagi membedakan siapa
 melakukan apa — justru pada peran yang paling perlu bisa dibedakan.
 
-1. Dukuh yang menjabat membuat **akun baru ber-peran Dukuh** untuk
-   penggantinya.
-2. Penggantinya masuk, dan memastikan ia bisa membuka menu **Akun Pengurus**.
-3. Dukuh yang baru **mereset password akunnya sendiri** lewat Dukuh lama, atau
-   akun lama meresetnya sekali lagi — supaya password awal yang pernah
-   diketahui orang lain tidak lagi berlaku.
-4. **Setelah langkah 2 terbukti berhasil**, akun Dukuh lama dinonaktifkan.
-5. Perbarui bagian [Akun layanan](#akun-layanan-untuk-yang-mengurus-teknis) di
+1. Admin yang menjabat membuatkan **akun Admin baru** untuk penggantinya.
+2. Penggantinya masuk, **mengganti password awalnya** (dituntut aplikasi), dan
+   memastikan ia bisa membuka menu **Akun Pengurus**.
+3. **Setelah langkah 2 terbukti berhasil**, akun Admin lama dicabut aksesnya.
+4. Perbarui bagian [Akun layanan](#akun-layanan-untuk-yang-mengurus-teknis) di
    atas, termasuk kontaknya.
 
-> **Urutan langkah 2 sebelum 4 tidak boleh dibalik.** Menonaktifkan akun lama
+> **Urutan langkah 2 sebelum 3 tidak boleh dibalik.** Menonaktifkan akun lama
 > sebelum akun baru terbukti bisa dipakai adalah cara paling umum sebuah sistem
 > menjadi tidak bisa dikelola siapa pun.

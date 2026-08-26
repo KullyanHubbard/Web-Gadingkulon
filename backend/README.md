@@ -4,12 +4,26 @@ FastAPI + SQLite (`sqlite3` stdlib, tanpa ORM). Dua tabel: `penduduk` dan
 `pengurus`.
 
 **NIK dan Nomor Kartu Keluarga tidak disimpan sama sekali** — desa tidak
-mengizinkannya. `id` penduduk adalah UUID yang dibangkitkan saat impor, bukan
-turunan data apa pun. Lihat
-`docs/superpowers/specs/2026-08-26-hapus-nik-kk-auth-pengurus-design.md`.
+mengizinkannya. `id` penduduk diambil dari kolom **Kode Warga** di Excel: kunci
+yang dijaga pengurus, satu-satunya yang bertahan melewati impor yang menimpa.
+Kode ganda atau kosong menghentikan impor. Lihat dua spec bertanggal 2026-08-26
+di `docs/superpowers/specs/`.
 
-**Warga tidak punya akun.** Yang bisa masuk hanya perangkat desa: `ADMIN`
-(Dukuh — plus kelola akun) dan `PENGURUS` (Ketua RW/RT).
+**Warga tidak punya akun.** Yang bisa masuk hanya perangkat desa, empat peran:
+
+| Peran   | Bisa apa |
+| ------- | -------- |
+| `ADMIN` | Kelola akun pengurus. **Nol akses data warga.** |
+| `DUKUH` | Baca seluruh data warga + infografis |
+| `RW`    | sama (satu akun per nomor RW) |
+| `RT`    | sama (satu akun per nomor RT) |
+
+Akun berbentuk **kursi**: daftar jabatannya diturunkan dari alamat warga di
+data penduduk, bukan disimpan di tabel kedua, jadi kursi RT baru muncul sendiri
+begitu ada warga ber-RT itu. Satu kursi hanya boleh dihuni satu akun aktif.
+
+**Password awal dari Admin sekali pakai.** Akun baru bisa login tapi ditolak di
+semua endpoint lain sampai menggantinya lewat `POST /auth/ganti-password`.
 
 | Kolom                | Isi                                                    |
 | -------------------- | ------------------------------------------------------ |
@@ -31,7 +45,9 @@ cp .env.example .env      # WAJIB: isi ADMIN_USERNAME & ADMIN_PASSWORD
 
 **Backend menolak jalan kalau tabel `pengurus` kosong dan `ADMIN_USERNAME` /
 `ADMIN_PASSWORD` belum diisi.** Dua nilai itu dipakai sekali, untuk membuat akun
-Dukuh pertama; setelah akun itu ada, nilainya tidak dipakai lagi. Memakai
+`ADMIN` pertama; setelah akun itu ada, nilainya tidak dipakai lagi. Akun
+bootstrap ini tidak dituntut ganti password — nilainya datang dari environment
+server, bukan dari tangan orang lain. Memakai
 default berarti ada instalasi yang berjalan dengan password yang tertulis di
 kode publik — karena itu tidak ada defaultnya.
 
@@ -48,9 +64,11 @@ Excel pendataan:
 ```
 
 **Setiap impor MENIMPA seluruh tabel penduduk.** File yang diimpor harus selalu
-lengkap, bukan berisi warga baru saja. Tanpa NIK tidak ada kunci yang bisa
-dipercaya untuk mengenali orang yang sama antar-impor, jadi tidak ada dedup —
-Excel adalah sumber kebenaran tunggal.
+lengkap, bukan berisi warga baru saja. Excel adalah sumber kebenaran tunggal.
+
+Kolom **Kode Warga** wajib diisi, unik, dan tidak boleh berubah: nilainya jadi
+`id` penduduk. Impor berhenti dengan menyebutkan nomor barisnya kalau ada yang
+kosong atau ganda.
 
 Restart backend setelah impor: `store.py` membaca tabel sekali saat start.
 
@@ -75,13 +93,14 @@ VITE_API_BASE_URL=http://localhost:8000
 | ------ | -------------------------------- | ------------------------------------------------------ |
 | POST   | `/auth/login`                    | pengurus: username + password → `{ token, user }`      |
 | POST   | `/auth/logout`                   | —                                                      |
+| POST   | `/auth/ganti-password`           | ganti password sendiri (semua peran)                   |
 | GET    | `/penduduk`                      | daftar: `page`, `pageSize`, `search` (nama) + filter    |
 | GET    | `/penduduk/filter-opsi`          | pilihan RT / RW / pekerjaan dari isi data              |
 | GET    | `/penduduk/{id}`                 | detail satu warga                                       |
 | GET    | `/infografis`                    | agregat lengkap — semua pengurus                        |
 | GET    | `/publik/statistik`              | cacah per RW — **tanpa auth**                           |
-| GET    | `/pengurus`                      | daftar akun — ADMIN                                     |
-| POST   | `/pengurus`                      | tambah akun — ADMIN                                     |
+| GET    | `/pengurus`                      | daftar **kursi**, terisi & kosong — ADMIN                |
+| POST   | `/pengurus`                      | isi satu kursi kosong — ADMIN                           |
 | PATCH  | `/pengurus/{id}`                 | ubah nama / wilayah / status aktif — ADMIN              |
 | POST   | `/pengurus/{id}/reset-password`  | ganti password akun — ADMIN                             |
 
@@ -90,8 +109,8 @@ Filter `GET /penduduk` (semua opsional, digabung AND): `jenisKelamin`, `agama`,
 `pekerjaan`, `rt`, `rw`, `kelompokUmur`.
 
 Token JWT dikirim lewat header `Authorization: Bearer <token>`. Status `aktif`
-diperiksa tiap request, jadi akun yang dinonaktifkan langsung tertolak walaupun
-tokennya belum kedaluwarsa.
+dan `harus_ganti_password` diperiksa tiap request, jadi akun yang dicabut
+aksesnya langsung tertolak walaupun tokennya belum kedaluwarsa.
 
 Tidak ada `DELETE /pengurus`: akun cukup dinonaktifkan supaya jejak audit tetap
 menunjuk ke akun yang ada.

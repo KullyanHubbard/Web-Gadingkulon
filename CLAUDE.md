@@ -19,8 +19,9 @@ kode agar hasil tetap rapi dan konsisten.
   `app/data/impor_excel.py`, akun Dukuh pertama lewat `pengurus.bootstrap()`
   dari env. **Yang masih di memori:** audit log saja.
 - **NIK & No. KK tidak disimpan sama sekali** (keputusan desa, 26 Agustus
-  2026). Warga tidak punya akun. Spec:
-  `docs/superpowers/specs/2026-08-26-hapus-nik-kk-auth-pengurus-design.md`.
+  2026). Warga tidak punya akun. `id` penduduk = kolom **Kode Warga** di Excel.
+- **Empat peran** (`ADMIN`/`DUKUH`/`RW`/`RT`) dan akun berbentuk **kursi**.
+  Pergantian pengurus lewat pengajuan + persetujuan **belum dibuat** (Tahap 2).
 
 ---
 
@@ -29,14 +30,24 @@ kode agar hasil tetap rapi dan konsisten.
 Web untuk melihat data kependudukan desa. Dipakai **perangkat desa saja** —
 warga tidak punya akun.
 
-| Peran        | Hak akses                                                                 |
-| ------------ | ------------------------------------------------------------------------- |
-| **PENGURUS** | Ketua RW/RT. Baca seluruh data penduduk & infografis, tidak dibatasi wilayah |
-| **ADMIN**    | Dukuh. Semua kewenangan PENGURUS + kelola akun pengurus                    |
+| Peran     | Hak akses                                                                    |
+| --------- | ---------------------------------------------------------------------------- |
+| **ADMIN** | Kelola akun pengurus. **Nol akses data warga** — bukan pembatasan simbolis     |
+| **DUKUH** | Baca seluruh data penduduk & infografis                                       |
+| **RW**    | sama (satu akun per nomor RW)                                                 |
+| **RT**    | sama (satu akun per nomor RT)                                                 |
+
+Kewenangan ADMIN dan tiga peran lain **berpotongan kosong**: yang memegang
+tombol pemberian akses tidak membaca isi datanya, dan yang membaca data tidak
+bisa menyentuh akun siapa pun termasuk akunnya sendiri. Baca **tidak dibatasi
+wilayah** — RT 001 tetap melihat seluruh padukuhan.
 
 Halaman depan (`/publik/statistik`) terbuka tanpa login, isinya cacah saja.
 
-Desain berlaku: `docs/superpowers/specs/2026-08-26-hapus-nik-kk-auth-pengurus-design.md`.
+Desain berlaku, dua dokumen dan keduanya masih hidup:
+`2026-08-26-hapus-nik-kk-auth-pengurus-design.md` (NIK/KK & warga tanpa akun)
+dan `2026-08-26-empat-peran-pergantian-pengurus-design.md` (peran, kursi, Kode
+Warga, ganti password wajib — plus rangka Tahap 2 yang belum dikerjakan).
 Spec lama (`2026-08-12-auth-warga-pin-design.md`) disimpan sebagai catatan
 alasan — terutama bagian "Rancangan awal yang dibatalkan" yang masih berlaku —
 tapi seluruh jalur autentikasi warga di dalamnya **sudah dicabut**.
@@ -85,7 +96,7 @@ NIA-WEB/
 │       │   └── ui/           # primitif UI reusable (Button, Card, Table, …)
 │       ├── config/           # akses env tervalidasi (env.ts)
 │       ├── features/         # kode per-domain (lihat §4)
-│       │   ├── auth/             # login pengurus + sesi
+│       │   ├── auth/             # login + sesi + ganti password
 │       │   ├── pengurus/         # kelola akun (ADMIN)
 │       │   ├── penduduk/         # daftar + filter kategori
 │       │   ├── infografis/       # agregat untuk pengurus (di balik login)
@@ -207,8 +218,9 @@ untuk alasan lengkapnya):**
 - **Warga tidak punya akun.** Tidak ada login warga, PIN, aktivasi, maupun
   halaman kontak. Dicabut 26 Agustus 2026 bersama NIK & No. KK — jangan
   dihidupkan lagi tanpa keputusan eksplisit.
-- **Pengurus** masuk di `/login` dengan username + password. Dua peran:
-  `ADMIN` (Dukuh — plus kelola akun) dan `PENGURUS` (Ketua RW/RT).
+- **Perangkat desa** masuk di `/login` dengan username + password. Empat peran:
+  `ADMIN` (kelola akun, buta data warga) dan `DUKUH`/`RW`/`RT` (baca data
+  warga, tidak bisa menyentuh akun).
 - **Akun pengurus tinggal di SQLite** (tabel `pengurus`), ditambah &
   dinonaktifkan ADMIN saat runtime lewat `/admin/pengurus`. Akun ADMIN pertama
   dibuat `pengurus.bootstrap()` dari `ADMIN_USERNAME`/`ADMIN_PASSWORD`; **DB
@@ -218,11 +230,21 @@ untuk alasan lengkapnya):**
   waktu di mana pun. Konsekuensinya diterima sadar: akun pengurus lama tetap
   bisa masuk sampai ada yang menonaktifkannya manual. Penggantinya prosedur
   di `docs/PROSEDUR-PENGURUS.md`, bukan kode.
-- **`current_user` = pengurus mana pun; `current_admin` = kelola akun saja.**
-  Baca data penduduk & infografis tidak dibatasi peran maupun wilayah.
+- **Tiga dependency, jangan tertukar:** `current_user` (siapa pun yang masuk —
+  dipakai hanya oleh ganti password), `current_pengurus` (`DUKUH`/`RW`/`RT`,
+  menolak ADMIN), `current_admin` (ADMIN saja).
+- **Akun berbentuk kursi.** Daftar kursi diturunkan dari alamat warga
+  (`pengurus.daftar_kursi`), bukan disimpan di tabel kedua. Satu kursi hanya
+  boleh dihuni satu akun **aktif** — akun nonaktif penghuni lama tetap
+  tersimpan di kursi yang sama, jadi keunikannya diperiksa di kode, bukan lewat
+  `UNIQUE` di SQL.
+- **Password awal dari Admin sekali pakai.** Kolom `harus_ganti_password`:
+  selama menyala, login berhasil tapi `current_pengurus`/`current_admin`
+  menolak 403. Reset oleh Admin menyalakannya lagi.
 - **`jabatan` tidak disimpan** — diturunkan dari `role` + `rw` + `rt`
   (`pengurus.jabatan_dari`). Menyimpannya berarti dua sumber kebenaran yang
-  bisa berbeda diam-diam.
+  bisa berbeda diam-diam. `kursi_dari()` memakai RW **dan** RT sekaligus: nomor
+  RT cuma unik di dalam RW-nya.
 - **Status `aktif` diperiksa tiap request** (`current_user` query DB, bukan
   baca klaim token), jadi menonaktifkan akun langsung berlaku tanpa menunggu
   TTL JWT habis.
@@ -238,10 +260,13 @@ untuk alasan lengkapnya):**
 - Sesi (token + user) disimpan Zustand (`auth-store.ts`) & di-persist ke `localStorage` (`token-storage.ts`).
 - Proteksi route lewat guard di `routes/guards.tsx`:
   - `RequireAuth` — wajib login.
-  - `RequireRole` — batasi per role (dipakai sekali: `/admin/pengurus`).
+  - `RequireRole roles={[...]}` — menerima **daftar** peran, bukan satu.
+  - `RequireGantiPassword` — alihkan ke `/ganti-password` selagi penandanya
+    menyala.
   - `RedirectIfAuthenticated` — halaman login menolak user yang sudah masuk.
 - Menu sidebar mengikuti role via `navItemsForRole()` — **selalu perbarui ini saat menambah halaman**.
-- `homePathForRole()`: ADMIN mendarat di `/admin`, PENGURUS di `/admin/penduduk`.
+- `homePathForRole()`: ADMIN mendarat di `/admin/pengurus` (satu-satunya
+  halaman yang terbuka untuknya), sisanya di `/admin/penduduk`.
 
 > Keamanan sebenarnya WAJIB ditegakkan di backend (FastAPI). Guard frontend hanya UX.
 
@@ -356,10 +381,13 @@ harus query `db.py` langsung.
 
 **Data penduduk read-only dari sisi aplikasi.** Satu-satunya jalur masuk data
 adalah `app/data/impor_excel.py`, dan **tiap impor menimpa seluruh tabel**
-(`db.kosongkan`). Tidak ada dedup: tanpa NIK tidak ada kunci yang bisa
-dipercaya untuk mengenali orang yang sama antar-impor. `id` penduduk UUID yang
-dibangkitkan saat impor — **jangan simpan referensi ke `id` penduduk di mana
-pun**, ia berganti tiap impor.
+(`db.kosongkan`).
+
+**`id` penduduk = kolom "Kode Warga" di Excel**, bukan UUID. Kunci yang dijaga
+manusia adalah satu-satunya yang bertahan melewati impor yang menimpa, dan
+Tahap 2 mengharuskan jabatan pengurus menunjuk warga tertentu. Kode ganda atau
+kosong **menghentikan impor sebelum satu baris pun ditulis** — dua warga
+bertukar kode berarti dua orang bertukar jabatan tanpa ada yang menyadarinya.
 
 Kontrak endpoint yang **sudah diimplementasikan** (bentuknya sinkron dengan
 `*Api` frontend):
@@ -368,13 +396,14 @@ Kontrak endpoint yang **sudah diimplementasikan** (bentuknya sinkron dengan
 | ------ | -------------------------------- | ------------------------------------------------------ |
 | POST   | `/auth/login`                    | pengurus: username + password → `{ token, user }`      |
 | POST   | `/auth/logout`                   | —                                                      |
+| POST   | `/auth/ganti-password`           | ganti password sendiri; satu-satunya pintu yang terbuka selagi `harusGantiPassword` menyala |
 | GET    | `/penduduk`                      | daftar: `page`, `pageSize`, `search` (nama) + 10 filter |
 | GET    | `/penduduk/filter-opsi`          | pilihan RT / RW / pekerjaan dari isi data              |
 | GET    | `/penduduk/{id}`                 | detail satu warga                                       |
 | GET    | `/infografis`                    | agregat lengkap — semua pengurus                        |
 | GET    | `/publik/statistik`              | cacah per RW — **tanpa auth**                           |
-| GET    | `/pengurus`                      | daftar akun — ADMIN                                     |
-| POST   | `/pengurus`                      | tambah akun — ADMIN                                     |
+| GET    | `/pengurus`                      | daftar **kursi** (terisi & kosong) — ADMIN              |
+| POST   | `/pengurus`                      | isi satu kursi kosong — ADMIN                           |
 | PATCH  | `/pengurus/{id}`                 | ubah nama / wilayah / status aktif — ADMIN              |
 | POST   | `/pengurus/{id}/reset-password`  | ganti password akun — ADMIN                             |
 
@@ -399,6 +428,10 @@ harus di atas `/penduduk/{id}`, kalau tidak ia terbaca sebagai sebuah id.
   nonaktif ikut tertolak.
 - ✅ `/pengurus/*` hanya ADMIN (`dependencies=[Depends(current_admin)]` di
   level router), dicatat di log audit.
+- ✅ ADMIN ditolak di seluruh endpoint data warga (`current_pengurus`), bukan
+  sekadar disembunyikan menunya.
+- ✅ Akun yang belum mengganti password awal ditolak 403 di mana pun kecuali
+  `/auth/ganti-password`; password baru wajib berbeda dari yang lama.
 - ✅ Backend menolak jalan kalau tabel `pengurus` kosong tapi
   `ADMIN_USERNAME`/`ADMIN_PASSWORD` belum diisi.
 - ✅ `deletedAt` (salah input) disaring di `app/data/store.py`, satu tempat.
@@ -408,6 +441,10 @@ harus di atas `/penduduk/{id}`, kalau tidak ia terbaca sebagai sebuah id.
 **Utang yang masih terbuka** — tercatat di spec 2026-08-26, jangan dianggap
 kondisi final:
 
+- ⬜ **Pengajuan & persetujuan pergantian pengurus** (Tahap 2). Sementara ini
+  ADMIN masih bisa mengisi kursi dan mencabut akses langsung — `PATCH
+  /pengurus/{id}` ber-`aktif=false` sudah ditandai `ponytail:` sebagai pintu
+  darurat yang harus dicabut begitu Tahap 2 jalan.
 - ⬜ **Endpoint mutasi data warga** (`POST`/`PATCH`/`DELETE /penduduk`) beserta
   helper `boleh_akses(pengurus, warga)` dan pembatasan wilayah. Sengaja ditunda
   — data penduduk sekarang read-only dari Excel. Rencananya menempel di
