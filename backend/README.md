@@ -58,12 +58,11 @@ diisi.
 itu siapa pun bisa membuat token masuk palsu untuk akun mana pun. Bangkitkan
 sekali: `python3 -c "import secrets; print(secrets.token_urlsafe(48))"`.
 
- Dua nilai itu dipakai sekali, untuk membuat akun
-`ADMIN` pertama; setelah akun itu ada, nilainya tidak dipakai lagi. Akun
-bootstrap ini tidak dituntut ganti password — nilainya datang dari environment
-server, bukan dari tangan orang lain. Memakai
-default berarti ada instalasi yang berjalan dengan password yang tertulis di
-kode publik — karena itu tidak ada defaultnya.
+`ADMIN_USERNAME` / `ADMIN_PASSWORD` dipakai sekali, untuk membuat akun `ADMIN`
+pertama; setelah akun itu ada, nilainya tidak dipakai lagi — **mengubahnya
+belakangan tidak mengubah password akun yang sudah terlanjur dibuat.** Akun
+bootstrap ini tidak dituntut ganti password: nilainya datang dari environment
+server, bukan dari tangan orang lain.
 
 Docs interaktif: http://localhost:8000/docs
 
