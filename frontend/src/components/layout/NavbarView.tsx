@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/Badge';
 
 interface NavbarViewProps {
   nama: string;
-  /** Teks peran di bawah nama, mis. "Ketua RT 03" atau "Warga". */
+  /** Teks jabatan di bawah nama, mis. "Ketua RT 03" atau "Dukuh". */
   peran: string;
   /** Label ringkas pada badge di dalam dropdown. */
   peranBadge: string;

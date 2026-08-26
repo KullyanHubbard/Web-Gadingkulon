@@ -1,7 +1,6 @@
 import ikonChartBar from '@/assets/icons/nav/chart-bar.svg';
 import ikonChartPie from '@/assets/icons/nav/chart-pie.svg';
 import ikonId from '@/assets/icons/nav/id.svg';
-import ikonPhone from '@/assets/icons/nav/phone.svg';
 import ikonUsers from '@/assets/icons/nav/users.svg';
 import type { Role } from '@/features/auth/types';
 import { CHART_KATEGORI_COLORS } from '@/lib/colors';
@@ -34,50 +33,37 @@ const statistikDesa: NavItem = {
   end: true,
 };
 
-/** Muncul di dua role, jadi warnanya ditulis sekali di sini. */
-const dataSaya: NavItem = {
-  label: 'Data Saya',
-  to: paths.beranda,
-  icon: ikonId,
-  aksen: CHART_KATEGORI_COLORS[2],
-};
-
-/** Menu navigasi sesuai role. */
+/** Menu navigasi. Semua pengurus melihat menu yang sama; ADMIN dapat satu
+ *  menu tambahan untuk kelola akun. */
 export function navItemsForRole(role: Role | undefined): NavItem[] {
-  if (role === 'ADMIN') {
-    return [
-      {
-        label: 'Dashboard',
-        to: paths.admin.root,
-        aksen: CHART_KATEGORI_COLORS[0],
-        end: true,
-      },
-      {
-        label: 'Data Penduduk',
-        to: paths.admin.penduduk,
-        icon: ikonUsers,
-        aksen: CHART_KATEGORI_COLORS[5],
-      },
-      {
-        label: 'Infografis',
-        to: paths.admin.infografis,
-        icon: ikonChartPie,
-        aksen: CHART_KATEGORI_COLORS[4],
-      },
-      dataSaya,
-      statistikDesa,
-    ];
-  }
-  // Warga. "Kontak Saya" hanya relevan untuk warga — pengurus tidak punya
-  // akun warga sehingga halaman itu tidak berlaku bagi mereka.
-  return [
-    dataSaya,
+  const menu: NavItem[] = [
     {
-      label: 'Kontak Saya',
-      to: paths.kontak,
-      icon: ikonPhone,
-      aksen: CHART_KATEGORI_COLORS[1],
+      label: 'Dashboard',
+      to: paths.admin.root,
+      aksen: CHART_KATEGORI_COLORS[0],
+      end: true,
     },
-    statistikDesa,
+    {
+      label: 'Data Penduduk',
+      to: paths.admin.penduduk,
+      icon: ikonUsers,
+      aksen: CHART_KATEGORI_COLORS[5],
+    },
+    {
+      label: 'Infografis',
+      to: paths.admin.infografis,
+      icon: ikonChartPie,
+      aksen: CHART_KATEGORI_COLORS[4],
+    },
   ];
+  if (role === 'ADMIN') {
+    menu.push({
+      label: 'Akun Pengurus',
+      to: paths.admin.pengurus,
+      icon: ikonId,
+      aksen: CHART_KATEGORI_COLORS[2],
+    });
+  }
+  menu.push(statistikDesa);
+  return menu;
 }
