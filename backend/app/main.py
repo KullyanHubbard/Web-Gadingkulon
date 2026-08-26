@@ -10,7 +10,7 @@ from app.api.routers import (
     pengurus,
     publik,
 )
-from app.core.config import settings
+from app.core.config import BAWAAN_JWT_SECRET, settings
 from app.data.pengurus import bootstrap
 from app.data.pengurus import daftar as daftar_pengurus
 from app.data.store import DAFTAR_PENDUDUK
@@ -45,6 +45,22 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+def _wajib_diisi() -> None:
+    """Berhenti kalau nilai rahasia masih bawaan.
+
+    Diperlakukan sama tegas dengan ADMIN_PASSWORD, dan alasannya sama: kunci
+    contoh ini tertulis di kode yang bisa dibaca siapa saja, jadi siapa pun
+    bisa membuat token masuk palsu untuk akun mana pun. Menolak jalan lebih
+    baik daripada berjalan dengan pintu yang tidak terkunci.
+    """
+    if settings.JWT_SECRET == BAWAAN_JWT_SECRET:
+        raise RuntimeError(
+            "JWT_SECRET masih memakai nilai bawaan yang tertulis di kode.\n"
+            "Isi JWT_SECRET di backend/.env dengan nilai acak panjang, mis.:\n"
+            "  python3 -c \"import secrets; print(secrets.token_urlsafe(48))\""
+        )
+
+
 @app.on_event("startup")
 def _startup() -> None:
     """Bootstrap akun ADMIN pertama, lalu ringkasan keadaan data.
@@ -52,6 +68,7 @@ def _startup() -> None:
     Tidak ada kredensial yang dicetak: begitu tabelnya berisi data pendataan
     sungguhan, log server jadi tempat bocornya.
     """
+    _wajib_diisi()
     bootstrap()
     print("=== SIDUK backend ===")
     print(f"  Akun pengurus: {len(daftar_pengurus())} akun terdaftar")

@@ -50,8 +50,15 @@ cp .env.example .env      # WAJIB: isi ADMIN_USERNAME & ADMIN_PASSWORD
 .venv/bin/uvicorn app.main:app --reload --port 8000
 ```
 
-**Backend menolak jalan kalau tabel `pengurus` kosong dan `ADMIN_USERNAME` /
-`ADMIN_PASSWORD` belum diisi.** Dua nilai itu dipakai sekali, untuk membuat akun
+**Backend menolak jalan kalau `JWT_SECRET` masih bernilai bawaan**, atau kalau
+tabel `pengurus` kosong sementara `ADMIN_USERNAME` / `ADMIN_PASSWORD` belum
+diisi.
+
+`JWT_SECRET` bawaan tertulis di kode yang bisa dibaca siapa saja — dengan nilai
+itu siapa pun bisa membuat token masuk palsu untuk akun mana pun. Bangkitkan
+sekali: `python3 -c "import secrets; print(secrets.token_urlsafe(48))"`.
+
+ Dua nilai itu dipakai sekali, untuk membuat akun
 `ADMIN` pertama; setelah akun itu ada, nilainya tidak dipakai lagi. Akun
 bootstrap ini tidak dituntut ganti password — nilainya datang dari environment
 server, bukan dari tangan orang lain. Memakai

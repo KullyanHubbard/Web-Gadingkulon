@@ -1,5 +1,7 @@
 import type { RefObject } from 'react';
-import { LogOut, Menu, UserCircle2 } from 'lucide-react';
+import { KeyRound, LogOut, Menu, UserCircle2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { paths } from '@/routes/paths';
 import { Badge } from '@/components/ui/Badge';
 
 interface NavbarViewProps {
@@ -13,6 +15,7 @@ interface NavbarViewProps {
   menuOpen: boolean;
   onToggleMenu: () => void;
   menuRef: RefObject<HTMLDivElement>;
+  onTutupMenu: () => void;
   onLogout: () => void;
 }
 
@@ -26,6 +29,7 @@ export function NavbarView({
   menuOpen,
   onToggleMenu,
   menuRef,
+  onTutupMenu,
   onLogout,
 }: NavbarViewProps) {
   return (
@@ -63,6 +67,18 @@ export function NavbarView({
                   {peranBadge}
                 </Badge>
               </div>
+              {/* Satu-satunya jalan ke halaman ganti password bagi orang yang
+                  tidak sedang dipaksa menggantinya. Tanpa ini, akun yang
+                  passwordnya sudah pernah diganti tidak punya cara mengubahnya
+                  lagi selain mengetik alamatnya sendiri. */}
+              <Link
+                to={paths.gantiPassword}
+                onClick={onTutupMenu}
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
+              >
+                <KeyRound className="h-4 w-4" />
+                Ganti Password
+              </Link>
               <button
                 onClick={onLogout}
                 className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50"

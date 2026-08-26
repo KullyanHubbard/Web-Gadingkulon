@@ -177,6 +177,11 @@ dan tidak ada yang bisa mati diam-diam.
 
 ## Pengurus lupa password
 
+**Kalau masih ingat passwordnya dan cuma ingin menggantinya:** tidak perlu
+Admin. Klik gambar orang di pojok kanan atas → **Ganti Password**.
+
+**Kalau benar-benar lupa:**
+
 1. Pengurus **datang langsung** menemui Admin.
 2. Admin membuka menu **Akun Pengurus** → cari barisnya → **Reset Password**.
 3. Admin mengetik password baru, lalu menyampaikannya **langsung**.

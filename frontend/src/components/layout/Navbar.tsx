@@ -23,6 +23,7 @@ export function Navbar({ onOpenSidebar }: { onOpenSidebar: () => void }) {
       menuOpen={menuOpen}
       onToggleMenu={() => setMenuOpen((v) => !v)}
       menuRef={menuRef}
+      onTutupMenu={() => setMenuOpen(false)}
       onLogout={logout}
     />
   );

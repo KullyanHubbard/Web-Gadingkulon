@@ -460,8 +460,10 @@ harus di atas `/penduduk/{id}`, kalau tidak ia terbaca sebagai sebuah id.
   menyetujui.
 - ✅ Penyetuju hanya menerima pengajuan yang ditujukan kepadanya; yang lain
   memang tidak ikut dikembalikan, bukan disembunyikan di layar.
-- ✅ Backend menolak jalan kalau tabel `pengurus` kosong tapi
-  `ADMIN_USERNAME`/`ADMIN_PASSWORD` belum diisi.
+- ✅ Backend menolak jalan kalau `JWT_SECRET` masih bernilai bawaan
+  (`app/main.py:_wajib_diisi`), atau kalau tabel `pengurus` kosong tapi
+  `ADMIN_USERNAME`/`ADMIN_PASSWORD` belum diisi. Defaultnya tetap ada supaya
+  perkakas baris perintah jalan tanpa `.env`; yang menolak adalah startup.
 - ✅ `deletedAt` (salah input) disaring di `app/data/store.py`, satu tempat.
   `PINDAH`/`MENINGGAL` sengaja **tidak** disaring: datanya sah, dan keputusan
   sementaranya tetap dihitung.
@@ -483,7 +485,7 @@ kondisi final:
   tabel `pengajuan`/`persetujuan`, jadi ini menunggu sampai ada mutasi data
   warga.
 - ⬜ **Rate limit login pengurus.** Dicabut bersama jalur warga; belum ada
-  penggantinya.
+  penggantinya. Satu-satunya lubang keamanan yang tersisa dari daftar awal.
 - ⬜ **Status kependudukan (`PINDAH`/`MENINGGAL`)** ikut disaring dari daftar
   atau statistik. Sekarang tetap dihitung, sesuai keputusan sementara di
   `docs/PROSEDUR-PENGURUS.md`.

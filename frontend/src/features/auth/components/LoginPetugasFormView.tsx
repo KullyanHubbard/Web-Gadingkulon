@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/Input';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { AuthLayout } from '@/features/auth/components/AuthLayout';
 import type { PetugasLoginFormValues } from '../schemas';
+import type { Role } from '../types';
+import { PERAN_LOGIN, PilihanPeranLogin } from './PilihanPeranLogin';
 
 interface LoginPetugasFormViewProps {
   register: UseFormRegister<PetugasLoginFormValues>;
@@ -14,6 +16,9 @@ interface LoginPetugasFormViewProps {
   onSubmit: FormEventHandler<HTMLFormElement>;
   isPending: boolean;
   errorMessage: string | null;
+  /** Peran yang sedang dipilih. Orientasi saja — tidak dikirim ke backend. */
+  peran: Role;
+  onPilihPeran: (role: Role) => void;
 }
 
 /** Tampilan form masuk pengurus. Tanpa hook — lihat `LoginPetugasForm`. */
@@ -23,10 +28,16 @@ export function LoginPetugasFormView({
   onSubmit,
   isPending,
   errorMessage,
+  peran,
+  onPilihPeran,
 }: LoginPetugasFormViewProps) {
+  const pilihan = PERAN_LOGIN.find((p) => p.role === peran) ?? PERAN_LOGIN[0];
+
   return (
-    <AuthLayout title="Masuk sebagai pengurus">
-      <form onSubmit={onSubmit} className="mt-6 space-y-4">
+    <AuthLayout title={pilihan.judul} description={pilihan.catatan}>
+      <PilihanPeranLogin dipilih={peran} onPilih={onPilihPeran} />
+
+      <form onSubmit={onSubmit} className="mt-5 space-y-4">
         {errorMessage && <Alert tone="error">{errorMessage}</Alert>}
 
         <Input
@@ -34,7 +45,7 @@ export function LoginPetugasFormView({
           className="h-12 text-base"
           icon={<UserRound className="h-4 w-4" />}
           autoComplete="username"
-          placeholder="cth. dukuh"
+          placeholder={`cth. ${pilihan.contoh}`}
           error={errors.username}
           {...register('username')}
         />
@@ -56,6 +67,11 @@ export function LoginPetugasFormView({
         >
           Masuk
         </Button>
+
+        <p className="text-center text-xs text-slate-500">
+          Salah pilih peran tidak masalah — yang menentukan adalah akun Anda,
+          bukan tombol di atas.
+        </p>
       </form>
 
     </AuthLayout>
