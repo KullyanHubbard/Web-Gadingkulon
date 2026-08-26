@@ -20,7 +20,6 @@ BARIS_KOSONG = 300
 
 CONTOH = [
     {
-        "noKK": "3204120101900001", "nik": "3204120101900001",
         "nama": "Contoh Nama Kepala Keluarga", "jenisKelamin": "LAKI_LAKI",
         "tempatLahir": "Bandung", "tanggalLahir": "1990-01-01", "agama": "ISLAM",
         "statusPerkawinan": "KAWIN", "pendidikan": "SMA", "pekerjaan": "Wiraswasta",
@@ -30,7 +29,6 @@ CONTOH = [
         "kabupaten": "Bandung", "provinsi": "Jawa Barat", "kodePos": "40615",
     },
     {
-        "noKK": "3204120101900001", "nik": "3204124205920002",
         "nama": "Contoh Nama Istri", "jenisKelamin": "PEREMPUAN",
         "tempatLahir": "Bandung", "tanggalLahir": "1992-05-02", "agama": "ISLAM",
         "statusPerkawinan": "KAWIN", "pendidikan": "SMA",
@@ -47,12 +45,14 @@ PETUNJUK = [
     "",
     "1. Jangan ubah JUDUL kolom di sheet 'Data Penduduk'. Urutannya boleh digeser.",
     "2. Dua baris contoh (huruf miring abu-abu) HAPUS sebelum dipakai.",
-    "3. NIK dan No. KK: 16 digit angka, tanpa spasi atau tanda baca.",
-    "4. Satu keluarga = satu No. KK yang sama di semua anggotanya.",
-    "5. Tanggal Lahir: format yyyy-mm-dd (contoh 1990-01-01).",
-    "6. Kolom berikut WAJIB pilih dari dropdown (klik sel, muncul panah di kanan):",
+    "3. NIK dan No. KK TIDAK didata. Jangan menambahkan kolomnya sendiri —",
+    "   sistem tidak menyimpannya, dan desa tidak mengizinkannya.",
+    "4. Tanggal Lahir: format yyyy-mm-dd (contoh 1990-01-01).",
+    "5. Kolom berikut WAJIB pilih dari dropdown (klik sel, muncul panah di kanan):",
     "   Jenis Kelamin, Agama, Status Perkawinan, Pendidikan Terakhir,",
-    "   Gol. Darah, Status dalam KK.",
+    "   Gol. Darah, Status dalam Keluarga.",
+    "6. Kirim file LENGKAP berisi SELURUH warga, bukan tambahannya saja:",
+    "   impor menimpa seluruh data lama.",
     "7. Simpan sebagai .xlsx, kirim ke pengelola data untuk diimpor ke sistem.",
 ]
 

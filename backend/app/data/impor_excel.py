@@ -2,11 +2,14 @@
 dibaca lewat app/schemas/penduduk.py, disimpan lewat app/data/db.py (sudah
 tervalidasi self-check-nya sendiri).
 
-Dipakai baik untuk impor awal (DB kosong) maupun menambah warga baru
-belakangan (DB sudah terisi) — jalur yang sama. NIK di file yang ternyata
-sudah ada di database ditolak keras, tidak ditimpa diam-diam; kalau itu
-terjadi hapus baris itu dari Excel (koreksi data warga lama bukan cakupan
-skrip ini) lalu jalankan ulang.
+File Excel adalah sumber kebenaran tunggal. Setiap impor MENIMPA seluruh
+tabel penduduk — file yang diimpor harus selalu lengkap, bukan berisi warga
+baru saja, atau warga lama akan terhapus.
+
+Tidak ada dedup: tanpa NIK tidak ada kunci yang bisa dipercaya untuk mengenali
+orang yang sama antar-impor, dan kandidat penggantinya (nama + tanggal lahir +
+alamat) gagal persis pada kasus yang paling mungkin terjadi di satu padukuhan:
+dua orang senama.
 
 Kolom dicocokkan lewat **nama header**, bukan urutan. Pengurus boleh
 menggeser, jadi mengandalkan urutan berarti data masuk ke kolom yang salah
@@ -24,6 +27,7 @@ Pakai:
 """
 
 import sys
+import uuid
 
 from openpyxl import load_workbook
 
@@ -38,8 +42,6 @@ BARIS_HEADER = 2  # baris 1 = judul
 # Pembangkit file Excel di `backend/tools/` membaca daftar ini juga, supaya
 # bentuk file dan pembacanya tidak mungkin melenceng sendiri-sendiri.
 KOLOM: list[tuple[str, str, int]] = [
-    ("noKK", "No. KK", 18),
-    ("nik", "NIK", 18),
     ("nama", "Nama Lengkap", 24),
     ("jenisKelamin", "Jenis Kelamin", 14),
     ("tempatLahir", "Tempat Lahir", 16),
@@ -106,7 +108,9 @@ def petakan_kolom(baris_header: tuple) -> dict[str, int]:
 def baris_ke_penduduk(nilai: dict[str, str]) -> Penduduk:
     inti = {k: v for k, v in nilai.items() if k not in _ALAMAT}
     alamat = {k: v for k, v in nilai.items() if k in _ALAMAT}
-    return Penduduk(id=nilai["nik"], alamat=Alamat(**alamat), **inti)
+    # `id` dibangkitkan, bukan diturunkan dari data: NIK tidak lagi disimpan
+    # (spec 2026-08-26), dan tidak ada field lain yang dijamin unik.
+    return Penduduk(id=str(uuid.uuid4()), alamat=Alamat(**alamat), **inti)
 
 
 def baca_xlsx(path: str) -> list[Penduduk]:
@@ -116,7 +120,7 @@ def baca_xlsx(path: str) -> list[Penduduk]:
 
     daftar = []
     for r in baris[1:]:
-        if not r[peta["nik"]]:  # NIK kosong = baris belum diisi, lewati
+        if not r[peta["nama"]]:  # nama kosong = baris belum diisi, lewati
             continue
         nilai = {
             field: ("" if r[i] is None else str(r[i]).strip())
@@ -132,19 +136,12 @@ def main(path_xlsx: str) -> None:
         sys.exit("Tidak ada baris terisi — cek lagi apakah baris contoh sudah dihapus.")
 
     conn = db.buka(settings.DATABASE_FILE)
-    bentrok = db.nik_sudah_ada(conn, [p.nik for p in daftar])
-    if bentrok:
-        conn.close()
-        sys.exit(
-            "NIK berikut SUDAH ADA di database, tidak ditimpa:\n  "
-            + "\n  ".join(bentrok)
-            + "\n\nKalau memang cuma mau menambah warga baru, hapus baris itu dari "
-            "Excel lalu jalankan ulang. Kalau memang mau mengoreksi datanya, skrip "
-            "ini belum menanganinya — perlu langkah manual."
-        )
+    lama = db.kosongkan(conn)
     masuk = db.simpan(conn, daftar)
     conn.close()
-    print(f"OK: {masuk} warga baru masuk ke {settings.DATABASE_FILE}")
+    if lama:
+        print(f"PERHATIAN: {lama} baris lama dihapus dan diganti seluruhnya.")
+    print(f"OK: {masuk} warga masuk ke {settings.DATABASE_FILE}")
     print("Restart backend supaya data ini kepakai — store.py baca tabel sekali saat start.")
 
 

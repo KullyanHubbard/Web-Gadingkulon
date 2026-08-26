@@ -1,7 +1,8 @@
 """Bikin docs/data-penduduk.xlsx — data CONTOH untuk menguji sistem.
 
-Isinya karangan: 1 No. KK = 3-5 NIK, satu keluarga utuh (bapak/ibu/anak),
-umur & pendidikan & pekerjaan dibuat saling masuk akal. Bukan warga sungguhan.
+Isinya karangan: 100 keluarga utuh (bapak/ibu/anak) yang berbagi alamat dan
+marga, umur & pendidikan & pekerjaan dibuat saling masuk akal. Bukan warga
+sungguhan. NIK & No. KK tidak dibangkitkan — sistem tidak menyimpannya.
 
 Bukan bagian aplikasi; alat sekali jalan. Bentuk filenya sama persis dengan
 yang diisi pengurus, jadi jalur impornya juga sama.
@@ -21,7 +22,6 @@ from app.data.impor_excel import BARIS_HEADER, KOLOM, NAMA_SHEET
 
 random.seed(20260819)
 
-KODE_WILAYAH = "320412"
 DESA, KECAMATAN, KABUPATEN, PROVINSI, KODE_POS = (
     "Sukamaju", "Cibiru", "Bandung", "Jawa Barat", "40615",
 )
@@ -86,13 +86,6 @@ def umur(lahir: date) -> int:
     return (HARI_INI - lahir).days // 365
 
 
-def buat_nik(lahir: date, perempuan: bool, urut: int) -> str:
-    """Format NIK asli: 6 digit wilayah + DDMMYY + 4 digit urut.
-    Tanggal perempuan ditambah 40 — itu penanda jenis kelamin di NIK asli."""
-    dd = lahir.day + (40 if perempuan else 0)
-    return f"{KODE_WILAYAH}{dd:02d}{lahir.month:02d}{lahir.year % 100:02d}{urut:04d}"
-
-
 def pendidikan_utk(u: int) -> str:
     if u < 6:
         return "TIDAK_SEKOLAH"
@@ -120,7 +113,6 @@ def pekerjaan_utk(u: int, perempuan: bool, pendidikan: str) -> str:
 
 
 baris_semua = []
-urut_nik = 1
 
 for i in range(JUMLAH_KK):
     rw = list(RW_RT)[i % 3]
@@ -134,8 +126,6 @@ for i in range(JUMLAH_KK):
     # selisihnya belasan tahun bikin datanya kelihatan karangan.
     umur_ayah = umur(ayah_lahir)
     ibu_lahir = tanggal_acak(max(22, umur_ayah - 5), max(23, umur_ayah + 3))
-    no_kk = f"{KODE_WILAYAH}{ayah_lahir.day:02d}{ayah_lahir.month:02d}{ayah_lahir.year % 100:02d}{i + 1:04d}"
-
     anggota = []
 
     # Kepala keluarga
@@ -184,8 +174,6 @@ for i in range(JUMLAH_KK):
 
     for a in anggota:
         baris_semua.append({
-            "nik": buat_nik(a["lahir"], a["perempuan"], urut_nik),
-            "noKK": no_kk,
             "nama": a["nama"],
             "jenisKelamin": "PEREMPUAN" if a["perempuan"] else "LAKI_LAKI",
             "tempatLahir": random.choice(
@@ -203,9 +191,8 @@ for i in range(JUMLAH_KK):
             "desa": DESA, "kecamatan": KECAMATAN, "kabupaten": KABUPATEN,
             "provinsi": PROVINSI, "kodePos": KODE_POS,
         })
-        urut_nik += 1
 
-assert len({b["nik"] for b in baris_semua}) == len(baris_semua), "ada NIK dobel"
+assert baris_semua, "tidak ada baris terbangkitkan"
 
 # --- tulis ke xlsx, bentuknya sama persis dengan template kosong ------------
 
