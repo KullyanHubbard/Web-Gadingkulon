@@ -90,6 +90,10 @@ disetujui. Dua orang ditandai memegang kursi yang sama menghentikan impor.
 
 Restart backend setelah impor: `store.py` membaca tabel sekali saat start.
 
+Kolom baru pada tabel yang sudah ada dipasang otomatis saat backend membuka
+database (`db._TAMBALAN`) — **file `.db` tidak perlu dihapus**, dan akun yang
+sudah ada selamat.
+
 Formulir kosong untuk pengurus dibangkitkan dari definisi kolom yang sama:
 
 ```bash
@@ -138,6 +142,9 @@ aksesnya langsung tertolak walaupun tokennya belum kedaluwarsa.
 lewat pergantian yang disetujui — kalau Admin bisa mengosongkannya sendiri, ia
 bisa mengisinya langsung dan persetujuan jadi hiasan yang bisa dilewati dalam
 dua klik.
+
+**Satu orang satu jabatan**, diperiksa lewat Kode Warga (`pengurus.warga_id`),
+bukan nama — dua orang yang benar-benar senama tidak boleh saling menghalangi.
 
 **Kandidat wajib warga wilayah kursinya**: Ketua RT dari RT itu, Ketua RW dari
 RW itu, Dukuh dari mana pun (`pengurus.cocok_wilayah`). Ditegakkan saat mengisi

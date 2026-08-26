@@ -35,6 +35,9 @@ class Pengurus:
     rt: str | None
     aktif: bool
     harus_ganti_password: bool = False
+    # Kode Warga orang yang menduduki kursi ini. `None` untuk ADMIN — ia akun
+    # layanan, bukan warga padukuhan.
+    warga_id: str | None = None
 
     @property
     def jabatan(self) -> str:
@@ -109,6 +112,7 @@ def _dari_row(row) -> Pengurus:
         rt=row["rt"],
         aktif=bool(row["aktif"]),
         harus_ganti_password=bool(row["harus_ganti_password"]),
+        warga_id=row["warga_id"],
     )
 
 
@@ -143,9 +147,10 @@ def tambah(
     role: str,
     rw: str | None = None,
     rt: str | None = None,
+    warga_id: str | None = None,
 ) -> Pengurus:
-    """Raise `ValueError` kalau username sudah dipakai atau kursinya sudah
-    diduduki akun aktif. Akun baru selalu lahir dengan `harus_ganti_password`
+    """Raise `ValueError` kalau username sudah dipakai, kursinya sudah diduduki
+    akun aktif, atau orangnya sedang menduduki kursi lain. Akun baru selalu lahir dengan `harus_ganti_password`
     menyala: password dari Admin sekali pakai."""
     baru = Pengurus(
         id=str(uuid.uuid4()),
@@ -156,6 +161,7 @@ def tambah(
         rt=rt or None,
         aktif=True,
         harus_ganti_password=True,
+        warga_id=warga_id or None,
     )
     with _db() as conn:
         sudah = conn.execute(
@@ -172,10 +178,22 @@ def tambah(
         ]
         if any(p.kursi == baru.kursi for p in penghuni):
             raise ValueError(f"Kursi {baru.jabatan} sudah ada yang menduduki.")
+        # Satu orang satu jabatan. Dibandingkan lewat Kode Warga, bukan nama:
+        # dua orang yang benar-benar senama akan saling menghalangi kalau
+        # namanya yang dipakai.
+        lain = next(
+            (p for p in penghuni if baru.warga_id and p.warga_id == baru.warga_id),
+            None,
+        )
+        if lain is not None:
+            raise ValueError(
+                f"{baru.nama} sedang menduduki kursi {lain.jabatan}. "
+                "Satu orang satu jabatan."
+            )
         with conn:
             conn.execute(
                 "INSERT INTO pengurus (id, username, password_hash, nama, role,"
-                " rw, rt, aktif) VALUES (?, ?, ?, ?, ?, ?, ?, 1)",
+                " rw, rt, aktif, warga_id) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)",
                 (
                     baru.id,
                     baru.username,
@@ -184,6 +202,7 @@ def tambah(
                     baru.role,
                     baru.rw,
                     baru.rt,
+                    baru.warga_id,
                 ),
             )
     return baru
@@ -354,6 +373,13 @@ def demo() -> None:
 
         DATABASE_PATH=/tmp/uji-pengurus.db .venv/bin/python -m app.data.pengurus
     """
+    assert cocok_wilayah(ROLE_RT, "019", "001", "019", "001") is True
+    assert cocok_wilayah(ROLE_RT, "019", "001", "019", "002") is False
+    assert cocok_wilayah(ROLE_RW, "019", None, "019", "005") is True
+    assert cocok_wilayah(ROLE_RW, "019", None, "020", "003") is False
+    # Dukuh boleh dari wilayah mana pun di padukuhan.
+    assert cocok_wilayah(ROLE_DUKUH, None, None, "021", "006") is True
+
     assert jabatan_dari(ROLE_ADMIN, None, None) == "Admin"
     assert jabatan_dari(ROLE_DUKUH, None, None) == "Dukuh"
     assert jabatan_dari(ROLE_RW, "019", None) == "Ketua RW 019"
@@ -364,7 +390,8 @@ def demo() -> None:
     assert kursi_dari(ROLE_RT, "019", "001") != kursi_dari(ROLE_RT, "020", "001")
     assert kursi_dari(ROLE_DUKUH, None, None) == "DUKUH"
 
-    p = tambah("uji-rt", "rahasia", "Fajar", ROLE_RT, rw="019", rt="001")
+    p = tambah("uji-rt", "rahasia", "Fajar", ROLE_RT, rw="019", rt="001",
+               warga_id="W0001")
     assert p.jabatan == "Ketua RT 001"
     # Akun baru wajib ganti password: nilainya datang dari tangan Admin.
     assert p.harus_ganti_password is True
@@ -385,10 +412,25 @@ def demo() -> None:
     except ValueError:
         pass
 
+    # Satu orang satu jabatan — dibandingkan lewat Kode Warga.
+    try:
+        tambah("uji-rw", "rahasia", "Fajar", ROLE_RW, rw="020", warga_id="W0001")
+        raise AssertionError("orang yang sudah menjabat harus ditolak")
+    except ValueError as e:
+        assert "satu jabatan" in str(e), e
+
+    # Dua orang yang benar-benar SENAMA tidak boleh saling menghalangi —
+    # inilah alasan pemeriksaannya memakai Kode Warga, bukan nama.
+    kembar = tambah("uji-kembar", "rahasia", "Fajar", ROLE_RW, rw="020",
+                    warga_id="W9999")
+    assert kembar.jabatan == "Ketua RW 020"
+    assert kembar.warga_id == "W9999"
+
     # Kursi yang sama boleh diisi lagi setelah penghuninya dinonaktifkan —
     # itulah jalur pergantian pengurus.
     assert ubah(p.id, aktif=False).aktif is False  # type: ignore[union-attr]
-    pengganti = tambah("uji-rt2", "rahasia", "Bagus", ROLE_RT, rw="019", rt="001")
+    pengganti = tambah("uji-rt2", "rahasia", "Bagus", ROLE_RT, rw="019", rt="001",
+                       warga_id="W0002")
     assert pengganti.kursi == p.kursi
 
     # Ganti password sendiri memadamkan penanda; reset Admin menyalakannya lagi.

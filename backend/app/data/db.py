@@ -79,6 +79,11 @@ CREATE TABLE IF NOT EXISTS pengurus (
     rw            TEXT,
     rt            TEXT,
     aktif         INTEGER NOT NULL DEFAULT 1,
+    -- Kode Warga penghuni kursi ini. Dipakai memeriksa "orang ini sedang
+    -- menjabat di kursi lain" — nama tidak bisa dipakai untuk itu, karena dua
+    -- orang senama akan saling menghalangi. NULL untuk akun ADMIN, yang memang
+    -- bukan warga.
+    warga_id      TEXT,
     -- Password awal dari Admin sekali pakai: selama 1, akun cuma boleh
     -- mengganti passwordnya sendiri. Padam begitu password diganti.
     harus_ganti_password INTEGER NOT NULL DEFAULT 1
@@ -132,7 +137,30 @@ def buka(path: Path) -> sqlite3.Connection:
     # constraint tidak jalan nanti.
     conn.execute("PRAGMA foreign_keys = ON")
     conn.executescript(SKEMA)
+    _tambal_kolom(conn)
     return conn
+
+
+# Kolom yang ditambahkan setelah ada instalasi berjalan. `CREATE TABLE IF NOT
+# EXISTS` tidak menyentuh tabel yang sudah ada, jadi tanpa ini satu-satunya cara
+# memasang kolom baru adalah menghapus file `.db` — beserta seluruh akun di
+# dalamnya.
+#
+# ponytail: daftar tempel seadanya, bukan perkakas migrasi. Cukup selama
+# tambahannya kolom nullable. Begitu ada perubahan yang butuh mengisi ulang atau
+# membuang kolom, ini tidak lagi memadai — dan saat itu barulah pantas memakai
+# alat yang sebenarnya.
+_TAMBALAN: list[tuple[str, str, str]] = [
+    ("pengurus", "warga_id", "TEXT"),
+]
+
+
+def _tambal_kolom(conn: sqlite3.Connection) -> None:
+    for tabel, kolom, tipe in _TAMBALAN:
+        ada = {r["name"] for r in conn.execute(f"PRAGMA table_info({tabel})")}
+        if kolom not in ada:
+            conn.execute(f"ALTER TABLE {tabel} ADD COLUMN {kolom} {tipe}")
+            conn.commit()
 
 
 @contextmanager

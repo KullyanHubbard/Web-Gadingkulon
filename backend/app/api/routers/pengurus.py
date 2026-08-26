@@ -144,6 +144,7 @@ def tambah_pengurus(
             role=payload.role,
             rw=payload.rw,
             rt=payload.rt,
+            warga_id=warga.id,
         )
     except ValueError as e:
         raise HTTPException(409, str(e))

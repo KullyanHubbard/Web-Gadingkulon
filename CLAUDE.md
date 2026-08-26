@@ -371,6 +371,12 @@ permanen, dan git history tidak bisa dibersihkan setengah-setengah. Sudah
 dikunci di `backend/.gitignore` (`data/`, `*.db`). Backup-nya salin file, bukan
 commit.
 
+**Kolom baru dipasang lewat `db._TAMBALAN`**, bukan dengan menghapus file
+`.db`: `CREATE TABLE IF NOT EXISTS` tidak menyentuh tabel yang sudah ada, dan
+menghapus filenya berarti membuang seluruh akun di dalamnya. Ditandai
+`ponytail:` — daftar tempel seadanya, cukup untuk kolom nullable, dan bukan
+pengganti perkakas migrasi kalau nanti ada perubahan yang lebih berat.
+
 **Akses SQL cuma di `app/data/db.py`** — `sqlite3` stdlib, empat tabel:
 `penduduk` (dengan `Alamat` diratakan jadi kolom `alamat_*`), `pengurus`, serta
 `pengajuan` + `persetujuan` (riwayat perpindahan jabatan, tidak pernah
@@ -431,6 +437,11 @@ Filter `GET /penduduk` (semua opsional, digabung AND, disaring di memori oleh
 `penduduk.saring`): `jenisKelamin`, `agama`, `golonganDarah`, `pendidikan`,
 `statusPerkawinan`, `statusHubunganKeluarga`, `pekerjaan`, `rt`, `rw`,
 `kelompokUmur`.
+
+**Satu orang satu jabatan**, diperiksa lewat kolom `pengurus.warga_id` (Kode
+Warga penghuni kursi) — bukan lewat nama, karena dua orang yang benar-benar
+senama akan saling menghalangi. `NULL` untuk akun ADMIN, yang memang bukan
+warga.
 
 **Kandidat wajib warga wilayah kursinya** — Ketua RT dari RT itu, Ketua RW dari
 RW itu, Dukuh dari mana pun (`pengurus.cocok_wilayah`). Ditegakkan di dua jalur
