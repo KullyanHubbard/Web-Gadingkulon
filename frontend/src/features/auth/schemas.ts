@@ -5,3 +5,22 @@ export const petugasLoginSchema = z.object({
   password: z.string().min(1, 'Password wajib diisi'),
 });
 export type PetugasLoginFormValues = z.infer<typeof petugasLoginSchema>;
+
+/** Ganti password sendiri saat pertama kali masuk. */
+export const gantiPasswordSchema = z
+  .object({
+    passwordLama: z.string().min(1, 'Password lama wajib diisi'),
+    passwordBaru: z.string().min(8, 'Minimal 8 karakter'),
+    ulangi: z.string().min(1, 'Ulangi password wajib diisi'),
+  })
+  .refine((v) => v.passwordBaru === v.ulangi, {
+    path: ['ulangi'],
+    message: 'Password tidak sama dengan sebelumnya',
+  })
+  .refine((v) => v.passwordBaru !== v.passwordLama, {
+    path: ['passwordBaru'],
+    // Kalau boleh sama, tuntutan mengganti password bisa dipenuhi tanpa
+    // mengganti apa pun. Backend menolaknya juga.
+    message: 'Password baru harus berbeda dari yang lama',
+  });
+export type GantiPasswordFormValues = z.infer<typeof gantiPasswordSchema>;

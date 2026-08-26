@@ -1,13 +1,11 @@
 import type { FormEventHandler } from 'react';
 import type { UseFormRegister } from 'react-hook-form';
 import { KeyRound, UserRound } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { AuthLayout } from '@/features/auth/components/AuthLayout';
-import { paths } from '@/routes/paths';
 import type { PetugasLoginFormValues } from '../schemas';
 
 interface LoginPetugasFormViewProps {
@@ -60,14 +58,6 @@ export function LoginPetugasFormView({
         </Button>
       </form>
 
-      <div className="mt-6 border-t border-slate-200 pt-4 text-center">
-        <Link
-          to={paths.login}
-          className="text-sm text-slate-700 underline underline-offset-2 hover:text-slate-900"
-        >
-          Kembali ke halaman masuk warga
-        </Link>
-      </div>
     </AuthLayout>
   );
 }

@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { paths } from '@/routes/paths';
 import { authApi } from '../api/auth-api';
 import { useAuthStore } from '../auth-store';
-import type { PetugasCredentials } from '../types';
+import type { GantiPassword, PetugasCredentials } from '../types';
+import { ROLE_PENGURUS } from '../types';
 
 /** Akses state auth (user, role, status). */
 export function useAuth() {
@@ -12,8 +13,12 @@ export function useAuth() {
   return {
     user,
     isAuthenticated,
-    /** Kelola akun pengurus — kewenangan Dukuh saja. */
+    /** Kelola akun — satu-satunya kewenangan Admin, dan ia buta data warga. */
     isAdmin: user?.role === 'ADMIN',
+    /** Dukuh/RW/RT — boleh membaca data warga. */
+    isPengurus: user ? ROLE_PENGURUS.includes(user.role) : false,
+    /** Password awal dari Admin belum diganti: seluruh aplikasi masih terkunci. */
+    harusGantiPassword: user?.harusGantiPassword ?? false,
   };
 }
 
@@ -23,6 +28,16 @@ export function useLoginPetugas() {
   return useMutation({
     mutationFn: (credentials: PetugasCredentials) => authApi.login(credentials),
     onSuccess: (session) => setSession(session),
+  });
+}
+
+/** Ganti password sendiri. Sesi diperbarui di tempat supaya penanda
+ *  `harusGantiPassword` langsung padam tanpa login ulang. */
+export function useGantiPassword() {
+  const updateUser = useAuthStore((s) => s.updateUser);
+  return useMutation({
+    mutationFn: (payload: GantiPassword) => authApi.gantiPassword(payload),
+    onSuccess: (user) => updateUser(user),
   });
 }
 

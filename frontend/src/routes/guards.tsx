@@ -15,12 +15,33 @@ export function RequireAuth() {
   return <Outlet />;
 }
 
-/** Batasi akses berdasarkan role. Redirect ke beranda role bila tak sesuai. */
-export function RequireRole({ role }: { role: Role }) {
+/**
+ * Batasi akses ke daftar role tertentu. Redirect ke halaman awal role-nya bila
+ * tidak sesuai.
+ *
+ * Menerima daftar, bukan satu role: sejak ada empat peran, "boleh baca data
+ * warga" berarti tiga role sekaligus (Dukuh/RW/RT), dan menuliskannya sebagai
+ * tiga guard bersarang cuma menyembunyikan aturan yang sama.
+ */
+export function RequireRole({ roles }: { roles: readonly Role[] }) {
   const { user } = useAuth();
 
-  if (user?.role !== role) {
+  if (!user || !roles.includes(user.role)) {
     return <Navigate to={homePathForRole(user?.role)} replace />;
+  }
+  return <Outlet />;
+}
+
+/**
+ * Password awal dari Admin belum diganti: seluruh aplikasi dialihkan ke halaman
+ * ganti password. Kenyamanan saja — backend menolak akun ini di semua endpoint
+ * lain, jadi tanpa pengalihan pun tidak ada yang bisa dibuka.
+ */
+export function RequireGantiPassword() {
+  const { harusGantiPassword } = useAuth();
+
+  if (harusGantiPassword) {
+    return <Navigate to={paths.gantiPassword} replace />;
   }
   return <Outlet />;
 }

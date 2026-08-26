@@ -2,8 +2,10 @@
 export const paths = {
   /** Landing publik: statistik padukuhan, tanpa auth. */
   landing: '/',
-  /** Masuk pengurus (Dukuh/RW/RT) — satu-satunya jalur masuk. */
+  /** Masuk perangkat desa — satu-satunya jalur masuk. */
   login: '/login',
+  /** Ganti password sendiri; wajib sekali untuk akun yang baru dibuatkan. */
+  gantiPassword: '/ganti-password',
   admin: {
     root: '/admin',
     penduduk: '/admin/penduduk',

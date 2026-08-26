@@ -1,54 +1,57 @@
 import { useState } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { useAuth } from '@/features/auth/hooks/use-auth';
-import { DaftarPengurusView } from '@/features/pengurus/components/DaftarPengurusView';
-import { PengurusForm } from '@/features/pengurus/components/PengurusForm';
+import { DaftarKursiView } from '@/features/pengurus/components/DaftarKursiView';
+import { IsiKursiDialog } from '@/features/pengurus/components/IsiKursiDialog';
 import { ResetPasswordDialog } from '@/features/pengurus/components/ResetPasswordDialog';
 import {
-  usePengurusList,
+  useDaftarKursi,
   useUbahPengurus,
 } from '@/features/pengurus/hooks/use-pengurus';
-import type { Pengurus } from '@/features/pengurus/types';
+import type { Kursi } from '@/features/pengurus/types';
 
 /**
- * Kelola akun perangkat desa. ADMIN saja — dijaga `RequireRole` di route dan
- * ditegakkan ulang backend.
+ * Kelola kursi perangkat desa. Admin saja — dijaga `RequireRole` di route dan
+ * ditegakkan ulang backend, yang juga menutup seluruh data warga dari Admin.
  */
 export default function PengurusPage() {
-  const { user } = useAuth();
-  const { data, isLoading, isError } = usePengurusList();
+  const { data, isLoading, isError } = useDaftarKursi();
   const ubah = useUbahPengurus();
-  const [resetTarget, setResetTarget] = useState<Pengurus | null>(null);
+  const [isiTarget, setIsiTarget] = useState<Kursi | null>(null);
+  const [resetTarget, setResetTarget] = useState<Kursi | null>(null);
 
-  function onToggleAktif(akun: Pengurus) {
+  function onCabutAkses(kursi: Kursi) {
+    const akun = kursi.penghuni;
+    if (!akun) return;
     // Konfirmasi wajib: salah pencet memutus akses orang lain, dan yang
     // bersangkutan baru tahu saat gagal masuk.
-    const aksi = akun.aktif ? 'Nonaktifkan' : 'Aktifkan';
-    if (!window.confirm(`${aksi} akun ${akun.nama} (${akun.username})?`)) return;
-    ubah.mutate({ id: akun.id, payload: { aktif: !akun.aktif } });
+    const setuju = window.confirm(
+      `Cabut akses ${akun.nama} dari kursi ${kursi.jabatan}?\n\n` +
+        'Akunnya langsung tidak bisa dipakai, dan kursi ini jadi kosong.',
+    );
+    if (!setuju) return;
+    ubah.mutate({ id: akun.id, payload: { aktif: false } });
   }
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Akun Pengurus"
-        description="Tambah, nonaktifkan, dan reset password akun Dukuh/RW/RT."
+        description="Buatkan akun untuk kursi yang kosong, atau cabut akses saat pengurusnya berganti."
       />
 
-      <DaftarPengurusView
+      <DaftarKursiView
         isLoading={isLoading}
         isError={isError}
-        daftar={data}
-        idSaya={user?.id}
+        kursi={data}
         sedangMengubah={ubah.isPending}
-        onToggleAktif={onToggleAktif}
+        onIsiKursi={setIsiTarget}
         onResetPassword={setResetTarget}
+        onCabutAkses={onCabutAkses}
       />
 
-      <PengurusForm />
-
+      <IsiKursiDialog kursi={isiTarget} onClose={() => setIsiTarget(null)} />
       <ResetPasswordDialog
-        akun={resetTarget}
+        kursi={resetTarget}
         onClose={() => setResetTarget(null)}
       />
     </div>

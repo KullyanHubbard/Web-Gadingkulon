@@ -2,13 +2,22 @@ import { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { LoadingBlock } from '@/components/ui/Spinner';
-import { RedirectIfAuthenticated, RequireAuth, RequireRole } from './guards';
+import { ROLE_PENGURUS } from '@/features/auth/types';
+import {
+  RedirectIfAuthenticated,
+  RequireAuth,
+  RequireGantiPassword,
+  RequireRole,
+} from './guards';
 import { paths } from './paths';
 
 // Code-splitting per halaman: chart (recharts) & halaman admin hanya
 // dimuat saat dibutuhkan, memperkecil bundle awal.
 const LandingPage = lazy(() => import('@/pages/landing/LandingPage'));
 const LoginPage = lazy(() => import('@/pages/login/LoginPetugasPage'));
+const GantiPasswordPage = lazy(
+  () => import('@/pages/ganti-password/GantiPasswordPage'),
+);
 const AdminDashboardPage = lazy(
   () => import('@/pages/admin/dashboard/AdminDashboardPage'),
 );
@@ -28,15 +37,26 @@ export function AppRoutes() {
         </Route>
 
         <Route element={<RequireAuth />}>
-          <Route element={<DashboardLayout />}>
-            {/* Semua pengurus: baca data & statistik, tidak dibatasi wilayah. */}
-            <Route path={paths.admin.root} element={<AdminDashboardPage />} />
-            <Route path={paths.admin.penduduk} element={<PendudukPage />} />
-            <Route path={paths.admin.infografis} element={<InfografisPage />} />
+          {/* Di luar `RequireGantiPassword`: inilah satu-satunya halaman yang
+              harus tetap terbuka selagi password awal belum diganti. */}
+          <Route path={paths.gantiPassword} element={<GantiPasswordPage />} />
 
-            {/* Kelola akun adalah kewenangan terpisah, ADMIN saja. */}
-            <Route element={<RequireRole role="ADMIN" />}>
-              <Route path={paths.admin.pengurus} element={<PengurusPage />} />
+          <Route element={<RequireGantiPassword />}>
+            <Route element={<DashboardLayout />}>
+              {/* Baca data warga: Dukuh/RW/RT. Admin ditolak backend juga. */}
+              <Route element={<RequireRole roles={ROLE_PENGURUS} />}>
+                <Route path={paths.admin.root} element={<AdminDashboardPage />} />
+                <Route path={paths.admin.penduduk} element={<PendudukPage />} />
+                <Route
+                  path={paths.admin.infografis}
+                  element={<InfografisPage />}
+                />
+              </Route>
+
+              {/* Kelola akun: Admin saja, dan ia tidak punya halaman lain. */}
+              <Route element={<RequireRole roles={['ADMIN']} />}>
+                <Route path={paths.admin.pengurus} element={<PengurusPage />} />
+              </Route>
             </Route>
           </Route>
         </Route>

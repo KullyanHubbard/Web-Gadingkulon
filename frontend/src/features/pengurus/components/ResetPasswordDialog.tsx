@@ -10,25 +10,27 @@ import {
   passwordBaruSchema,
   type PasswordBaruFormValues,
 } from '../schemas';
-import type { Pengurus } from '../types';
+import type { Kursi } from '../types';
 
 interface ResetPasswordDialogProps {
-  /** Akun yang sedang direset; `null` = dialog tertutup. */
-  akun: Pengurus | null;
+  /** Kursi yang penghuninya sedang direset; `null` = dialog tertutup. */
+  kursi: Kursi | null;
   onClose: () => void;
 }
 
 /**
  * Reset password satu akun pengurus.
  *
- * Password barunya diketik Dukuh, bukan dibangkitkan sistem: tidak ada jalur
+ * Password barunya diketik Admin, bukan dibangkitkan sistem: tidak ada jalur
  * pengiriman (email/SMS) di aplikasi ini, jadi ia harus menyampaikannya
- * langsung ke orangnya.
+ * langsung ke orangnya. Password ini juga sekali pakai — pemiliknya wajib
+ * menggantinya saat masuk.
  */
 export function ResetPasswordDialog({
-  akun,
+  kursi,
   onClose,
 }: ResetPasswordDialogProps) {
+  const akun = kursi?.penghuni ?? null;
   const reset = useResetPassword();
 
   const {
@@ -63,7 +65,8 @@ export function ResetPasswordDialog({
       <form onSubmit={onSubmit} className="space-y-4">
         <p className="text-sm text-slate-600">
           Password lama {akun?.username} langsung tidak berlaku. Sampaikan
-          password baru ini langsung kepada yang bersangkutan.
+          password baru ini langsung kepada yang bersangkutan; ia wajib
+          menggantinya lagi saat masuk.
         </p>
         <PasswordInput
           label="Password Baru"

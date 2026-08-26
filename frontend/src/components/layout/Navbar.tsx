@@ -17,7 +17,7 @@ export function Navbar({ onOpenSidebar }: { onOpenSidebar: () => void }) {
     <NavbarView
       nama={user?.nama ?? ''}
       peran={user?.jabatan ?? 'Perangkat Desa'}
-      peranBadge={isAdmin ? 'Dukuh' : 'Pengurus'}
+      peranBadge={isAdmin ? 'Admin' : 'Pengurus'}
       peranBadgeTone={isAdmin ? 'brand' : 'green'}
       onOpenSidebar={onOpenSidebar}
       menuOpen={menuOpen}

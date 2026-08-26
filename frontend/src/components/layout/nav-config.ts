@@ -33,10 +33,26 @@ const statistikDesa: NavItem = {
   end: true,
 };
 
-/** Menu navigasi. Semua pengurus melihat menu yang sama; ADMIN dapat satu
- *  menu tambahan untuk kelola akun. */
+/**
+ * Menu navigasi sesuai peran.
+ *
+ * Admin TIDAK melihat Dashboard, Data Penduduk, maupun Infografis: ketiganya
+ * memang ditolak backend untuknya. Menampilkannya cuma menyediakan tiga pintu
+ * buntu di sidebar.
+ */
 export function navItemsForRole(role: Role | undefined): NavItem[] {
-  const menu: NavItem[] = [
+  if (role === 'ADMIN') {
+    return [
+      {
+        label: 'Akun Pengurus',
+        to: paths.admin.pengurus,
+        icon: ikonId,
+        aksen: CHART_KATEGORI_COLORS[2],
+      },
+      statistikDesa,
+    ];
+  }
+  return [
     {
       label: 'Dashboard',
       to: paths.admin.root,
@@ -55,15 +71,6 @@ export function navItemsForRole(role: Role | undefined): NavItem[] {
       icon: ikonChartPie,
       aksen: CHART_KATEGORI_COLORS[4],
     },
+    statistikDesa,
   ];
-  if (role === 'ADMIN') {
-    menu.push({
-      label: 'Akun Pengurus',
-      to: paths.admin.pengurus,
-      icon: ikonId,
-      aksen: CHART_KATEGORI_COLORS[2],
-    });
-  }
-  menu.push(statistikDesa);
-  return menu;
 }

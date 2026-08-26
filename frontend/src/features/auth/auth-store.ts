@@ -8,6 +8,8 @@ interface AuthState {
   isAuthenticated: boolean;
   /** Simpan sesi (dipanggil setelah login sukses) + persist ke storage. */
   setSession: (session: Session) => void;
+  /** Perbarui data user tanpa login ulang (mis. setelah ganti password). */
+  updateUser: (user: AuthUser) => void;
   /** Bersihkan sesi (logout). */
   clear: () => void;
 }
@@ -27,6 +29,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       isAuthenticated: true,
     });
   },
+
+  updateUser: (user) =>
+    set((state) => {
+      if (!state.token) return state;
+      storeSession({ token: state.token, user });
+      return { user };
+    }),
 
   clear: () => {
     clearSession();
