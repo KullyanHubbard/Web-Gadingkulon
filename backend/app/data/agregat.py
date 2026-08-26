@@ -117,9 +117,7 @@ if __name__ == "__main__":
         tanggal_lahir: str, agama: str = "ISLAM", pendidikan: str = "SD"
     ) -> Penduduk:
         return Penduduk(
-            id="1",
-            nik="0",
-            noKK="0",
+            id="uji",
             nama="x",
             jenisKelamin="LAKI_LAKI",
             tempatLahir="x",
