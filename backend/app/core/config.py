@@ -39,13 +39,12 @@ class Settings(BaseSettings):
     JWT_SECRET: str = "dev-only-ganti-di-produksi"
     JWT_TTL_JAM: int = 12
 
-    # --- Wilayah -----------------------------------------------------------
-    # 6 digit kode wilayah, jadi prefiks NIK akun pengurus (`app/data/akun.py`).
-    # Salah panjang = NIK rusak diam-diam, jadi divalidasi di sini.
-    #
-    # Data penduduk TIDAK lagi memakai nilai ini: alamat & NIK warga sekarang
-    # ikut apa adanya dari file Excel pendataan, bukan dibangkitkan dari config.
-    KODE_WILAYAH: str = Field(default="320412", pattern=r"^\d{6}$")
+    # --- Bootstrap ADMIN pertama -------------------------------------------
+    # Dipakai HANYA saat tabel `pengurus` masih kosong. Kalau kosong dan dua
+    # nilai ini belum diisi, backend menolak jalan — memakai default berarti
+    # ada instalasi yang berjalan dengan password yang tertulis di kode publik.
+    ADMIN_USERNAME: str = ""
+    ADMIN_PASSWORD: str = ""
 
     # --- Daftar bernilai jamak ---------------------------------------------
     # pydantic-settings 2.6 memaksa JSON untuk field bertipe list, padahal env
