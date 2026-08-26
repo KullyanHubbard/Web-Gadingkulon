@@ -32,7 +32,6 @@ def _rincian(
     return RincianRw(
         label=label,
         totalPenduduk=len(warga),
-        totalKK=len({p.noKK for p in warga}),
         totalLakiLaki=sum(1 for p in warga if p.jenisKelamin == "LAKI_LAKI"),
         totalPerempuan=sum(1 for p in warga if p.jenisKelamin == "PEREMPUAN"),
         perKelompokUmur=distribusi_kelompok_umur(warga),
@@ -45,13 +44,12 @@ def _rincian(
 
 @router.get("/publik/statistik", response_model=StatistikPublik)
 def statistik_publik() -> StatistikPublik:
-    """Cacah saja — tanpa NIK, nama, atau alamat. Endpoint ini terbuka tanpa
+    """Cacah saja — tanpa nama atau alamat. Endpoint ini terbuka tanpa
     autentikasi (lihat CLAUDE.md §11), jadi apa pun yang ditambahkan di sini
     otomatis jadi konsumsi publik: boleh angka agregat, tidak boleh data orang.
     """
     return StatistikPublik(
         totalPenduduk=len(DAFTAR_PENDUDUK),
-        totalKK=len({p.noKK for p in DAFTAR_PENDUDUK}),
         totalLakiLaki=sum(
             1 for p in DAFTAR_PENDUDUK if p.jenisKelamin == "LAKI_LAKI"
         ),

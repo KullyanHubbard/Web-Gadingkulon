@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from app.api.routers.auth import current_admin
+from app.api.routers.auth import current_user
 from app.data.agregat import (
     distribusi_by,
     distribusi_kelompok_umur,
@@ -15,10 +15,9 @@ router = APIRouter(tags=["infografis"])
 
 
 @router.get("/infografis", response_model=InfografisData)
-async def infografis(_admin: AuthUser = Depends(current_admin)) -> InfografisData:
+async def infografis(_user: AuthUser = Depends(current_user)) -> InfografisData:
     return InfografisData(
         totalPenduduk=len(DAFTAR_PENDUDUK),
-        totalKK=len({p.noKK for p in DAFTAR_PENDUDUK}),
         totalLakiLaki=sum(
             1 for p in DAFTAR_PENDUDUK if p.jenisKelamin == "LAKI_LAKI"
         ),

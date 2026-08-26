@@ -7,7 +7,6 @@ from app.schemas.penduduk import Distribusi
 
 class InfografisData(BaseModel):
     totalPenduduk: int
-    totalKK: int
     totalLakiLaki: int
     totalPerempuan: int
     perAgama: list[Distribusi]
