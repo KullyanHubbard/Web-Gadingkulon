@@ -109,39 +109,65 @@ Satu tambahan kecil: halaman Data Penduduk dan Infografis menyebutkan wilayah
 yang sedang ditampilkan (mis. "RT 004 / RW 020") supaya pengurus tahu angka
 yang dilihatnya bukan se-padukuhan.
 
-## 6. Tahap 3b — endpoint tulis (belum dikerjakan)
+## 6. Tahap 3b — mutasi data warga
 
-Direkam supaya 3a tidak menutup jalannya.
+Sejak tahap ini **aplikasi adalah sumber kebenaran data warga**, bukan Excel.
 
-**Yang boleh dilakukan pengurus atas warga di wilayahnya:**
+### Dua lapis izin
 
-- mengubah data warga yang sudah ada
-- menandai `PINDAH` / `MENINGGAL` — **tidak pernah menghapus** dari database
-- menambah warga baru
+Batas wilayah Tahap 3a bekerja **per baris**: warga ini boleh disentuh atau
+tidak. Tahap 3b menambahkan lapis kedua, **per kolom**:
 
-**Kode Warga warga baru dibangkitkan aplikasi**, bukan diketik: pengurus tidak
-punya cara tahu kode mana yang belum terpakai, dan kode bentrok berarti dua
-orang bertukar identitas.
+| Kolom | Dukuh | Ketua RW | Ketua RT |
+| ----- | ----- | -------- | -------- |
+| nama, tempat & tanggal lahir, agama, pendidikan, pekerjaan, gol. darah, status perkawinan, status dalam keluarga, kewarganegaraan | ✅ | ✅ | ✅ |
+| alamat jalan | ✅ | ✅ | ✅ |
+| **RT / RW** | ✅ | ❌ | ❌ |
+| statusKependudukan (`PINDAH`/`MENINGGAL`) | ✅ | ✅ | ✅ |
 
-**Impor Excel dikunci.** `impor_excel` menolak jalan kalau tabel penduduk sudah
-berisi, kecuali diberi tanda `--timpa-semua` yang harus diketik penuh. Tanpa
-kunci itu, satu perintah impor yang dijalankan karena kebiasaan menghapus
-seluruh hasil pendataan yang dikerjakan pengurus di aplikasi.
+**Memindahkan warga antar-wilayah hanya boleh Dukuh.** Kalau Ketua RT boleh
+mengubah RT seorang warga, ia bisa memindahkan orang keluar dari wilayahnya
+sendiri — dan begitu tersimpan, ia tidak bisa lagi menyentuh orang itu untuk
+membatalkannya. Kesalahan yang tidak bisa diperbaiki sendiri oleh yang
+melakukannya.
 
-**Audit log jadi tabel sungguhan** (`audit_log`), berisi siapa mengubah apa,
-kapan, dan nilai sebelum/sesudah. Sekarang masih `print()` ke console dan
-hilang tiap restart. Begitu tiga puluh sekian orang bisa mengubah data warga,
-catatan itu berhenti jadi kemewahan.
+Membetulkan "Jl. Melati No. 5" jadi "No. 7" **bukan** pindah wilayah, jadi tetap
+boleh.
 
-**Yang masih perlu diputuskan sebelum 3b dimulai:**
+### Menambah warga
 
-- Warga pindah antar-RT: siapa yang berhak mengubah alamatnya — RT asal, RT
-  tujuan, atau harus lewat Dukuh? Aturan wilayah apa adanya membuat RT asal
-  bisa memindahkan warga keluar dari jangkauannya sendiri, dan setelah itu
-  tidak bisa membatalkannya.
-- Apakah pengurus boleh mengubah nama warga. Nama adalah satu-satunya cara
-  manusia mengenali baris; membiarkannya bebas diubah membuat riwayat sulit
-  ditelusuri.
+RT/RW warga baru **dipaksa masuk wilayah penambahnya**: Ketua RT 004 hanya bisa
+menambah warga RT 004; Ketua RW 020 memilih RT 003 atau 004; Dukuh bebas. Aturan
+yang sama dengan mengubah — kalau berbeda, menambah jadi jalan memutar untuk
+memindahkan.
+
+**Kode Warga dibangkitkan aplikasi**, bukan diketik: pengurus tidak punya cara
+tahu kode mana yang belum terpakai, dan kode bentrok berarti dua orang bertukar
+identitas.
+
+### Tidak ada penghapusan
+
+Warga yang pindah atau meninggal **ditandai**, tidak dihapus. `deletedAt`
+(salah input) tetap ada di skema tapi tidak bisa disetel lewat API — satu-satunya
+jalannya lewat SQL langsung, dan itu disengaja.
+
+### Impor Excel dikunci
+
+`impor_excel` **menolak jalan kalau tabel penduduk sudah berisi**, kecuali
+diberi `--timpa-semua` yang harus diketik penuh. Tanpa kunci itu, satu perintah
+impor yang dijalankan karena kebiasaan menghapus seluruh hasil pendataan yang
+dikerjakan pengurus di aplikasi.
+
+### Audit log jadi tabel
+
+Tabel `audit_log`: waktu, aktor, aksi, sasaran, dan **apa yang berubah**
+(kolom, nilai lama, nilai baru). Sebelumnya `print()` ke console dan hilang tiap
+restart. Begitu tiga puluh sekian orang bisa mengubah data warga, catatan itu
+berhenti jadi kemewahan.
+
+Belum ada halaman untuk membacanya — itu ditunda sampai ada yang benar-benar
+perlu menelusuri. Isinya sudah tersimpan permanen, dan itu bagian yang tidak
+bisa disusulkan belakangan.
 
 ## Batasan yang diterima sadar
 
@@ -152,4 +178,7 @@ catatan itu berhenti jadi kemewahan.
 - **Statistik publik tetap membocorkan cacah se-padukuhan** kepada siapa pun,
   termasuk Ketua RT yang datanya sendiri dibatasi. Itu memang sudah terbuka
   untuk umum sejak awal.
+- **Audit log belum bisa dibaca lewat aplikasi.** Tersimpan, tapi perlu SQL
+  untuk melihatnya.
+- **Tidak ada penyuntingan massal.** Satu warga satu kali simpan.
 - **Tidak ada rate limit** (utang lama, belum dibayar).
