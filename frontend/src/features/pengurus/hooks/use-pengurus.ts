@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { pengurusApi } from '../api/pengurus-api';
-import type { PengurusBaru, PengurusUbah } from '../types';
+import type { PengurusBaru } from '../types';
 
 /** Query keys terpusat agar caching konsisten & mudah di-invalidate. */
 export const pengurusKeys = {
@@ -25,15 +25,6 @@ export function useTambahPengurus() {
   const segarkan = useSegarkanKursi();
   return useMutation({
     mutationFn: (payload: PengurusBaru) => pengurusApi.tambah(payload),
-    onSuccess: segarkan,
-  });
-}
-
-export function useUbahPengurus() {
-  const segarkan = useSegarkanKursi();
-  return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: PengurusUbah }) =>
-      pengurusApi.ubah(id, payload),
     onSuccess: segarkan,
   });
 }

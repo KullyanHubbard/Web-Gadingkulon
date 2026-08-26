@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
+import { PersetujuanPanel } from '@/features/pergantian/components/PersetujuanPanel';
 import { KreditKkn } from '@/components/ui/KreditKkn';
 import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
@@ -39,6 +40,11 @@ export function DashboardLayout() {
             supaya batang gulungnya di tepi layar, bukan di tepi `max-w-6xl`. */}
         <main ref={konten} className="flex-1 lg:overflow-y-auto">
           <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8">
+            {/* Panggilan yang tidak boleh terlewat, dan pengurus tidak selalu
+                mendarat di halaman yang sama — jadi di kerangka, bukan di satu
+                halaman. Tidak menggambar apa pun kalau tidak ada yang perlu
+                dijawab. */}
+            <PersetujuanPanel />
             <Outlet />
           </div>
         </main>

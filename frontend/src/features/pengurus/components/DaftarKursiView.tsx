@@ -12,7 +12,7 @@ interface DaftarKursiViewProps {
   sedangMengubah: boolean;
   onIsiKursi: (kursi: Kursi) => void;
   onResetPassword: (kursi: Kursi) => void;
-  onCabutAkses: (kursi: Kursi) => void;
+  onAjukanPergantian: (kursi: Kursi) => void;
 }
 
 /** Tabel kursi padukuhan beserta aksinya. Tampilan saja. */
@@ -23,13 +23,13 @@ export function DaftarKursiView({
   sedangMengubah,
   onIsiKursi,
   onResetPassword,
-  onCabutAkses,
+  onAjukanPergantian,
 }: DaftarKursiViewProps) {
   return (
     <Card>
       <CardHeader
         title="Kursi Pengurus"
-        description="Daftar jabatan mengikuti RW & RT yang ada di data warga."
+        description="Kursi kosong diisi langsung. Mengganti penghuni kursi terisi butuh persetujuan perangkat desa."
       />
       <CardContent className="p-0">
         <QueryBoundary
@@ -80,11 +80,11 @@ export function DaftarKursiView({
                           </Button>
                           <Button
                             size="sm"
-                            variant="danger"
+                            variant="outline"
                             disabled={sedangMengubah}
-                            onClick={() => onCabutAkses(k)}
+                            onClick={() => onAjukanPergantian(k)}
                           >
-                            Cabut Akses
+                            Ajukan Pergantian
                           </Button>
                         </div>
                       ) : (

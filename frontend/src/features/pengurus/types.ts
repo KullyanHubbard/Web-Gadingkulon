@@ -37,11 +37,3 @@ export interface PengurusBaru {
   rw?: string;
   rt?: string;
 }
-
-/** Field yang tidak dikirim tidak diubah backend. */
-export interface PengurusUbah {
-  nama?: string;
-  rw?: string | null;
-  rt?: string | null;
-  aktif?: boolean;
-}
