@@ -11,7 +11,12 @@ from app.api.routers.auth import current_admin, ke_auth_user
 from app.core.audit import catat_audit
 from app.data import pengurus as data
 from app.schemas.auth import AuthUser
-from app.schemas.pengurus import PasswordBaru, PengurusBaru, PengurusUbah
+from app.schemas.pengurus import (
+    PasswordBaru,
+    PengurusBaru,
+    PengurusOut,
+    PengurusUbah,
+)
 
 router = APIRouter(
     prefix="/pengurus",
@@ -20,15 +25,19 @@ router = APIRouter(
 )
 
 
-@router.get("", response_model=list[AuthUser])
-def daftar_pengurus() -> list[AuthUser]:
-    return [ke_auth_user(p) for p in data.daftar()]
+def _keluaran(p: data.Pengurus) -> PengurusOut:
+    return PengurusOut(**ke_auth_user(p).model_dump(), aktif=p.aktif)
 
 
-@router.post("", response_model=AuthUser, status_code=201)
+@router.get("", response_model=list[PengurusOut])
+def daftar_pengurus() -> list[PengurusOut]:
+    return [_keluaran(p) for p in data.daftar()]
+
+
+@router.post("", response_model=PengurusOut, status_code=201)
 def tambah_pengurus(
     payload: PengurusBaru, admin: AuthUser = Depends(current_admin)
-) -> AuthUser:
+) -> PengurusOut:
     try:
         baru = data.tambah(
             username=payload.username,
@@ -41,13 +50,13 @@ def tambah_pengurus(
     except ValueError as e:
         raise HTTPException(409, str(e))
     catat_audit(aktor=admin.username, aksi="tambah-pengurus", target=baru.username)
-    return ke_auth_user(baru)
+    return _keluaran(baru)
 
 
-@router.patch("/{id}", response_model=AuthUser)
+@router.patch("/{id}", response_model=PengurusOut)
 def ubah_pengurus(
     id: str, payload: PengurusUbah, admin: AuthUser = Depends(current_admin)
-) -> AuthUser:
+) -> PengurusOut:
     dikirim = payload.model_fields_set
     hasil = data.ubah(
         id,
@@ -64,7 +73,7 @@ def ubah_pengurus(
         target=hasil.username,
         catatan=", ".join(sorted(dikirim)),
     )
-    return ke_auth_user(hasil)
+    return _keluaran(hasil)
 
 
 @router.post("/{id}/reset-password", status_code=204)

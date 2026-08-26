@@ -4,7 +4,18 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from app.schemas.auth import Role
+from app.schemas.auth import AuthUser, Role
+
+
+class PengurusOut(AuthUser):
+    """Akun pengurus untuk halaman kelola akun: `AuthUser` + status aktif.
+
+    `aktif` sengaja tidak ikut `AuthUser` biasa — di dalam sesi nilainya selalu
+    True (yang nonaktif tidak bisa masuk), jadi mengirimkannya di sana cuma
+    menyiratkan pilihan yang tidak ada.
+    """
+
+    aktif: bool
 
 
 class PengurusBaru(BaseModel):
