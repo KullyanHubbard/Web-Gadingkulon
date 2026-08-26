@@ -1,0 +1,14 @@
+# Database SQLite — TIDAK PERNAH ikut repo. Begitu isinya data warga
+# sungguhan, satu commit menaruh data kependudukan sedesa di riwayat git
+# secara permanen, dan riwayat git tidak bisa dibersihkan setengah-setengah.
+# Backup-nya menyalin file, bukan commit.
+data/
+*.db
+
+# Virtualenv & bytecode
+.venv/
+__pycache__/
+*.py[cod]
+
+# Konfigurasi lokal (berisi JWT_SECRET & password ADMIN pertama)
+.env
