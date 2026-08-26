@@ -55,6 +55,12 @@ export interface Penduduk {
   golonganDarah: GolonganDarah;
   statusHubunganKeluarga: StatusHubunganKeluarga;
   kewarganegaraan: string;
+  /**
+   * Jabatan dari kolom "Jabatan" file Excel. BUKAN penentu kewenangan — yang
+   * menentukan tetap akun pengurus. Dibaca hanya untuk mencalonkan penghuni
+   * kursi yang masih kosong.
+   */
+  jabatan: 'WARGA' | 'DUKUH' | 'RW' | 'RT';
   alamat: Alamat;
   statusKependudukan: StatusKependudukan;
   /** ISO date string, atau null kalau barisnya masih berlaku. */
@@ -93,4 +99,32 @@ export interface FilterOpsi {
   rt: string[];
   rw: string[];
   pekerjaan: string[];
+}
+
+/** Warga baru. `id` (Kode Warga) tidak ada — dibangkitkan aplikasi. */
+export type PendudukBaru = Omit<
+  Penduduk,
+  'id' | 'statusKependudukan' | 'deletedAt' | 'jabatan'
+>;
+
+/**
+ * Perubahan sebagian atas satu warga. Field yang tidak dikirim tidak disentuh.
+ *
+ * `alamat.rt` / `alamat.rw` hanya diterima backend kalau pengirimnya Dukuh —
+ * memindahkan warga antar-wilayah bukan kewenangan Ketua RT/RW.
+ */
+export interface PendudukUbah {
+  nama?: string;
+  jenisKelamin?: JenisKelamin;
+  tempatLahir?: string;
+  tanggalLahir?: string;
+  agama?: Agama;
+  statusPerkawinan?: StatusPerkawinan;
+  pendidikan?: Pendidikan;
+  pekerjaan?: string;
+  golonganDarah?: GolonganDarah;
+  statusHubunganKeluarga?: StatusHubunganKeluarga;
+  kewarganegaraan?: string;
+  statusKependudukan?: StatusKependudukan;
+  alamat?: Partial<Alamat>;
 }

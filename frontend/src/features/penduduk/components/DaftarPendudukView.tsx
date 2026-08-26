@@ -42,6 +42,8 @@ interface DaftarPendudukViewProps {
   onPilih: (row: PendudukRow) => void;
   detail: PendudukDetailData | null;
   onTutupDetail: () => void;
+  onTambah: () => void;
+  onUbah: (id: string) => void;
 }
 
 /** Tabel daftar penduduk + pencarian + paginasi. Tampilan saja. */
@@ -60,6 +62,8 @@ export function DaftarPendudukView({
   onPilih,
   detail,
   onTutupDetail,
+  onTambah,
+  onUbah,
 }: DaftarPendudukViewProps) {
   return (
     <>
@@ -79,6 +83,12 @@ export function DaftarPendudukView({
             opsi={filterOpsi}
             onChange={onFilterChange}
           />
+
+          <div className="flex justify-end">
+            <Button size="sm" onClick={onTambah}>
+              + Tambah Warga
+            </Button>
+          </div>
         </CardContent>
 
         <CardContent className="p-0">
@@ -119,13 +129,22 @@ export function DaftarPendudukView({
                       <Td>{row.umur}</Td>
                       <Td>{row.agama}</Td>
                       <Td>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => onPilih(row)}
-                        >
-                          Detail
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => onPilih(row)}
+                          >
+                            Detail
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => onUbah(row.id)}
+                          >
+                            Ubah
+                          </Button>
+                        </div>
                       </Td>
                     </tr>
                   ))}

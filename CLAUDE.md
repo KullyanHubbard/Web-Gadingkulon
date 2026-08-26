@@ -207,9 +207,8 @@ Komponen tidak pernah memanggil `apiClient` langsung — selalu lewat `pendudukA
   kotaknya (dd/mm vs mm/dd) ikut bahasa browser dan **tidak bisa dipaksa** —
   tidak lewat atribut, CSS, maupun `lang`. Akibatnya isian diam-diam terbaca
   jadi tanggal lain. Pakai tiga kolom Tgl / Bulan (nama, bukan angka) / Tahun,
-  disatukan jadi ISO. Aturannya masih berlaku walaupun form terakhir yang
-  memakainya (aktivasi warga) sudah dicabut — tanggal lahir masuk lewat Excel
-  sekarang.
+  disatukan jadi ISO lewat `keTanggalLahirIso()` di `lib/tanggal.ts`. Dipakai
+  form data warga (`features/penduduk/components/WargaFormDialog.tsx`).
 
 ### Error
 
@@ -402,9 +401,20 @@ dicabut di Tahap 3a dan diganti `semua_penduduk()` + `penduduk_untuk(user)`,
 yang query database tiap dipanggil. Ditandai `ponytail:` — pindahkan
 penyaringannya ke `WHERE` di SQL kalau datanya nanti puluhan ribu baris.
 
-**Data penduduk read-only dari sisi aplikasi.** Satu-satunya jalur masuk data
-adalah `app/data/impor_excel.py`, dan **tiap impor menimpa seluruh tabel**
-(`db.kosongkan`).
+**Aplikasi adalah sumber kebenaran data warga sejak Tahap 3b**, bukan Excel.
+Pengurus mengubah & menambah lewat `POST`/`PATCH /penduduk`; `impor_excel`
+dipakai untuk mengisi pertama kali dan **menolak jalan kalau tabel sudah
+berisi**, kecuali diberi `--timpa-semua` yang harus diketik penuh.
+
+**Izinnya dua lapis.** `store.penduduk_untuk` menentukan warga MANA yang boleh
+disentuh; di dalam `store.ubah_warga` ada lapis kedua per kolom: **mengubah
+RT/RW hanya boleh Dukuh.** Kalau Ketua RT boleh, ia bisa memindahkan orang
+keluar dari wilayahnya sendiri lalu tidak bisa lagi membatalkannya. Menambah
+warga ikut aturan yang sama — kalau tidak, menambah jadi jalan memutar untuk
+memindahkan.
+
+**Tidak ada penghapusan warga lewat API.** Pindah/meninggal ditandai lewat
+`statusKependudukan`; `deletedAt` hanya bisa disetel lewat SQL langsung.
 
 **Kolom "Jabatan" di Excel (`WARGA`/`DUKUH`/`RW`/`RT`) dibaca HANYA untuk kursi
 yang masih kosong** (`pengurus.daftar_kursi` mengisi `Kursi.calon`). Begitu
@@ -430,7 +440,9 @@ Kontrak endpoint yang **sudah diimplementasikan** (bentuknya sinkron dengan
 | POST   | `/auth/ganti-password`           | ganti password sendiri; satu-satunya pintu yang terbuka selagi `harusGantiPassword` menyala |
 | GET    | `/penduduk`                      | daftar: `page`, `pageSize`, `search` (nama) + 10 filter |
 | GET    | `/penduduk/filter-opsi`          | pilihan RT / RW / pekerjaan dari isi data              |
-| GET    | `/penduduk/{id}`                 | detail satu warga                                       |
+| GET    | `/penduduk/{id}`                 | detail satu warga (404 kalau di luar wilayah)           |
+| POST   | `/penduduk`                      | tambah warga di wilayah sendiri — PENGURUS              |
+| PATCH  | `/penduduk/{id}`                 | ubah data warga; RT/RW hanya Dukuh — PENGURUS           |
 | GET    | `/infografis`                    | agregat lengkap — semua pengurus                        |
 | GET    | `/publik/statistik`              | cacah per RW — **tanpa auth**                           |
 | GET    | `/pengurus`                      | daftar **kursi** (terisi & kosong) — ADMIN              |
@@ -506,19 +518,12 @@ harus di atas `/penduduk/{id}`, kalau tidak ia terbaca sebagai sebuah id.
 **Utang yang masih terbuka** — tercatat di spec 2026-08-26, jangan dianggap
 kondisi final:
 
-- ⬜ **Endpoint mutasi data warga** (Tahap 3b): ubah data, tandai
-  PINDAH/MENINGGAL, tambah warga baru — semuanya dibatasi wilayah lewat
-  `cocok_wilayah` yang sudah ada. Ikut wajib di tahap itu: **impor Excel
-  dikunci** (menolak jalan kalau tabel sudah berisi, kecuali `--timpa-semua`)
-  dan **audit log jadi tabel sungguhan**.
 - ⬜ **Sesi server-side menggantikan JWT.** Sekarang pencabutan sudah berlaku
   seketika lewat pemeriksaan `aktif` tiap request, jadi prioritasnya turun —
   tapi token yang sah sampai TTL habis tetap bukan model yang benar.
-- ⬜ **Audit log persisten** (`tabel audit_log` + `GET /audit`).
-  `app/core/audit.py` masih `print()` ke console dan hilang tiap restart. Yang
-  paling perlu ditelusuri — perpindahan jabatan — sudah tercatat permanen di
-  tabel `pengajuan`/`persetujuan`, jadi ini menunggu sampai ada mutasi data
-  warga.
+- ⬜ **Halaman baca audit log.** Tabelnya sudah ada dan terisi (nilai sebelum →
+  sesudah tiap kolom), tapi belum ada endpoint maupun layar untuk membacanya —
+  sekarang lewat `app/core/audit.riwayat()` dari baris perintah.
 - ⬜ **Rate limit login pengurus.** Dicabut bersama jalur warga; belum ada
   penggantinya. Satu-satunya lubang keamanan yang tersisa dari daftar awal.
 - ⬜ **Status kependudukan (`PINDAH`/`MENINGGAL`)** ikut disaring dari daftar

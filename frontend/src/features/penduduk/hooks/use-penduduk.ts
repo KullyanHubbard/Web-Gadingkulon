@@ -1,6 +1,15 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import type { PaginationParams } from '@/types/api';
-import type { FilterPenduduk } from '@/types/penduduk';
+import type {
+  FilterPenduduk,
+  PendudukBaru,
+  PendudukUbah,
+} from '@/types/penduduk';
 import { pendudukApi } from '../api/penduduk-api';
 
 type ListParams = PaginationParams & FilterPenduduk;
@@ -43,5 +52,32 @@ export function useFilterOpsi() {
     queryKey: pendudukKeys.filterOpsi(),
     queryFn: () => pendudukApi.filterOpsi(),
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+/** Tiap perubahan menyegarkan daftar, detail, pilihan filter, dan infografis —
+ *  angka agregat ikut bergerak begitu satu warga berubah. */
+function useSegarkanPenduduk() {
+  const queryClient = useQueryClient();
+  return () => {
+    void queryClient.invalidateQueries({ queryKey: pendudukKeys.all });
+    void queryClient.invalidateQueries({ queryKey: ['infografis'] });
+  };
+}
+
+export function useTambahPenduduk() {
+  const segarkan = useSegarkanPenduduk();
+  return useMutation({
+    mutationFn: (payload: PendudukBaru) => pendudukApi.tambah(payload),
+    onSuccess: segarkan,
+  });
+}
+
+export function useUbahPenduduk() {
+  const segarkan = useSegarkanPenduduk();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: PendudukUbah }) =>
+      pendudukApi.ubah(id, payload),
+    onSuccess: segarkan,
   });
 }

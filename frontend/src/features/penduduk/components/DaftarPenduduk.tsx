@@ -2,7 +2,9 @@ import { useMemo, useState } from 'react';
 import { useDebounce } from '@/hooks/use-debounce';
 import type { FilterPenduduk } from '@/types/penduduk';
 import { useFilterOpsi, usePendudukList } from '../hooks/use-penduduk';
+import type { Penduduk } from '@/types/penduduk';
 import { toPendudukDetail, toPendudukRow } from '../view-model';
+import { WargaFormDialog } from './WargaFormDialog';
 import { DaftarPendudukView, type PaginasiView } from './DaftarPendudukView';
 
 const PAGE_SIZE = 8;
@@ -19,6 +21,7 @@ export function DaftarPenduduk() {
   const [filter, setFilter] = useState<FilterPenduduk>({});
   const [page, setPage] = useState(1);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [formTarget, setFormTarget] = useState<Penduduk | 'baru' | null>(null);
 
   const debouncedSearch = useDebounce(search);
   const { data: filterOpsi } = useFilterOpsi();
@@ -63,8 +66,14 @@ export function DaftarPenduduk() {
     setPage(1);
   }
 
+  function onUbah(id: string) {
+    const warga = data?.items.find((p) => p.id === id);
+    if (warga) setFormTarget(warga);
+  }
+
   return (
-    <DaftarPendudukView
+    <>
+      <DaftarPendudukView
       search={search}
       onSearchChange={onSearchChange}
       filter={filter}
@@ -79,6 +88,13 @@ export function DaftarPenduduk() {
       onPilih={(row) => setSelectedId(row.id)}
       detail={detail}
       onTutupDetail={() => setSelectedId(null)}
+      onTambah={() => setFormTarget('baru')}
+      onUbah={onUbah}
     />
+      <WargaFormDialog
+        target={formTarget}
+        onClose={() => setFormTarget(null)}
+      />
+    </>
   );
 }

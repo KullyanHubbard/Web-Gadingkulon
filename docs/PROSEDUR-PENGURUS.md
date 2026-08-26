@@ -98,9 +98,9 @@ isinya cuma cacah, tanpa nama maupun alamat.
 Admin tidak melihat satu pun dari itu. Menu di layarnya hanya **Akun Pengurus**
 dan **Statistik Desa** (halaman depan yang terbuka untuk umum).
 
-Aplikasi ini **tidak bisa dipakai mengubah data warga.** Menambah, mengoreksi,
-dan menghapus semuanya dilakukan di file Excel pendataan, lalu diimpor ulang —
-lihat [Memperbarui data warga](#memperbarui-data-warga).
+**Pengurus sekarang bisa mengubah data warga langsung di aplikasi** — lihat
+[Memperbarui data warga](#memperbarui-data-warga). File Excel dipakai untuk
+mengisi data pertama kali saja.
 
 ---
 
@@ -120,43 +120,56 @@ filter** mengembalikan daftar utuh.
 
 ## Memperbarui data warga
 
-**File Excel pendataan adalah satu-satunya sumber data.** Aplikasi tidak punya
-formulir untuk mengubah data warga — semua perubahan dilakukan di Excel, lalu
-file itu diimpor.
+**Aplikasi adalah catatan yang berlaku.** Sejak sekarang pengurus membetulkan
+dan menambah data lewat menu **Data Penduduk**, bukan lewat file Excel.
 
-Alurnya:
+### Membetulkan data
 
-1. Pengurus memperbarui file Excel pendataan: menambah warga baru, membetulkan
-   yang keliru, menghapus baris yang salah.
-2. File diserahkan kepada yang mengurus teknis untuk diimpor.
-3. Setelah impor, data di aplikasi langsung mengikuti isi file.
+Cari warganya, tekan **Ubah**, betulkan, simpan. Setiap perubahan **tercatat
+permanen**: siapa yang mengubah, kapan, kolom apa, dari apa jadi apa. Itu bukan
+pengawasan terhadap pengurus — itu supaya kalau ada data yang keliru, bisa
+ditelusuri kembali dan diperbaiki, bukan ditebak.
 
-> ### ⚠️ File yang diimpor HARUS berisi seluruh warga
+### Menambah warga baru
+
+Tekan **+ Tambah Warga**. RT dan RW-nya otomatis wilayah Anda sendiri. Nomor
+**Kode Warga dibuat aplikasi**, tidak perlu (dan tidak bisa) Anda tentukan.
+
+### Warga pindah atau meninggal
+
+Ubah **Status Kependudukan** menjadi Pindah atau Meninggal. **Datanya tidak
+pernah dihapus** — barisnya tetap ada, statusnya saja yang berubah.
+
+### Warga pindah antar-RT: hanya Pak Dukuh
+
+Kolom **RT** dan **RW** terkunci untuk Ketua RT dan Ketua RW. Kalau ada warga
+pindah dari RT 003 ke RT 004, **laporkan ke Pak Dukuh** — beliau yang
+memindahkannya.
+
+Alasannya: kalau Ketua RT bisa memindahkan warga keluar dari RT-nya sendiri,
+maka begitu tersimpan ia tidak bisa lagi menyentuh orang itu untuk membatalkan
+kalau ternyata salah. Kesalahan yang tidak bisa diperbaiki oleh yang
+melakukannya.
+
+Membetulkan **alamat jalan** — "Jl. Melati No. 5" jadi "No. 7" — tetap bisa
+dilakukan Ketua RT, karena itu bukan pindah wilayah.
+
+### File Excel: hanya untuk pengisian pertama
+
+Formulir kosongnya ada di `docs/template-data-penduduk.xlsx`, dipakai sekali
+saat aplikasi pertama kali dipasang.
+
+> ### ⚠️ Jangan mengimpor Excel lagi setelah aplikasi dipakai
 >
-> Impor **menimpa** seluruh data lama, bukan menambahkannya. Kalau yang
-> diimpor cuma file berisi lima warga baru, maka setelah impor isi aplikasi
-> hanya lima orang itu — sisanya hilang.
+> Impor **menghapus seluruh data di aplikasi** dan menggantinya dengan isi
+> file. Semua koreksi dan warga baru yang dimasukkan pengurus akan hilang.
 >
-> **Selalu kirim file lengkap.** Simpan juga salinan file sebelum diubah,
-> supaya ada yang bisa dikembalikan kalau salah kirim.
-
-**Kolom Jabatan** menandai siapa memegang kursi apa: isi `WARGA` untuk hampir
-semua orang, lalu `DUKUH`, `RW`, atau `RT` untuk sepuluh pemegang jabatan. Satu
-kursi satu orang — dua orang bertanda `RT` di RT yang sama akan menghentikan
-impor.
-
-Kolom itu dibaca **hanya saat kursinya masih kosong di aplikasi.** Setelah
-kursinya terisi, pergantian dilakukan lewat aplikasi dan harus disetujui —
-mengubah kolom Jabatan di Excel tidak akan mengubah apa pun. Itu disengaja:
-kalau tidak, satu impor biasa bisa membatalkan pergantian yang sudah disetujui
-Pak Dukuh dan para Ketua RW.
+> Aplikasi sudah menolak impor kalau databasenya berisi, jadi itu tidak bisa
+> terjadi karena tidak sengaja. Tapi kalau ada yang memaksanya, **salin dulu
+> file databasenya.**
 
 **Jangan menambahkan kolom NIK atau No. KK ke file itu.** Sistem tidak
-menyimpannya, dan desa tidak mengizinkannya. Formulir kosong yang benar ada di
-`docs/template-data-penduduk.xlsx`.
-
-**Warga pindah atau meninggal:** ubah kolom status kependudukannya di Excel,
-jangan hapus barisnya. Datanya tetap tercatat.
+menyimpannya, dan desa tidak mengizinkannya.
 
 ---
 

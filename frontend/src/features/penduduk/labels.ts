@@ -1,6 +1,7 @@
 import type {
   Agama,
   GolonganDarah,
+  StatusKependudukan,
   JenisKelamin,
   KelompokUmur,
   Pendidikan,
@@ -59,6 +60,12 @@ export const statusHubunganLabel: Record<StatusHubunganKeluarga, string> = {
   ANAK: 'Anak',
   FAMILI_LAIN: 'Famili Lain',
   LAINNYA: 'Lainnya',
+};
+
+export const statusKependudukanLabel: Record<StatusKependudukan, string> = {
+  AKTIF: 'Aktif',
+  PINDAH: 'Pindah',
+  MENINGGAL: 'Meninggal',
 };
 
 /** Urutan tampil kelompok umur — sama dengan `KELOMPOK_UMUR` di backend. */

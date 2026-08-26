@@ -82,8 +82,10 @@ Excel pendataan:
 .venv/bin/python -m app.data.impor_excel ../docs/data-penduduk.xlsx
 ```
 
-**Setiap impor MENIMPA seluruh tabel penduduk.** File yang diimpor harus selalu
-lengkap, bukan berisi warga baru saja. Excel adalah sumber kebenaran tunggal.
+**Setiap impor MENIMPA seluruh tabel penduduk**, jadi skrip ini **menolak jalan
+kalau database sudah berisi** — sejak Tahap 3b sumber kebenaran data warga
+adalah aplikasi, bukan file ini. Kalau memang mau membuang isi database dan
+menggantinya, ulangi dengan `--timpa-semua`.
 
 Kolom **Kode Warga** wajib diisi, unik, dan tidak boleh berubah: nilainya jadi
 `id` penduduk. Impor berhenti dengan menyebutkan nomor barisnya kalau ada yang
@@ -124,7 +126,9 @@ VITE_API_BASE_URL=http://localhost:8000
 | POST   | `/auth/ganti-password`           | ganti password sendiri (semua peran)                   |
 | GET    | `/penduduk`                      | daftar: `page`, `pageSize`, `search` (nama) + filter    |
 | GET    | `/penduduk/filter-opsi`          | pilihan RT / RW / pekerjaan dari isi data              |
-| GET    | `/penduduk/{id}`                 | detail satu warga                                       |
+| GET    | `/penduduk/{id}`                 | detail satu warga (404 kalau di luar wilayah)           |
+| POST   | `/penduduk`                      | tambah warga di wilayah sendiri — PENGURUS              |
+| PATCH  | `/penduduk/{id}`                 | ubah data warga; RT/RW hanya Dukuh — PENGURUS           |
 | GET    | `/infografis`                    | agregat lengkap — semua pengurus                        |
 | GET    | `/publik/statistik`              | cacah per RW — **tanpa auth**                           |
 | GET    | `/pengurus`                      | daftar **kursi**, terisi & kosong — ADMIN                |
@@ -180,5 +184,6 @@ dipakai. Uji ujung-ke-ujung: jalankan uvicorn di port lain dengan
 File `data/siduk.db` di-gitignore — **jangan pernah di-commit.** Backup-nya
 menyalin file, bukan commit.
 
-**Yang masih di memori dan hilang tiap restart:** audit log
-(`app/core/audit.py`, baru `print()` ke console).
+**Audit log tersimpan permanen** di tabel `audit_log` — siapa mengubah apa,
+kapan, dan nilai sebelum → sesudah tiap kolom. Belum ada endpoint untuk
+membacanya; sementara lewat `app/core/audit.riwayat()`.
