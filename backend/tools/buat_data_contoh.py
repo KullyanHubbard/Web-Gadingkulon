@@ -189,6 +189,7 @@ for i in range(JUMLAH_KK):
             "golonganDarah": random.choice(GOLDAR),
             "statusHubunganKeluarga": a["statusHubunganKeluarga"],
             "kewarganegaraan": "WNI",
+            "jabatan": "WARGA",  # disetel di bawah untuk 10 pemegang kursi
             "jalan": alamat_jalan, "rt": rt, "rw": rw,
             "desa": DESA, "kecamatan": KECAMATAN, "kabupaten": KABUPATEN,
             "provinsi": PROVINSI, "kodePos": KODE_POS,
@@ -197,6 +198,30 @@ for i in range(JUMLAH_KK):
 
 assert baris_semua, "tidak ada baris terbangkitkan"
 assert len({b["id"] for b in baris_semua}) == len(baris_semua), "Kode Warga dobel"
+
+# --- tunjuk pemegang kursi: kepala keluarga tertua di tiap wilayah ---------
+# Pilihan yang bisa dijelaskan, bukan baris pertama yang kebetulan ketemu.
+kepala = sorted(
+    (b for b in baris_semua if b["statusHubunganKeluarga"] == "KEPALA_KELUARGA"),
+    key=lambda b: b["tanggalLahir"],
+)
+terpakai: set[str] = set()
+
+
+def _tunjuk(kandidat, jabatan: str) -> None:
+    for b in kandidat:
+        if b["id"] not in terpakai:
+            terpakai.add(b["id"])
+            b["jabatan"] = jabatan
+            return
+    raise SystemExit(f"tidak ada kandidat untuk {jabatan}")
+
+
+_tunjuk(kepala, "DUKUH")
+for _rw in sorted({b["rw"] for b in baris_semua}):
+    _tunjuk([b for b in kepala if b["rw"] == _rw], "RW")
+for _rw, _rt in sorted({(b["rw"], b["rt"]) for b in baris_semua}):
+    _tunjuk([b for b in kepala if b["rw"] == _rw and b["rt"] == _rt], "RT")
 
 # --- tulis ke xlsx, bentuknya sama persis dengan template kosong ------------
 

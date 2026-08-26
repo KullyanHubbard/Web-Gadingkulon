@@ -77,6 +77,11 @@ Kolom **Kode Warga** wajib diisi, unik, dan tidak boleh berubah: nilainya jadi
 `id` penduduk. Impor berhenti dengan menyebutkan nomor barisnya kalau ada yang
 kosong atau ganda.
 
+Kolom **Jabatan** (`WARGA`/`DUKUH`/`RW`/`RT`) menandai siapa memegang kursi apa.
+Dibaca **hanya untuk kursi yang masih kosong** — begitu kursinya terisi, kolom
+itu diabaikan, sehingga impor tidak pernah membatalkan pergantian yang sudah
+disetujui. Dua orang ditandai memegang kursi yang sama menghentikan impor.
+
 Restart backend setelah impor: `store.py` membaca tabel sekali saat start.
 
 Formulir kosong untuk pengurus dibangkitkan dari definisi kolom yang sama:

@@ -22,6 +22,7 @@ from app.core.audit import catat_audit
 from app.data import pengurus as data
 from app.schemas.auth import AuthUser
 from app.schemas.pengurus import (
+    CalonOut,
     KursiOut,
     PasswordBaru,
     PengurusBaru,
@@ -54,6 +55,7 @@ def daftar_kursi() -> list[KursiOut]:
             rt=k.rt,
             jabatan=k.jabatan,
             penghuni=_keluaran(k.penghuni) if k.penghuni else None,
+            calon=CalonOut(id=k.calon.id, nama=k.calon.nama) if k.calon else None,
         )
         for k in data.daftar_kursi()
     ]

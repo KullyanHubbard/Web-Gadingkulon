@@ -53,7 +53,18 @@ export function DaftarKursiView({
                 {daftar.map((k) => (
                   <tr key={k.kursi} className="hover:bg-slate-50">
                     <Td className="font-medium text-slate-900">{k.jabatan}</Td>
-                    <Td>{k.penghuni?.nama ?? '—'}</Td>
+                    <Td>
+                      {k.penghuni ? (
+                        k.penghuni.nama
+                      ) : k.calon ? (
+                        <span className="text-slate-500">
+                          {k.calon.nama}{' '}
+                          <span className="text-xs">(dari data warga)</span>
+                        </span>
+                      ) : (
+                        '—'
+                      )}
+                    </Td>
                     <Td className="text-xs">{k.penghuni?.username ?? '—'}</Td>
                     <Td>
                       {k.penghuni ? (

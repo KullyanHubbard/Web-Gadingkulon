@@ -391,6 +391,14 @@ harus query `db.py` langsung.
 adalah `app/data/impor_excel.py`, dan **tiap impor menimpa seluruh tabel**
 (`db.kosongkan`).
 
+**Kolom "Jabatan" di Excel (`WARGA`/`DUKUH`/`RW`/`RT`) dibaca HANYA untuk kursi
+yang masih kosong** (`pengurus.daftar_kursi` mengisi `Kursi.calon`). Begitu
+sebuah kursi ada penghuninya, kolom itu diabaikan — kalau tidak, satu impor
+Excel yang belum diperbarui bisa membatalkan pergantian yang sudah disetujui
+Dukuh dan para Ketua RW. Kolom ini **bukan** penentu kewenangan; yang
+menentukan tetap akun di tabel `pengurus`. Dua orang ditandai memegang kursi
+yang sama menghentikan impor.
+
 **`id` penduduk = kolom "Kode Warga" di Excel**, bukan UUID. Kunci yang dijaga
 manusia adalah satu-satunya yang bertahan melewati impor yang menimpa, dan
 Tahap 2 mengharuskan jabatan pengurus menunjuk warga tertentu. Kode ganda atau

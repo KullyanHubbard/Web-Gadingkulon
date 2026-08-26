@@ -126,6 +126,17 @@ Alurnya:
 > **Selalu kirim file lengkap.** Simpan juga salinan file sebelum diubah,
 > supaya ada yang bisa dikembalikan kalau salah kirim.
 
+**Kolom Jabatan** menandai siapa memegang kursi apa: isi `WARGA` untuk hampir
+semua orang, lalu `DUKUH`, `RW`, atau `RT` untuk sepuluh pemegang jabatan. Satu
+kursi satu orang — dua orang bertanda `RT` di RT yang sama akan menghentikan
+impor.
+
+Kolom itu dibaca **hanya saat kursinya masih kosong di aplikasi.** Setelah
+kursinya terisi, pergantian dilakukan lewat aplikasi dan harus disetujui —
+mengubah kolom Jabatan di Excel tidak akan mengubah apa pun. Itu disengaja:
+kalau tidak, satu impor biasa bisa membatalkan pergantian yang sudah disetujui
+Pak Dukuh dan para Ketua RW.
+
 **Jangan menambahkan kolom NIK atau No. KK ke file itu.** Sistem tidak
 menyimpannya, dan desa tidak mengizinkannya. Formulir kosong yang benar ada di
 `docs/template-data-penduduk.xlsx`.
@@ -140,8 +151,9 @@ jangan hapus barisnya. Datanya tetap tercatat.
 Dilakukan **Admin**, lewat menu **Akun Pengurus**:
 
 1. Cari baris kursinya (mis. "Ketua RT 003"), yang statusnya **Kosong**.
-2. Klik **Buatkan Akun**, isi **nama lengkap**, **username**, dan **password
-   awal** (minimal 8 karakter).
+2. Klik **Buatkan Akun**. Kalau kolom Jabatan di Excel sudah menandai orangnya,
+   **namanya sudah terisi otomatis** — tinggal periksa. Isi **username** dan
+   **password awal** (minimal 8 karakter).
 3. **Serahkan password awal secara tatap muka.**
 
 Jabatan tidak perlu dipilih — sudah ditentukan oleh baris kursi yang diklik.

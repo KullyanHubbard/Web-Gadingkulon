@@ -228,6 +228,14 @@ def ganti_password(id: str, password: str, *, oleh_admin: bool) -> bool:
 
 
 @dataclass
+class Calon:
+    """Warga yang ditandai memegang kursi ini di kolom "Jabatan" file Excel."""
+
+    id: str
+    nama: str
+
+
+@dataclass
 class Kursi:
     """Satu jabatan yang ada di padukuhan, terisi maupun kosong."""
 
@@ -237,6 +245,10 @@ class Kursi:
     rt: str | None
     jabatan: str
     penghuni: Pengurus | None
+    # Hanya diisi untuk kursi KOSONG. Begitu ada penghuninya, kolom Jabatan di
+    # Excel diabaikan — kalau tidak, satu impor yang belum diperbarui bisa
+    # membatalkan pergantian yang sudah disetujui.
+    calon: Calon | None = None
 
 
 def daftar_kursi() -> list[Kursi]:
@@ -259,17 +271,31 @@ def daftar_kursi() -> list[Kursi]:
     rencana += [(ROLE_RT, rw, rt) for rw, rt in wilayah]
 
     aktif = {p.kursi: p for p in daftar() if p.aktif}
-    return [
-        Kursi(
-            kursi=kursi_dari(role, rw, rt),
-            role=role,
-            rw=rw,
-            rt=rt,
-            jabatan=jabatan_dari(role, rw, rt),
-            penghuni=aktif.get(kursi_dari(role, rw, rt)),
+
+    # Calon dari kolom "Jabatan" Excel, dipetakan ke kursi yang sama bentuknya.
+    calon: dict[str, Calon] = {}
+    for w in DAFTAR_PENDUDUK:
+        if w.jabatan == "WARGA" or w.statusKependudukan != "AKTIF":
+            continue
+        kunci = kursi_dari(w.jabatan, w.alamat.rw, w.alamat.rt)
+        calon.setdefault(kunci, Calon(id=w.id, nama=w.nama))
+
+    hasil = []
+    for role, rw, rt in rencana:
+        kunci = kursi_dari(role, rw, rt)
+        penghuni = aktif.get(kunci)
+        hasil.append(
+            Kursi(
+                kursi=kunci,
+                role=role,
+                rw=rw,
+                rt=rt,
+                jabatan=jabatan_dari(role, rw, rt),
+                penghuni=penghuni,
+                calon=None if penghuni else calon.get(kunci),
+            )
         )
-        for role, rw, rt in rencana
-    ]
+    return hasil
 
 
 def bootstrap() -> None:

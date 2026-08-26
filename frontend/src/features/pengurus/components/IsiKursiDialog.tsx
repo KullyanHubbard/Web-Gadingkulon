@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Alert } from '@/components/ui/Alert';
@@ -35,6 +36,12 @@ export function IsiKursiDialog({ kursi, onClose }: IsiKursiDialogProps) {
     defaultValues: { nama: '', username: '', password: '' },
   });
 
+  // Nama diisikan dari kolom Jabatan file Excel, tapi tetap bisa diubah: Excel
+  // menandai siapa yang seharusnya, bukan menentukan siapa yang akhirnya.
+  useEffect(() => {
+    if (kursi?.calon) reset({ nama: kursi.calon.nama, username: '', password: '' });
+  }, [kursi, reset]);
+
   function tutup() {
     reset();
     tambah.reset();
@@ -61,7 +68,16 @@ export function IsiKursiDialog({ kursi, onClose }: IsiKursiDialogProps) {
       title={`Buatkan Akun — ${kursi?.jabatan ?? ''}`}
     >
       <form onSubmit={onSubmit} className="space-y-4">
-        <Input label="Nama Lengkap" error={errors.nama?.message} {...register('nama')} />
+        <Input
+          label="Nama Lengkap"
+          hint={
+            kursi?.calon
+              ? 'Terisi dari kolom Jabatan di file Excel. Ubah kalau orangnya berbeda.'
+              : undefined
+          }
+          error={errors.nama?.message}
+          {...register('nama')}
+        />
         <Input
           label="Username"
           autoComplete="off"

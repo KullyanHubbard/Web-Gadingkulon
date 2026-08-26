@@ -17,6 +17,12 @@ export interface Pengurus extends AuthUser {
  * Daftarnya diturunkan backend dari alamat warga, bukan disimpan — jadi kursi
  * RT baru muncul sendiri begitu ada warga ber-RT itu di data.
  */
+/** Warga yang ditandai memegang kursi ini di kolom "Jabatan" file Excel. */
+export interface Calon {
+  id: string;
+  nama: string;
+}
+
 export interface Kursi {
   /** Penanda kursi, mis. `DUKUH`, `RW:019`, `RT:019/001`. */
   kursi: string;
@@ -26,6 +32,12 @@ export interface Kursi {
   /** Mis. "Ketua RT 001". */
   jabatan: string;
   penghuni: Pengurus | null;
+  /**
+   * Hanya terisi untuk kursi kosong. Begitu kursinya punya penghuni, kolom
+   * Jabatan di Excel diabaikan — kalau tidak, satu impor yang belum diperbarui
+   * bisa membatalkan pergantian yang sudah disetujui.
+   */
+  calon: Calon | null;
 }
 
 /** Mengisi satu kursi kosong. `role`/`rw`/`rt` menunjuk kursi mana. */

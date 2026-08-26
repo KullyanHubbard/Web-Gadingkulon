@@ -33,6 +33,15 @@ GolonganDarah = Literal["A", "B", "AB", "O", "TIDAK_TAHU"]
 # tidak pernah valid (salah input).
 StatusKependudukan = Literal["AKTIF", "PINDAH", "MENINGGAL"]
 
+# Jabatan warga di padukuhan, diisi pengurus di kolom "Jabatan" file Excel.
+#
+# Ini BUKAN penentu kewenangan — yang menentukan siapa boleh apa tetap akun
+# pengurus (tabel `pengurus`). Kolom ini hanya dibaca untuk **mengisi kursi
+# yang masih kosong**: begitu sebuah kursi ada penghuninya, isi kolom ini
+# diabaikan. Tanpa batas itu, satu impor Excel yang belum diperbarui bisa
+# membatalkan pergantian yang sudah disetujui Dukuh dan para Ketua RW.
+JabatanWarga = Literal["WARGA", "DUKUH", "RW", "RT"]
+
 
 class Alamat(BaseModel):
     jalan: str
@@ -61,6 +70,7 @@ class Penduduk(BaseModel):
     golonganDarah: GolonganDarah
     statusHubunganKeluarga: StatusHubunganKeluarga
     kewarganegaraan: str
+    jabatan: JabatanWarga = "WARGA"
     alamat: Alamat
     statusKependudukan: StatusKependudukan = "AKTIF"
     # ISO date string, atau None kalau barisnya masih berlaku. Baris ber-nilai

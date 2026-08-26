@@ -49,6 +49,9 @@ CREATE TABLE IF NOT EXISTS penduduk (
     golonganDarah          TEXT NOT NULL,
     statusHubunganKeluarga TEXT NOT NULL,
     kewarganegaraan        TEXT NOT NULL,
+    -- Jabatan dari file Excel. Bukan penentu kewenangan; dibaca hanya untuk
+    -- mencalonkan penghuni kursi yang masih kosong.
+    jabatan                TEXT NOT NULL DEFAULT 'WARGA',
     alamat_jalan           TEXT NOT NULL,
     alamat_rt              TEXT NOT NULL,
     alamat_rw              TEXT NOT NULL,

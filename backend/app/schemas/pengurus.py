@@ -18,6 +18,13 @@ class PengurusOut(AuthUser):
     aktif: bool
 
 
+class CalonOut(BaseModel):
+    """Warga yang ditandai memegang kursi ini di kolom "Jabatan" file Excel."""
+
+    id: str
+    nama: str
+
+
 class KursiOut(BaseModel):
     """Satu jabatan di padukuhan, terisi maupun kosong.
 
@@ -31,6 +38,8 @@ class KursiOut(BaseModel):
     rt: Optional[str] = None
     jabatan: str
     penghuni: Optional[PengurusOut] = None
+    # Hanya untuk kursi kosong; diabaikan begitu ada penghuninya.
+    calon: Optional[CalonOut] = None
 
 
 class PengurusBaru(BaseModel):

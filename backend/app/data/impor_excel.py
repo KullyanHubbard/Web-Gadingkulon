@@ -53,6 +53,7 @@ KOLOM: list[tuple[str, str, int]] = [
     ("golonganDarah", "Gol. Darah", 10),
     ("statusHubunganKeluarga", "Status dalam KK", 18),
     ("kewarganegaraan", "Kewarganegaraan", 14),
+    ("jabatan", "Jabatan", 12),
     ("jalan", "Alamat Jalan", 26),
     ("rt", "RT", 6),
     ("rw", "RW", 6),
@@ -74,6 +75,7 @@ PILIHAN: dict[str, list[str]] = {
     "statusHubunganKeluarga": [
         "KEPALA_KELUARGA", "ISTRI", "ANAK", "FAMILI_LAIN", "LAINNYA",
     ],
+    "jabatan": ["WARGA", "DUKUH", "RW", "RT"],
 }
 
 _ALAMAT = {
@@ -144,6 +146,8 @@ def baca_xlsx(path: str) -> list[Penduduk]:
             "tidak bisa dipakai. Isi dulu, lalu jalankan ulang."
         )
 
+    _periksa_jabatan(daftar, baris_ke_nomor)
+
     ganda = {k: b for k, b in _cari_ganda(daftar, baris_ke_nomor).items()}
     if ganda:
         sys.exit(
@@ -153,6 +157,36 @@ def baca_xlsx(path: str) -> list[Penduduk]:
             "bertukar jabatan tanpa ada yang menyadarinya. Betulkan dulu."
         )
     return daftar
+
+
+def _periksa_jabatan(
+    daftar: list[Penduduk], nomor_baris: dict[str, list[int]]
+) -> None:
+    """Satu kursi satu orang, sudah di file Excel-nya.
+
+    Dua orang bertanda `RT` di RT yang sama berarti file itu sendiri tidak tahu
+    siapa ketuanya — dan aplikasi tidak boleh menebak. Diperiksa sebelum satu
+    baris pun ditulis.
+    """
+    pemegang: dict[str, list[str]] = {}
+    for p in daftar:
+        if p.jabatan == "WARGA":
+            continue
+        if p.jabatan == "DUKUH":
+            kursi = "Dukuh"
+        elif p.jabatan == "RW":
+            kursi = f"Ketua RW {p.alamat.rw}"
+        else:
+            kursi = f"Ketua RT {p.alamat.rt} (RW {p.alamat.rw})"
+        pemegang.setdefault(kursi, []).append(p.nama)
+
+    bentrok = {k: v for k, v in pemegang.items() if len(v) > 1}
+    if bentrok:
+        sys.exit(
+            "Satu kursi ditandai untuk lebih dari satu orang:\n  "
+            + "\n  ".join(f"{k}: {', '.join(v)}" for k, v in bentrok.items())
+            + "\n\nSatu jabatan dipegang satu orang. Betulkan kolom Jabatan dulu."
+        )
 
 
 def _cari_ganda(
