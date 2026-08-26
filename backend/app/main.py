@@ -2,8 +2,10 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.routers import auth, infografis, penduduk, publik
+from app.api.routers import auth, infografis, penduduk, pengurus, publik
 from app.core.config import settings
+from app.data.pengurus import bootstrap
+from app.data.pengurus import daftar as daftar_pengurus
 from app.data.store import DAFTAR_PENDUDUK
 
 app = FastAPI(title="SIDUK API", description="Data penduduk dari pendataan Excel — lihat CLAUDE.md §11")
@@ -27,6 +29,7 @@ app.include_router(penduduk.router)
 app.include_router(publik.router)
 app.include_router(auth.router)
 app.include_router(infografis.router)
+app.include_router(pengurus.router)
 
 
 @app.get("/health")
@@ -35,13 +38,15 @@ def health() -> dict[str, str]:
 
 
 @app.on_event("startup")
-def _cetak_status_awal() -> None:
-    """Akun pengurus saja. NIK/PIN warga sengaja tidak dicetak — begitu tabelnya
-    berisi data pendataan sungguhan, log server jadi tempat bocornya."""
+def _startup() -> None:
+    """Bootstrap akun ADMIN pertama, lalu ringkasan keadaan data.
+
+    Tidak ada kredensial yang dicetak: begitu tabelnya berisi data pendataan
+    sungguhan, log server jadi tempat bocornya.
+    """
+    bootstrap()
     print("=== SIDUK backend ===")
-    print("  Akun pengurus — dukuh / dukuh123")
-    print("  Akun pengurus — rw019 / rw123")
-    print("  Akun pengurus — rt03 / rt123")
+    print(f"  Akun pengurus: {len(daftar_pengurus())} akun terdaftar")
     if DAFTAR_PENDUDUK:
         print(f"  Data penduduk: {len(DAFTAR_PENDUDUK)} jiwa terbaca dari DB")
     else:
