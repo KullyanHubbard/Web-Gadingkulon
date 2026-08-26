@@ -33,10 +33,10 @@ export function AuthLayout({ title, description, children }: AuthLayoutProps) {
       </header>
 
       <div className="flex flex-1 flex-col px-4 py-8 sm:px-6">
-        <div className="my-auto w-full max-w-md self-center">
+        <div className="my-auto w-full max-w-lg self-center">
           {/* `border-1`, bukan `border`: `borderWidth.DEFAULT` di tailwind.config
               di-setel 4px, jadi `border` telanjang menggambar bingkai tebal. */}
-          <div className="rounded-2xl border-1 border-slate-200 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-12px_rgba(15,23,42,0.12)] sm:p-8">
+          <div className="rounded-2xl border-1 border-slate-200 bg-white p-8 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-12px_rgba(15,23,42,0.12)] sm:p-10">
             <Link
               to={paths.landing}
               className="focus-ring -ml-3 mb-2 inline-flex w-fit items-center gap-2 rounded-lg px-3 py-2 text-base font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-brand-700"

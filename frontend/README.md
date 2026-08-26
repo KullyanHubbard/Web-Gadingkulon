@@ -8,9 +8,29 @@ Backend (FastAPI, data dummy) harus jalan dulu — lihat
 [`../backend/README.md`](../backend/README.md).
 
 ```bash
+./start.sh    # bikin .env kalau belum ada, pasang dependensi, nyalakan Vite
+```
+
+Tidak ada `.env.example`. Kerangkanya dibuatkan `start.sh` dengan **nilai
+bawaan yang langsung bisa jalan** — frontend tidak punya rahasia wajib seperti
+backend, jadi kerangkanya lengkap.
+
+### Isi `frontend/.env`
+
+| Variabel | Wajib | Bawaan | Guna |
+| -------- | ----- | ------ | ---- |
+| `VITE_API_BASE_URL` | — | `/api` | Base URL API backend. `/api` melewati proxy Vite ke `localhost:8000` (satu origin, tanpa CORS). Isi URL penuh hanya kalau mau memanggil backend langsung. |
+| `VITE_APP_NAME` | — | `SIDUK` | Nama aplikasi, dipakai di title & header. |
+
+Semua variabel yang diakses di client **wajib** berprefix `VITE_`.
+
+Berkas itu **tidak ikut repo** (`.gitignore`).
+
+Manual, kalau lebih suka:
+
+```bash
 npm install
-cp .env.example .env   # arahkan VITE_API_BASE_URL ke backend
-npm run dev            # http://localhost:5173
+npm run dev   # http://localhost:5173
 ```
 
 ## Akun Demo (data dummy backend)

@@ -1,7 +1,7 @@
 """Konfigurasi terpusat — satu-satunya tempat nilai yang bisa berbeda antar
 environment (dev/staging/prod) boleh ditulis.
 
-Dibaca dari `backend/.env` bila ada; lihat `backend/.env.example` untuk daftar
+Dibaca dari `backend/.env` bila ada; lihat `backend/README.md` untuk daftar
 lengkapnya. Setiap field punya default yang aman untuk dev, jadi repo tetap
 jalan tanpa `.env` sama sekali.
 

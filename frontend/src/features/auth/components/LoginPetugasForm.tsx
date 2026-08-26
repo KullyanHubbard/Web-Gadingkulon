@@ -25,7 +25,10 @@ export function LoginPetugasForm() {
   });
 
   const onSubmit = handleSubmit((values) => {
-    login.mutate(values, { onSuccess: redirectAfterLogin });
+    login.mutate(
+      { credentials: values, expectedRole: peran },
+      { onSuccess: redirectAfterLogin },
+    );
   });
 
   return (

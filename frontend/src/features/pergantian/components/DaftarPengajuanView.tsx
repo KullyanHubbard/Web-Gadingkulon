@@ -1,17 +1,15 @@
-import { Badge } from '@/components/ui/Badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { FileClock } from 'lucide-react';
 import { QueryBoundary } from '@/components/ui/QueryBoundary';
 import type { Pengajuan, StatusPengajuan } from '../types';
 
-const nadaStatus: Record<StatusPengajuan, 'amber' | 'green' | 'red' | 'slate'> =
-  {
-    MENUNGGU: 'amber',
-    DISETUJUI: 'green',
-    DITOLAK: 'red',
-    GUGUR: 'slate',
-  };
+const warnaStatus: Record<StatusPengajuan, string> = {
+  MENUNGGU: 'bg-amber-400',
+  DISETUJUI: 'bg-green-400',
+  DITOLAK: 'bg-red-400',
+  GUGUR: 'bg-slate-300',
+};
 
 const labelStatus: Record<StatusPengajuan, string> = {
   MENUNGGU: 'Menunggu',
@@ -34,10 +32,7 @@ export function DaftarPengajuanView({
 }: DaftarPengajuanViewProps) {
   return (
     <Card>
-      <CardHeader
-        title="Pengajuan Pergantian"
-        description="Riwayat ini tidak pernah dihapus — inilah catatan perpindahan jabatan."
-      />
+      <CardHeader title="Pengajuan Pergantian" />
       <CardContent className="p-0">
         <QueryBoundary
           isLoading={isLoading}
@@ -65,9 +60,12 @@ export function DaftarPengajuanView({
                         {p.kandidatRw}
                       </p>
                     </div>
-                    <Badge tone={nadaStatus[p.status]}>
-                      {labelStatus[p.status]}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <span className={`h-2 w-2 rounded-full ${warnaStatus[p.status]}`} />
+                      <span className="text-sm font-medium text-slate-700">
+                        {labelStatus[p.status]}
+                      </span>
+                    </div>
                   </div>
 
                   {p.suara.length > 0 && (

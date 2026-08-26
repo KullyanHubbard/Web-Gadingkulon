@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { PageHeader } from '@/components/layout/PageHeader';
 import { AjukanPergantianDialog } from '@/features/pergantian/components/AjukanPergantianDialog';
 import { DaftarPengajuanView } from '@/features/pergantian/components/DaftarPengajuanView';
 import { usePengajuanList } from '@/features/pergantian/hooks/use-pergantian';
@@ -26,11 +25,6 @@ export default function PengurusPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Akun Pengurus"
-        description="Isi kursi yang kosong, atau ajukan pergantian untuk kursi yang sudah terisi."
-      />
-
       <DaftarKursiView
         isLoading={kursi.isLoading}
         isError={kursi.isError}

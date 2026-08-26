@@ -21,7 +21,7 @@
 @layer components {
   /* Fokus ring konsisten untuk elemen interaktif. */
   .focus-ring {
-    @apply outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-brand-500;
+    @apply outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-brand-600;
   }
 }
 

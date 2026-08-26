@@ -1,6 +1,4 @@
-import ikonChartBar from '@/assets/icons/nav/chart-bar.svg';
 import ikonChartPie from '@/assets/icons/nav/chart-pie.svg';
-import ikonId from '@/assets/icons/nav/id.svg';
 import ikonUsers from '@/assets/icons/nav/users.svg';
 import type { Role } from '@/features/auth/types';
 import { CHART_KATEGORI_COLORS } from '@/lib/colors';
@@ -26,16 +24,15 @@ export interface NavItem {
  * sebagai prefix setiap route dan menunya menyala terus.
  */
 const statistikDesa: NavItem = {
-  label: 'Statistik Desa',
+  label: 'Statistik Warga',
   to: paths.landing,
-  icon: ikonChartBar,
   aksen: CHART_KATEGORI_COLORS[3],
   end: true,
 };
 
 /** Muncul di semua peran, isinya yang berbeda — jadi warnanya ditulis sekali. */
 const riwayat: NavItem = {
-  label: 'Riwayat Perubahan',
+  label: 'Riwayat Edit',
   to: paths.admin.riwayat,
   aksen: CHART_KATEGORI_COLORS[1],
 };
@@ -51,13 +48,11 @@ export function navItemsForRole(role: Role | undefined): NavItem[] {
   if (role === 'ADMIN') {
     return [
       {
-        label: 'Akun Pengurus',
+        label: 'Kelola Akun',
         to: paths.admin.pengurus,
-        icon: ikonId,
         aksen: CHART_KATEGORI_COLORS[2],
       },
       riwayat,
-      statistikDesa,
     ];
   }
   return [
@@ -68,7 +63,7 @@ export function navItemsForRole(role: Role | undefined): NavItem[] {
       end: true,
     },
     {
-      label: 'Data Penduduk',
+      label: 'Penduduk',
       to: paths.admin.penduduk,
       icon: ikonUsers,
       aksen: CHART_KATEGORI_COLORS[5],

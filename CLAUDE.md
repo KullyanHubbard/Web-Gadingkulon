@@ -292,13 +292,18 @@ untuk alasan lengkapnya):**
 
 - Hanya variabel berprefix `VITE_` yang terbaca di client.
 - **Jangan** baca `import.meta.env.*` langsung; akses via `@/config/env`.
-- Frontend: salin `frontend/.env.example` → `.env`. Kunci utama
+- **Tidak ada `.env.example` di mana pun.** Kedua sisi memakai pola yang sama:
+  `start.sh` membuatkan kerangka `.env` kalau belum ada, lalu dokumentasi
+  variabelnya tinggal di `README.md` masing-masing.
+- Frontend: `frontend/start.sh` membuatkan `.env` dengan **nilai bawaan yang
+  langsung bisa jalan** (tidak ada rahasia wajib). Kunci utama
   `VITE_API_BASE_URL` (default `/api`, diproksikan Vite ke `localhost:8000`).
-- Backend: **tidak ada `.env.example`.** Kerangka `backend/.env` dibuatkan
-  `backend/start.sh` dengan nilai kosong, lalu skripnya berhenti sampai
-  `ADMIN_USERNAME`/`ADMIN_PASSWORD` diisi. Contoh yang berisi password yang
-  berlaku terlalu mudah tersalin diam-diam jadi password sungguhan. Daftar
-  variabelnya didokumentasikan di `backend/README.md`.
+  Daftar variabelnya didokumentasikan di `frontend/README.md`.
+- Backend: `backend/start.sh` membuatkan `.env` dengan **nilai kosong** untuk
+  `ADMIN_USERNAME`/`ADMIN_PASSWORD`, lalu skripnya berhenti sampai keduanya
+  diisi. Contoh yang berisi password yang berlaku terlalu mudah tersalin
+  diam-diam jadi password sungguhan. Daftar variabelnya didokumentasikan di
+  `backend/README.md`.
 
 ## 9. Perintah
 

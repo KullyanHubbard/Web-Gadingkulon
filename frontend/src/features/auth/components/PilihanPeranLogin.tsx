@@ -1,15 +1,13 @@
+import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import type { Role } from '../types';
 
 /**
  * Empat peran di halaman masuk, beserta contoh username tiap peran.
  *
- * Pilihan ini **tidak dikirim ke backend dan tidak menentukan apa pun.** Peran
- * seseorang sudah melekat pada akunnya; memaksakannya cocok dengan pilihan di
- * layar tidak menambah keamanan sedikit pun, dan justru memberi tahu penebak
- * password peran apa yang dipegang sebuah username. Gunanya orientasi: orang
- * tahu ia berada di tempat yang benar, dan melihat bentuk username yang
- * diharapkan.
+ * Pilihan ini kini diverifikasi di layar masuk. Jika peran dari backend
+ * tidak cocok dengan tombol yang ditekan, proses masuk akan dibatalkan
+ * (sesi dicabut kembali) dan menampilkan error.
  */
 export const PERAN_LOGIN = [
   {
@@ -21,8 +19,8 @@ export const PERAN_LOGIN = [
   },
   {
     role: 'DUKUH' as Role,
-    label: 'Pak Dukuh',
-    judul: 'Masuk sebagai Pak Dukuh',
+    label: 'Dukuh',
+    judul: 'Masuk sebagai Dukuh',
     contoh: 'dukuh',
     catatan: 'Melihat seluruh data warga & infografis padukuhan.',
   },
@@ -50,24 +48,61 @@ interface Props {
 }
 
 export function PilihanPeranLogin({ dipilih, onPilih }: Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRefs = useRef<Map<Role, HTMLButtonElement>>(new Map());
+  const [indicator, setIndicator] = useState({ left: 0, width: 0 });
+  // Matikan transisi saat render pertama supaya indikator tidak terlihat
+  // meluncur dari pojok kiri atas.
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const btn = buttonRefs.current.get(dipilih);
+    const container = containerRef.current;
+    if (!btn || !container) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const btnRect = btn.getBoundingClientRect();
+    setIndicator({
+      left: btnRect.left - containerRect.left,
+      width: btnRect.width,
+    });
+
+    // Nyalakan transisi setelah posisi awal terpasang.
+    if (!ready) requestAnimationFrame(() => setReady(true));
+  }, [dipilih, ready]);
+
   return (
     <div
+      ref={containerRef}
       role="tablist"
       aria-label="Pilih peran"
-      className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4"
+      className="relative mt-4 grid grid-cols-4 rounded-xl bg-slate-100 p-1"
     >
+      {/* Sliding indicator — kotak putih yang meluncur di belakang tombol. */}
+      <span
+        aria-hidden
+        className={cn(
+          'absolute inset-y-1 rounded-lg bg-white shadow-sm',
+          ready && 'transition-all duration-250 ease-[cubic-bezier(0.4,0,0.2,1)]',
+        )}
+        style={{ left: indicator.left, width: indicator.width }}
+      />
+
       {PERAN_LOGIN.map((p) => (
         <button
           key={p.role}
+          ref={(el) => {
+            if (el) buttonRefs.current.set(p.role, el);
+          }}
           type="button"
           role="tab"
           aria-selected={dipilih === p.role}
           onClick={() => onPilih(p.role)}
           className={cn(
-            'focus-ring rounded-lg border-1 px-2 py-2 text-sm font-medium transition-colors',
+            'focus-ring relative z-10 h-11 rounded-lg px-2 text-sm transition-colors duration-200',
             dipilih === p.role
-              ? 'border-brand-600 bg-brand-50 text-brand-800'
-              : 'border-slate-200 text-slate-600 hover:bg-slate-50',
+              ? 'font-bold text-brand-700'
+              : 'font-medium text-slate-500 hover:text-slate-700',
           )}
         >
           {p.label}

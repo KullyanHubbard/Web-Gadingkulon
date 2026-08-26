@@ -13,7 +13,7 @@ export interface AuthApi {
   /** Ganti password sendiri — satu-satunya aksi yang terbuka selagi
    *  `harusGantiPassword` menyala. */
   gantiPassword(payload: GantiPassword): Promise<AuthUser>;
-  logout(): Promise<void>;
+  logout(tokenOverride?: string): Promise<void>;
 }
 
 export const authApi: AuthApi = {
@@ -30,7 +30,10 @@ export const authApi: AuthApi = {
     return data;
   },
 
-  async logout() {
-    await apiClient.post('/auth/logout');
+  async logout(tokenOverride) {
+    const config = tokenOverride
+      ? { headers: { Authorization: `Bearer ${tokenOverride}` } }
+      : undefined;
+    await apiClient.post('/auth/logout', undefined, config);
   },
 };

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { paths } from '@/routes/paths';
 import { authApi } from '../api/auth-api';
 import { useAuthStore } from '../auth-store';
-import type { GantiPassword, PetugasCredentials } from '../types';
+import type { GantiPassword, PetugasCredentials, Role } from '../types';
 import { ROLE_PENGURUS } from '../types';
 
 /** Akses state auth (user, role, status). */
@@ -22,11 +22,31 @@ export function useAuth() {
   };
 }
 
-/** Login pengurus: username + password. */
+/** Login pengurus: username + password. Memastikan peran yang diisi cocok. */
 export function useLoginPetugas() {
   const setSession = useAuthStore((s) => s.setSession);
   return useMutation({
-    mutationFn: (credentials: PetugasCredentials) => authApi.login(credentials),
+    mutationFn: async ({
+      credentials,
+      expectedRole,
+    }: {
+      credentials: PetugasCredentials;
+      expectedRole: Role;
+    }) => {
+      const session = await authApi.login(credentials);
+
+      if (session.user.role !== expectedRole) {
+        // Akun berhasil masuk, tapi perannya tidak sesuai yang dipilih di layar.
+        // Cabut kembali sesi yang telanjur dibuat di backend.
+        await authApi.logout(session.token).catch(() => undefined);
+        const p = ROLE_PENGURUS.includes(expectedRole)
+          ? expectedRole
+          : 'Admin';
+        throw new Error(`Username atau password salah untuk akun ${p}.`);
+      }
+
+      return session;
+    },
     onSuccess: (session) => setSession(session),
   });
 }

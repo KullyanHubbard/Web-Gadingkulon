@@ -23,11 +23,11 @@ export function CardHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
+    <div className="flex items-center justify-between gap-4 border-b border-slate-100 px-6 py-5">
       <div>
-        <h3 className="text-base font-semibold text-slate-900">{title}</h3>
+        <h3 className="text-lg font-bold text-slate-900">{title}</h3>
         {description && (
-          <p className="mt-0.5 text-sm text-slate-500">{description}</p>
+          <p className="mt-1 text-sm text-slate-500">{description}</p>
         )}
       </div>
       {action}

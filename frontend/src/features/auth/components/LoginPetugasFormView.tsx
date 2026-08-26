@@ -34,25 +34,25 @@ export function LoginPetugasFormView({
   const pilihan = PERAN_LOGIN.find((p) => p.role === peran) ?? PERAN_LOGIN[0];
 
   return (
-    <AuthLayout title={pilihan.judul} description={pilihan.catatan}>
+    <AuthLayout title={pilihan.judul}>
       <PilihanPeranLogin dipilih={peran} onPilih={onPilihPeran} />
 
-      <form onSubmit={onSubmit} className="mt-5 space-y-4">
+      <form onSubmit={onSubmit} className="mt-6 space-y-5">
         {errorMessage && <Alert tone="error">{errorMessage}</Alert>}
 
         <Input
           label="Username"
-          className="h-12 text-base"
-          icon={<UserRound className="h-4 w-4" />}
+          className="h-[3.25rem] text-base"
+          icon={<UserRound className="h-5 w-5" />}
           autoComplete="username"
-          placeholder={`cth. ${pilihan.contoh}`}
+          placeholder="Masukkan username"
           error={errors.username}
           {...register('username')}
         />
         <PasswordInput
           label="Password"
-          className="h-12 text-base"
-          icon={<KeyRound className="h-4 w-4" />}
+          className="h-[3.25rem] text-base"
+          icon={<KeyRound className="h-5 w-5" />}
           autoComplete="current-password"
           placeholder="••••••••"
           error={errors.password}
@@ -62,16 +62,12 @@ export function LoginPetugasFormView({
         <Button
           type="submit"
           size="lg"
-          className="w-full active:scale-[0.99]"
+          className="mt-1 h-[3.25rem] w-full bg-brand-700 text-base font-semibold hover:bg-brand-800 active:bg-brand-900"
           isLoading={isPending}
         >
           Masuk
         </Button>
 
-        <p className="text-center text-xs text-slate-500">
-          Salah pilih peran tidak masalah — yang menentukan adalah akun Anda,
-          bukan tombol di atas.
-        </p>
       </form>
 
     </AuthLayout>

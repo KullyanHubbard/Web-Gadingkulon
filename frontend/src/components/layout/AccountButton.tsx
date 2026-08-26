@@ -1,6 +1,6 @@
-import { UserCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ikonMasuk from '@/assets/forward-navigasi.svg';
+import ikonUserCircle from '@/assets/icons/nav/user-circle.svg';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/features/auth/hooks/use-auth';
 import { paths } from '@/routes/paths';
@@ -37,18 +37,14 @@ export function AccountButton({ className }: AccountButtonProps) {
           berkasnya satu warna, jadi `bg-current` yang mewarnainya mengikuti
           teks tombol. URL wajib dipetik ganda — tanpa itu mask diabaikan diam-
           diam dan yang tampil kotak penuh. */}
-      {isAuthenticated ? (
-        <UserCircle2 className="h-4 w-4" />
-      ) : (
-        <span
-          aria-hidden
-          className="h-4 w-4 shrink-0 bg-current"
-          style={{
-            mask: `url("${ikonMasuk}") center / contain no-repeat`,
-            WebkitMask: `url("${ikonMasuk}") center / contain no-repeat`,
-          }}
-        />
-      )}
+      <span
+        aria-hidden
+        className="h-4 w-4 shrink-0 bg-current"
+        style={{
+          mask: `url("${isAuthenticated ? ikonUserCircle : ikonMasuk}") center / contain no-repeat`,
+          WebkitMask: `url("${isAuthenticated ? ikonUserCircle : ikonMasuk}") center / contain no-repeat`,
+        }}
+      />
       {isAuthenticated ? 'Akun Saya' : 'Masuk'}
     </Link>
   );

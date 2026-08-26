@@ -4,19 +4,20 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Brand NIA — ikut warna lambang (`Logo.tsx`), #3b1368 di stop 900.
+        // Brand SIDUK — Ungu Profesional.
+        // 600 = primary, 700 = hover, 800 = active/deep, 200 = focus ring.
         brand: {
-          50: '#f6f0fc',
-          100: '#ebdff9',
-          200: '#d2b6f2',
-          300: '#af7ee7',
-          400: '#883ddc',
-          500: '#6721b5',
-          600: '#531b93',
-          700: '#47177d',
-          800: '#411572',
-          900: '#3b1368',
-          950: '#220b3c',
+          50:  '#F5F3FF', // purple-50
+          100: '#EDE9FE', // purple-100
+          200: '#DDD6FE', // purple-200  ← focus ring
+          300: '#C4B5FD', // purple-300
+          400: '#A78BFA', // purple-400
+          500: '#8B5CF6', // purple-500
+          600: '#7C3AED', // purple-600  ← primary (lebih vibrant dari 700)
+          700: '#6D28D9', // purple-700  ← hover
+          800: '#5B21B6', // purple-800  ← active/deep
+          900: '#4C1D95', // purple-900  ← darkest
+          950: '#2E1065', // purple-950
         },
       },
       borderColor: ({ theme }) => ({
