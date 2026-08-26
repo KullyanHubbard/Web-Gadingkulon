@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import { KreditKkn } from '@/components/layout/KreditKkn';
 import { Button } from '@/components/ui/Button';
+import { KreditKkn } from '@/components/ui/KreditKkn';
 import { paths } from '@/routes/paths';
 
 export default function NotFoundPage() {

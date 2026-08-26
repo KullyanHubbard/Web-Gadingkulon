@@ -1,5 +1,5 @@
+import { Logo } from '@/components/ui/Logo';
 import { AccountButton } from './AccountButton';
-import { Logo } from './Logo';
 
 /**
  * Bilah atas landing page publik untuk layar kecil — gantinya `PublicSidebar`

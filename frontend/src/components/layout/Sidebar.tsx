@@ -2,9 +2,9 @@ import { NavLink } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { warnaLembut } from '@/lib/colors';
+import { Logo } from '@/components/ui/Logo';
 import { env } from '@/config/env';
 import { useAuth } from '@/features/auth/hooks/use-auth';
-import { Logo } from './Logo';
 import { navItemsForRole } from './nav-config';
 
 interface SidebarProps {

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { KreditKkn } from './KreditKkn';
+import { KreditKkn } from '@/components/ui/KreditKkn';
 import { PublicSidebar } from './PublicSidebar';
 import { PublicTopbar } from './PublicTopbar';
 

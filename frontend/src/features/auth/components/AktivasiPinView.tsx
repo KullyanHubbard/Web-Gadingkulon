@@ -4,8 +4,8 @@ import { KeyRound } from 'lucide-react';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { PasswordInput } from '@/components/ui/PasswordInput';
+import { AuthLayout } from '@/features/auth/components/AuthLayout';
 import type { SetPinFormValues } from '../schemas';
-import { AuthLayout } from '@/components/layout/AuthLayout';
 
 interface AktivasiPinViewProps {
   /** Nama pemilik NIK, untuk dikonfirmasi warga sebelum membuat PIN. */

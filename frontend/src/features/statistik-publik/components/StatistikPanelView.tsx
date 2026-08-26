@@ -1,12 +1,12 @@
 import { ChevronRight } from 'lucide-react';
 import { Card, CardHeader } from '@/components/ui/Card';
-import { CountUp } from '@/components/ui/CountUp';
 import { DistribusiPieChart } from '@/components/ui/DistribusiPieChart';
 import { QueryBoundary } from '@/components/ui/QueryBoundary';
 import { StatCard } from '@/components/ui/StatCard';
 import { CHART_KATEGORI_COLORS } from '@/lib/colors';
 import { STAT_WARGA } from '@/lib/stat-warga';
 import type { RingkasanStatistik } from '../view-model';
+import { CountUp } from './CountUp';
 
 interface StatistikPanelViewProps {
   isLoading: boolean;

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
+import { KreditKkn } from '@/components/ui/KreditKkn';
 import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
-import { KreditKkn } from './KreditKkn';
 
 /**
  * Kerangka halaman ter-autentikasi: sidebar + navbar + area konten.

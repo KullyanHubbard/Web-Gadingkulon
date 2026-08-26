@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import ikonKembali from '@/assets/back-navigasi.svg';
+import { KreditKkn } from '@/components/ui/KreditKkn';
+import { Logo } from '@/components/ui/Logo';
 import { paths } from '@/routes/paths';
-import { KreditKkn } from './KreditKkn';
-import { Logo } from './Logo';
 
 interface AuthLayoutProps {
   title: string;

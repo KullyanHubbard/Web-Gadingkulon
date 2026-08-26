@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
+import { Logo } from '@/components/ui/Logo';
 import { AccountButton } from './AccountButton';
-import { Logo } from './Logo';
 
 interface PublicSidebarProps {
   /** Daftar bagian statistik. */
