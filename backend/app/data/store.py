@@ -7,43 +7,19 @@ otomatis**: DB kosong tetap kosong, dan itu disengaja. Data masuk lewat
 jalur, jadi tidak mungkin ada data karangan yang menyelinap ke sistem yang
 sedang dipakai sungguhan.
 
-ponytail: seluruh tabel dibaca ke memori sekali saat impor, dan `DAFTAR_PENDUDUK`
-tetap `list` seperti sebelumnya — semua router jalan tanpa disentuh, dan pada
-~700 baris ini lebih cepat daripada query per request. Ceilingnya dua: (1) data
-puluhan ribu baris, (2) endpoint tulis — begitu ada `POST/PATCH /penduduk`,
-cache ini basi dan router harus query `db.py` langsung. Ganti isi modul ini,
-bukan tiap router.
+ponytail: seluruh tabel dibaca ke memori sekali saat impor modul. Ceilingnya
+dua: (1) data puluhan ribu baris, (2) endpoint tulis penduduk — begitu ada
+`POST/PATCH /penduduk`, cache ini basi dan router harus query `db.py`
+langsung. Ganti isi modul ini, bukan tiap router.
+
+Akun pengurus TIDAK di sini: tabelnya ditulis saat runtime (ADMIN menambah &
+menonaktifkan akun), jadi cache impor-sekali akan basi. Lihat
+`app/data/pengurus.py`.
 """
 
 from app.core.config import settings
 from app.data import db
-from app.schemas.penduduk import KartuKeluarga, Penduduk
-
-
-def bangun_kartu_keluarga(daftar: list[Penduduk]) -> dict[str, KartuKeluarga]:
-    """Kelompokkan penduduk per `noKK` jadi indeks Kartu Keluarga.
-
-    KK tidak punya tabel sendiri — ia diturunkan dari `noKK` yang sama, jadi
-    tidak ada yang perlu dijaga tetap sinkron antara dua tabel.
-    """
-    by_no_kk: dict[str, list[Penduduk]] = {}
-    for p in daftar:
-        by_no_kk.setdefault(p.noKK, []).append(p)
-
-    hasil: dict[str, KartuKeluarga] = {}
-    for no_kk, anggota in by_no_kk.items():
-        kepala = next(
-            (p for p in anggota if p.statusHubunganKeluarga == "KEPALA_KELUARGA"),
-            anggota[0],
-        )
-        hasil[no_kk] = KartuKeluarga(
-            noKK=no_kk,
-            kepalaKeluarga=kepala.nama,
-            alamat=kepala.alamat,
-            anggota=anggota,
-        )
-    return hasil
-
+from app.schemas.penduduk import Penduduk
 
 _conn = db.buka(settings.DATABASE_FILE)
 _SEMUA_PENDUDUK = db.muat(_conn)
@@ -56,6 +32,3 @@ _conn.close()
 # `statusKependudukan` PINDAH/MENINGGAL sengaja TIDAK disaring — datanya sah,
 # yang berubah statusnya, dan untuk sementara tetap ikut dihitung.
 DAFTAR_PENDUDUK: list[Penduduk] = [p for p in _SEMUA_PENDUDUK if p.deletedAt is None]
-KARTU_KELUARGA_BY_NOKK: dict[str, KartuKeluarga] = bangun_kartu_keluarga(
-    DAFTAR_PENDUDUK
-)

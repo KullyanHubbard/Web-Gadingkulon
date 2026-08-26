@@ -1,18 +1,21 @@
-"""SQLite: penyimpanan penduduk. Satu-satunya modul yang menulis SQL.
+"""SQLite: penyimpanan penduduk & akun pengurus. Satu-satunya modul yang
+menulis SQL.
 
 Bentuknya sengaja sedatar mungkin:
 
 - **Dua tabel.** `penduduk` (`Alamat` diratakan jadi kolom `alamat_*`;
-  Pydantic yang menyusunnya balik — Kartu Keluarga tidak punya tabel sendiri,
-  diturunkan dari `noKK` lewat `bangun_kartu_keluarga()`) dan `warga_akun`
-  (PIN warga).
-- **Nama kolom = nama field Pydantic**, jadi `camelCase` (`noKK`,
-  `jenisKelamin`). Melanggar kebiasaan SQL, tapi menghapus seluruh tabel
+  Pydantic yang menyusunnya balik) dan `pengurus` (akun perangkat desa).
+- **Nama kolom = nama field Pydantic**, jadi `camelCase` (`jenisKelamin`,
+  `tanggalLahir`). Melanggar kebiasaan SQL, tapi menghapus seluruh tabel
   pemetaan nama: satu baris masuk ke `Penduduk(**row)` apa adanya. SQLite
   tidak peduli besar-kecil huruf pada nama kolom.
 - **`sqlite3` stdlib, bukan ORM.** Query di sini muat di satu layar;
   SQLAlchemy cuma menambah dependensi yang harus dipasang orang lain setelah
   KKN (CLAUDE.md §11).
+
+NIK & Nomor KK tidak disimpan sama sekali — desa tidak mengizinkannya. `id`
+penduduk adalah UUID yang dibangkitkan saat impor, bukan turunan data apa pun.
+Lihat `docs/superpowers/specs/2026-08-26-hapus-nik-kk-auth-pengurus-design.md`.
 
 Baris ber-`deletedAt` **tetap disimpan** — sebabnya ada di `store.py`:
 penyaringan itu keputusan baca, bukan alasan membuang data.
@@ -27,14 +30,12 @@ from app.schemas.penduduk import Alamat, Penduduk
 
 _PREFIKS_ALAMAT = "alamat_"
 
-# Semua TEXT: NIK & no KK berawalan angka 0 (kode wilayah), jadi menyimpannya
-# sebagai INTEGER akan memakan nol di depan diam-diam — bug yang sama persis
-# dengan yang dilakukan Excel pada kolom NIK.
+# Semua TEXT: `alamat_rt`, `alamat_rw`, dan `alamat_kodePos` berawalan angka 0,
+# jadi menyimpannya sebagai INTEGER akan memakan nol di depan diam-diam — bug
+# yang sama persis dengan yang dilakukan Excel pada kolom-kolom itu.
 SKEMA = """
 CREATE TABLE IF NOT EXISTS penduduk (
     id                     TEXT PRIMARY KEY,
-    nik                    TEXT NOT NULL UNIQUE,
-    noKK                   TEXT NOT NULL,
     nama                   TEXT NOT NULL,
     jenisKelamin           TEXT NOT NULL,
     tempatLahir            TEXT NOT NULL,
@@ -58,18 +59,21 @@ CREATE TABLE IF NOT EXISTS penduduk (
     deletedAt              TEXT
 );
 
--- Lookup KK (`GET /kartu-keluarga/{noKK}`) satu-satunya query non-PRIMARY KEY.
-CREATE INDEX IF NOT EXISTS idx_penduduk_noKK ON penduduk(noKK);
-
--- Akun warga. Ada di sini, bukan di memori, karena reset PIN tidak punya arti
--- kalau seluruh PIN hilang sendiri tiap backend dinyalakan ulang: "direset"
--- jadi keadaan default semua orang, dan tombol pengurus tidak menentukan apa
--- pun. `pin_hash` BLOB karena bcrypt mengembalikan bytes.
-CREATE TABLE IF NOT EXISTS warga_akun (
-    nik      TEXT PRIMARY KEY,
-    pin_hash BLOB NOT NULL,
-    noHp     TEXT,
-    email    TEXT
+-- Akun perangkat desa. Satu-satunya akun yang ada — warga tidak punya akun.
+-- Di SQLite, bukan di memori: akun ditambah & dinonaktifkan oleh ADMIN saat
+-- runtime, jadi harus selamat melewati restart.
+-- `jabatan` sengaja TIDAK disimpan: diturunkan dari role + rw + rt, supaya
+-- tidak ada dua sumber kebenaran yang bisa berbeda diam-diam.
+-- `password_hash` BLOB karena bcrypt mengembalikan bytes.
+CREATE TABLE IF NOT EXISTS pengurus (
+    id            TEXT PRIMARY KEY,
+    username      TEXT NOT NULL UNIQUE,
+    password_hash BLOB NOT NULL,
+    nama          TEXT NOT NULL,
+    role          TEXT NOT NULL,
+    rw            TEXT,
+    rt            TEXT,
+    aktif         INTEGER NOT NULL DEFAULT 1
 );
 """
 
@@ -128,8 +132,9 @@ def _ke_penduduk(row: sqlite3.Row) -> Penduduk:
 def simpan(conn: sqlite3.Connection, daftar: Iterable[Penduduk]) -> int:
     """Sisipkan penduduk. Mengembalikan jumlah baris yang masuk.
 
-    NIK ganda ditolak keras oleh `UNIQUE` — impor data asli yang mengandung
-    duplikat harus gagal terang-terangan, bukan menimpa baris yang sudah ada.
+    Tidak ada pemeriksaan duplikat: `id` dibangkitkan saat impor, dan impor
+    selalu mengosongkan tabel lebih dulu (`kosongkan`). Excel adalah sumber
+    kebenaran tunggal.
     """
     rows = [_ke_row(p) for p in daftar]
     if not rows:
@@ -141,28 +146,24 @@ def simpan(conn: sqlite3.Connection, daftar: Iterable[Penduduk]) -> int:
     return len(rows)
 
 
-def nik_sudah_ada(conn: sqlite3.Connection, niks: list[str]) -> list[str]:
-    """NIK dari `niks` yang sudah ada di tabel.
+def kosongkan(conn: sqlite3.Connection) -> int:
+    """Hapus seluruh baris penduduk, kembalikan jumlah yang terhapus.
 
-    Dipakai importer supaya berhenti dengan pesan jelas sebelum menulis apa
-    pun, bukan menabrak `UNIQUE` di tengah `executemany` (baris lain di batch
-    yang sama ikut gagal karena `simpan()` satu transaksi).
+    Dipakai impor: Excel adalah sumber kebenaran tunggal, jadi tiap impor
+    menimpa, bukan menambah. Tanpa NIK tidak ada kunci yang bisa dipercaya
+    untuk mengenali orang yang sama antar-impor.
     """
-    if not niks:
-        return []
-    tanda = ",".join("?" * len(niks))
-    return [
-        r["nik"]
-        for r in conn.execute(f"SELECT nik FROM penduduk WHERE nik IN ({tanda})", niks)
-    ]
+    jumlah = conn.execute("SELECT COUNT(*) FROM penduduk").fetchone()[0]
+    with conn:
+        conn.execute("DELETE FROM penduduk")
+    return int(jumlah)
 
 
 def muat(conn: sqlite3.Connection) -> list[Penduduk]:
     """Semua baris, termasuk yang ber-`deletedAt`. Penyaringan milik `store.py`.
 
-    `ORDER BY rowid` = urutan penyisipan, dan itu wajib bukan kosmetik:
-    `app/data/akun.py` memilih warga demo lewat `DAFTAR_PENDUDUK[0]` dan `[1]`.
-    Tanpa urutan eksplisit, SQLite bebas mengubahnya dan NIK demo ikut bergeser.
+    `ORDER BY rowid` = urutan penyisipan, jadi daftar penduduk muncul dalam
+    urutan yang sama dengan file Excel-nya — bukan urutan bebas pilihan SQLite.
     """
     return [
         _ke_penduduk(r)
@@ -170,58 +171,17 @@ def muat(conn: sqlite3.Connection) -> list[Penduduk]:
     ]
 
 
-# --- Akun warga ------------------------------------------------------------
-
-
-def warga_akun_ambil(conn: sqlite3.Connection, nik: str) -> sqlite3.Row | None:
-    return conn.execute("SELECT * FROM warga_akun WHERE nik = ?", (nik,)).fetchone()
-
-
-def warga_akun_simpan(
-    conn: sqlite3.Connection,
-    *,
-    nik: str,
-    pin_hash: bytes,
-    no_hp: str | None = None,
-    email: str | None = None,
-) -> None:
-    with conn:
-        conn.execute(
-            "INSERT INTO warga_akun (nik, pin_hash, noHp, email) VALUES (?, ?, ?, ?)"
-            " ON CONFLICT(nik) DO UPDATE SET pin_hash = excluded.pin_hash,"
-            " noHp = excluded.noHp, email = excluded.email",
-            (nik, pin_hash, no_hp, email),
-        )
-
-
-def warga_akun_hapus(conn: sqlite3.Connection, nik: str) -> bool:
-    """Hapus akun (reset PIN). `False` bila NIK-nya memang tidak punya akun.
-
-    Menghapus, bukan mengosongkan PIN: warga kembali persis ke keadaan sebelum
-    aktivasi, jadi jalur masuknya berikutnya sama dengan warga baru — NIK +
-    tanggal lahir.
-    """
-    with conn:
-        cur = conn.execute("DELETE FROM warga_akun WHERE nik = ?", (nik,))
-    return cur.rowcount > 0
-
-
-def warga_akun_niks(conn: sqlite3.Connection) -> list[str]:
-    return [r["nik"] for r in conn.execute("SELECT nik FROM warga_akun ORDER BY nik")]
-
-
 def _contoh_penduduk() -> list[Penduduk]:
     """Data uji seadanya untuk `_self_check`. Sengaja ditulis tangan, bukan
     dibangkitkan: yang diuji di sini penyimpanan, bukan pembangkit data.
 
     Tiga baris memikul beban berbeda — satu normal, satu `deletedAt`, satu
-    `statusKependudukan` non-AKTIF, dan NIK yang berawalan `0` supaya ketahuan
-    kalau kolomnya berubah jadi INTEGER dan memakan nol depannya.
+    `statusKependudukan` non-AKTIF.
     """
 
-    def _buat(nik: str, nama: str, **ubah: object) -> Penduduk:
+    def _buat(id: str, nama: str, **ubah: object) -> Penduduk:
         bawaan = dict(
-            id=nik, nik=nik, noKK="0204120101900001", nama=nama,
+            id=id, nama=nama,
             jenisKelamin="LAKI_LAKI", tempatLahir="Bandung",
             tanggalLahir="1990-01-01", agama="ISLAM", statusPerkawinan="KAWIN",
             pendidikan="SMA", pekerjaan="Petani", golonganDarah="O",
@@ -235,9 +195,17 @@ def _contoh_penduduk() -> list[Penduduk]:
         return Penduduk(**{**bawaan, **ubah})  # type: ignore[arg-type]
 
     return [
-        _buat("0204120101900001", "Warga Normal"),
-        _buat("0204124101900002", "Warga Salah Input", deletedAt="2026-01-15"),
-        _buat("0204120101900003", "Warga Pindah", statusKependudukan="PINDAH"),
+        _buat("4f1d0c8e-0001-4000-8000-000000000001", "Warga Normal"),
+        _buat(
+            "4f1d0c8e-0002-4000-8000-000000000002",
+            "Warga Salah Input",
+            deletedAt="2026-01-15",
+        ),
+        _buat(
+            "4f1d0c8e-0003-4000-8000-000000000003",
+            "Warga Pindah",
+            statusKependudukan="PINDAH",
+        ),
     ]
 
 
@@ -259,10 +227,10 @@ def _self_check() -> None:
         conn = buka(path)
         hasil = muat(conn)
 
-        assert {p.nik for p in hasil} == {p.nik for p in asli}, "NIK hilang/berubah"
-        by_nik = {p.nik: p for p in hasil}
+        assert {p.id for p in hasil} == {p.id for p in asli}, "id hilang/berubah"
+        by_id = {p.id: p for p in hasil}
         for p in asli:
-            assert by_nik[p.nik] == p, f"baris {p.nik} berubah setelah roundtrip"
+            assert by_id[p.id] == p, f"baris {p.id} berubah setelah roundtrip"
 
         # Kolom yang paling gampang tercecer: alamat (diratakan lalu disusun
         # ulang) dan dua kolom nullable/berdefault.
@@ -275,72 +243,26 @@ def _self_check() -> None:
             p.statusKependudukan for p in asli
         }, "statusKependudukan tidak selamat"
 
-        # NIK berawalan 0 tidak boleh kehilangan nolnya (sebab semua kolom TEXT).
-        assert all(isinstance(p.nik, str) and len(p.nik) == 16 for p in hasil), (
-            "NIK bukan string 16 digit — kolom kemungkinan jadi INTEGER"
+        # RT/RW berawalan 0 tidak boleh kehilangan nolnya (sebab semua kolom TEXT).
+        assert all(p.alamat.rt.startswith("0") for p in hasil), (
+            "nol depan RT termakan — kolom kemungkinan jadi INTEGER"
         )
 
-        try:
-            simpan(conn, asli[:1])
-        except sqlite3.IntegrityError:
-            pass
-        else:
-            raise AssertionError("NIK duplikat lolos, UNIQUE tidak jalan")
-
-        # nik_sudah_ada: dasar importer "tambah warga baru" — harus menunjuk
-        # NIK yang benar-benar sudah ada, dan tidak salah tunjuk NIK yang belum.
-        bentrok = nik_sudah_ada(conn, [asli[0].nik, "9999999999999999"])
-        assert bentrok == [asli[0].nik], "nik_sudah_ada salah deteksi bentrok"
-        assert nik_sudah_ada(conn, []) == [], "nik_sudah_ada harus terima list kosong"
-        conn.close()
-
-    print(f"OK: {len(hasil)} baris selamat lewat tutup-buka SQLite, NIK utuh 16 digit")
-
-
-def _self_check_warga_akun() -> None:
-    """Yang diuji: akun warga selamat melewati tutup-buka SQLite, dan reset
-    benar-benar menghapusnya — bukan sekadar terlihat hilang di satu proses."""
-    import tempfile
-
-    nik, nik_lain = "3204120101900001", "3204120101900002"
-
-    with tempfile.TemporaryDirectory() as tmp:
-        path = Path(tmp) / "uji.db"
-
-        conn = buka(path)
-        warga_akun_simpan(conn, nik=nik, pin_hash=b"hash-1", no_hp="0812")
-        warga_akun_simpan(conn, nik=nik_lain, pin_hash=b"hash-2")
-        conn.close()
-
-        # Tutup-buka: inti dari menaruh akun di SQLite adalah PIN tidak hilang
-        # sendiri tiap backend nyala ulang.
-        conn = buka(path)
-        assert warga_akun_niks(conn) == [nik, nik_lain], "akun hilang setelah restart"
-        assert warga_akun_ambil(conn, nik)["pin_hash"] == b"hash-1", (
-            "pin_hash berubah — kolom kemungkinan bukan BLOB"
-        )
-        assert warga_akun_ambil(conn, nik)["noHp"] == "0812", "kontak tidak selamat"
-
-        # PIN baru menimpa yang lama (aktivasi ulang setelah direset).
-        warga_akun_simpan(conn, nik=nik, pin_hash=b"hash-baru")
-        assert warga_akun_ambil(conn, nik)["pin_hash"] == b"hash-baru"
-
-        # Reset = hapus, dan cuma menyentuh satu orang.
-        assert warga_akun_hapus(conn, nik) is True
-        assert warga_akun_ambil(conn, nik) is None, "akun masih ada setelah direset"
-        assert warga_akun_ambil(conn, nik_lain) is not None, "akun lain ikut terhapus"
-        assert warga_akun_hapus(conn, nik) is False, (
-            "menghapus akun yang tidak ada tidak boleh dianggap berhasil"
-        )
+        # Impor menimpa: kosongkan harus mengembalikan tabel ke nol baris, dan
+        # melaporkan berapa yang dibuang supaya skrip impor bisa memperingatkan.
+        assert kosongkan(conn) == len(asli), "kosongkan salah menghitung baris lama"
+        assert kosong(conn), "tabel masih terisi setelah dikosongkan"
+        assert muat(conn) == [], "muat masih mengembalikan baris setelah dikosongkan"
+        assert kosongkan(conn) == 0, "mengosongkan tabel kosong harus mengembalikan 0"
+        assert simpan(conn, asli) == len(asli), "impor ulang setelah kosong gagal"
         conn.close()
 
         conn = buka(path)
-        assert warga_akun_niks(conn) == [nik_lain], "reset hidup lagi setelah restart"
+        assert len(muat(conn)) == len(asli), "impor ulang tidak selamat lewat restart"
         conn.close()
 
-    print("OK: akun warga selamat lewat restart, reset benar-benar menghapus")
+    print(f"OK: {len(hasil)} baris selamat lewat tutup-buka SQLite, impor menimpa bersih")
 
 
 if __name__ == "__main__":
     _self_check()
-    _self_check_warga_akun()

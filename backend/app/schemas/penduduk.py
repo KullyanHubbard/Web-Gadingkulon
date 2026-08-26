@@ -19,6 +19,8 @@ Pendidikan = Literal[
     "TIDAK_SEKOLAH", "SD", "SMP", "SMA", "D3", "S1", "S2", "S3"
 ]
 
+# Susunan rumah tangga. Nomor KK tidak disimpan (spec 2026-08-26), tapi peran
+# tiap orang di keluarganya tetap berguna dan tetap jadi filter.
 StatusHubunganKeluarga = Literal[
     "KEPALA_KELUARGA", "ISTRI", "ANAK", "FAMILI_LAIN", "LAINNYA"
 ]
@@ -44,9 +46,10 @@ class Alamat(BaseModel):
 
 
 class Penduduk(BaseModel):
+    """Satu warga. `id` UUID dibangkitkan saat impor — NIK & Nomor KK tidak
+    disimpan sama sekali, jadi tidak ada kunci turunan data."""
+
     id: str
-    nik: str
-    noKK: str
     nama: str
     jenisKelamin: JenisKelamin
     tempatLahir: str
@@ -65,18 +68,21 @@ class Penduduk(BaseModel):
     deletedAt: Optional[str] = None
 
 
-class KartuKeluarga(BaseModel):
-    noKK: str
-    kepalaKeluarga: str
-    alamat: Alamat
-    anggota: list[Penduduk]
-
-
 class PaginatedPenduduk(BaseModel):
     items: list[Penduduk]
     total: int
     page: int
     pageSize: int
+
+
+class FilterOpsi(BaseModel):
+    """Pilihan filter yang BUKAN enum — nilainya cuma bisa diketahui dari isi
+    data. Enum (agama, pendidikan, ...) sudah ada di frontend `labels.ts`, jadi
+    tidak dikirim lewat jaringan."""
+
+    rt: list[str]
+    rw: list[str]
+    pekerjaan: list[str]
 
 
 class Distribusi(BaseModel):
@@ -87,7 +93,7 @@ class Distribusi(BaseModel):
 class RincianRw(BaseModel):
     """Agregat satu wilayah (RW, atau satu RT di dalamnya) untuk halaman depan.
 
-    Cacah saja, tanpa NIK/nama/alamat — sama seperti induknya, isi model ini
+    Cacah saja, tanpa nama/alamat — sama seperti induknya, isi model ini
     terbuka untuk siapa pun. Label pada tiap `Distribusi` masih enum mentah
     (`'ISLAM'`); penerjemahannya milik frontend (`features/penduduk/labels.ts`).
 
@@ -98,7 +104,6 @@ class RincianRw(BaseModel):
 
     label: str
     totalPenduduk: int
-    totalKK: int
     totalLakiLaki: int
     totalPerempuan: int
     perKelompokUmur: list[Distribusi]
@@ -111,9 +116,6 @@ class RincianRw(BaseModel):
 
 class StatistikPublik(BaseModel):
     totalPenduduk: int
-    # Dihitung se-desa, bukan dijumlahkan dari `perRw`: satu nomor KK yang
-    # anggotanya terpisah RW akan terhitung dua kali kalau dijumlahkan.
-    totalKK: int
     totalLakiLaki: int
     totalPerempuan: int
     perRw: list[RincianRw]
