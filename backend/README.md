@@ -49,10 +49,20 @@ login.
 ## Jalankan
 
 ```bash
+cp .env.example .env      # WAJIB: isi ADMIN_USERNAME & ADMIN_PASSWORD
+./start.sh                # bikin venv, pasang dependensi, jalankan uvicorn
+```
+
+`start.sh` berhenti dengan petunjuk kalau `.env` belum ada. Berkas itu **tidak
+disalin otomatis**: `.env.example` berisi `ADMIN_PASSWORD=ganti-password-ini`,
+dan menyalinnya diam-diam mengubah contoh itu jadi password Admin yang
+sungguhan dan berlaku.
+
+Manual, kalau lebih suka:
+
+```bash
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-
-cp .env.example .env      # WAJIB: isi ADMIN_USERNAME & ADMIN_PASSWORD
 .venv/bin/uvicorn app.main:app --reload --port 8000
 ```
 
@@ -73,7 +83,6 @@ Database kosong tetap kosong — tidak ada seeding otomatis. Data masuk dari fil
 Excel pendataan:
 
 ```bash
-.venv/bin/pip install openpyxl   # sekali, alat ini saja yang butuh
 .venv/bin/python -m app.data.impor_excel ../docs/data-penduduk.xlsx
 ```
 

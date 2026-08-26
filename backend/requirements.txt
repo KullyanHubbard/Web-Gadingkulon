@@ -2,3 +2,6 @@ fastapi==0.115.0
 uvicorn[standard]==0.30.6
 bcrypt==4.2.0
 pydantic-settings==2.6.1
+# Dipakai impor Excel & pembangkit template di `tools/`. Bukan cuma
+# perkakas: mengisi data pertama kali TIDAK BISA tanpa ini.
+openpyxl==3.1.5

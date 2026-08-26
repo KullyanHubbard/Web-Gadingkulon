@@ -312,6 +312,7 @@ Dari `backend/` — **selalu `.venv/bin/python`**, `python3` sistem tidak punya
 dependensinya:
 
 ```bash
+./start.sh                              # berhenti dengan petunjuk kalau .env belum ada
 .venv/bin/uvicorn app.main:app --reload --port 8000
 .venv/bin/python -m app.data.db         # self-check SQLite (skema + impor menimpa)
 .venv/bin/python -m app.data.agregat    # self-check kelompok umur & distribusi
