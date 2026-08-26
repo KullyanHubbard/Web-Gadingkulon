@@ -10,6 +10,8 @@ programmer. **Simpan salinan cetaknya di rumah Dukuh.**
 >    sebelumnya sudah tidak berlaku.
 > 2. Ada **empat tingkat akun**, dan kewenangan kelola akun dipegang **Admin**
 >    yang justru tidak bisa melihat data warga sama sekali.
+> 3. **Pergantian pengurus tidak lagi ditentukan Admin sendiri.** Admin
+>    mengajukan; yang memutuskan adalah perangkat desa yang berwenang.
 
 ---
 
@@ -37,7 +39,7 @@ menjalankannya.
 
 | Tingkat      | Siapa                | Bisa apa                                                     |
 | ------------ | -------------------- | ------------------------------------------------------------ |
-| **Admin**    | pemegang akun layanan | Membuatkan akun untuk kursi yang kosong, reset password, cabut akses. **Tidak bisa melihat data warga sama sekali.** |
+| **Admin**    | pemegang akun layanan | Membuatkan akun untuk kursi kosong, reset password, **mengajukan** pergantian. **Tidak bisa melihat data warga, dan tidak bisa menyetujui pergantian apa pun.** |
 | **Dukuh**    | Pak Dukuh            | Melihat seluruh data warga & infografis                       |
 | **Ketua RW** | satu per RW (sekarang RW 019, 020, 021) | sama                       |
 | **Ketua RT** | satu per RT (sekarang RT 001–006)       | sama                       |
@@ -206,26 +208,65 @@ dibuat. Urutannya sengaja dibalik untuk kasus ini.
 
 ### Langkah konkret
 
-Dilakukan oleh **Admin**, atas permintaan Dukuh:
+1. **Admin mengajukan penggantinya:** menu **Akun Pengurus** → cari baris
+   kursinya → **Ajukan Pergantian** → ketik nama warga penggantinya, pilih dari
+   daftar yang muncul. Tiap pilihan tertulis "Nama — RT/RW" supaya tidak salah
+   pilih kalau ada dua orang senama.
+   *Sampai di sini belum ada yang berubah.*
 
-1. **Cabut akses pengurus lama:** menu **Akun Pengurus** → cari barisnya →
-   **Cabut Akses**. Akunnya langsung mati dan kursinya jadi kosong. Akun tidak
-   dihapus, hanya dimatikan.
-2. **Buatkan akun untuk penggantinya** di baris kursi yang sekarang kosong —
-   lihat [Membuatkan akun untuk kursi kosong](#membuatkan-akun-untuk-kursi-kosong).
-3. **Pastikan ia sudah bisa masuk** dan sudah mengganti password awalnya.
-4. **Catat pergantiannya** di buku administrasi padukuhan: tanggal, nama lama,
-   nama baru, dan siapa yang melakukan langkah 1–3.
+2. **Yang berwenang menyetujui membuka aplikasinya**, dan melihat kotak
+   **"Menunggu persetujuan Anda"** di layar. Isinya hanya pengajuan yang memang
+   urusannya — pengurus lain tidak melihatnya sama sekali.
 
-**Akun yang dicabut aksesnya langsung tertolak saat masuk**, dengan pesan yang
-menyuruh menghubungi Admin. Kalau orangnya sedang membuka aplikasi saat itu,
-akses berikutnya juga langsung tertutup.
+   | Yang diganti | Harus disetujui |
+   | ------------ | --------------- |
+   | Ketua RT     | Ketua RW wilayahnya **dan** Pak Dukuh |
+   | Ketua RW     | Pak Dukuh |
+   | Pak Dukuh    | seluruh Ketua RW |
 
-> **Yang akan berubah.** Ke depan pergantian pengurus tidak lagi ditentukan
-> Admin sendiri, melainkan lewat **pengajuan yang harus disetujui** — ganti
-> Dukuh disetujui para Ketua RW, ganti Ketua RW disetujui Dukuh, ganti Ketua RT
-> disetujui Ketua RW-nya dan Dukuh. Selama itu belum ada, langkah di atas
-> berlaku dan Admin dipercaya menjalankannya sesuai keputusan padukuhan.
+3. **Mereka menekan Setujui atau Tolak.** Satu penolakan saja membuat pengajuan
+   gugur, dan pengurus lama tetap menjabat.
+   **Jawaban tidak bisa diubah** — salah pencet berarti harus diajukan ulang
+   dari awal. Ini disengaja, supaya tidak ada tawar-menawar setelah suara masuk.
+
+4. **Begitu semuanya setuju, jabatan berpindah saat itu juga.** Akun pengurus
+   lama langsung mati, dan kursinya tercatat kosong.
+
+5. **Admin membuatkan akun untuk penghuni barunya**, sama seperti mengisi kursi
+   kosong biasa — lihat
+   [Membuatkan akun untuk kursi kosong](#membuatkan-akun-untuk-kursi-kosong).
+
+6. **Catat pergantiannya** di buku administrasi padukuhan.
+
+### Hal-hal yang perlu diketahui
+
+**Admin tidak bisa mencabut akses siapa pun sendirian.** Tombol itu memang
+tidak ada. Satu-satunya cara sebuah kursi menjadi kosong adalah lewat
+pergantian yang disetujui. Kalau Admin bisa mengosongkan kursi sendiri, ia bisa
+langsung mengisinya lagi — dan seluruh persetujuan ini jadi hiasan yang bisa
+dilewati dalam dua klik.
+
+**Kursi penyetuju yang sedang kosong dilewati, bukan ditunggu.** Kalau kursi
+Ketua RW 019 sedang kosong, pergantian Ketua RT di bawahnya cukup disetujui Pak
+Dukuh. Tanpa aturan ini satu kursi kosong akan mengunci pergantian selamanya.
+
+**Kalau tidak ada satu pun yang bisa menyetujui**, pengajuan ditolak dan
+aplikasi menyebutkan kursi mana yang harus diisi lebih dulu. Admin tidak pernah
+bisa memutuskan sendirian.
+
+**Warga yang diusulkan tidak boleh sedang menjabat di kursi lain.** Satu orang
+satu jabatan.
+
+**Pengajuan yang tidak dijawab siapa pun gugur setelah 30 hari**, begitu juga
+kalau warga yang diusulkan ternyata pindah atau meninggal.
+
+**Tidak ada pemberitahuan otomatis.** Penyetuju baru tahu ada pengajuan saat ia
+membuka aplikasi — tidak ada SMS, WhatsApp, maupun email. Kalau pergantiannya
+mendesak, beri tahu orangnya secara langsung.
+
+**Riwayat pengajuan tidak pernah dihapus.** Siapa mengusulkan siapa, siapa
+menyetujui, dan kapan — semuanya tersimpan permanen dan bisa dibaca Admin di
+menu **Akun Pengurus**.
 
 ---
 
@@ -244,8 +285,8 @@ yang bisa memeriksa ini sendirian — itu memang bentuk yang diinginkan.
    menjabat**, sesuai buku administrasi padukuhan.
 3. Untuk setiap baris, jawab dua pertanyaan:
    - Apakah orang ini masih menjabat? Kalau tidak → **nonaktifkan hari itu juga.**
-   - Apakah ia masih ada di kursi yang benar? Kalau tidak → cabut akses, lalu
-     buatkan akun di kursi yang tepat.
+   - Apakah ia masih ada di kursi yang benar? Kalau tidak → ajukan
+     pergantiannya lewat langkah di atas.
 4. Periksa juga arah sebaliknya: adakah kursi yang statusnya **Kosong** padahal
    orangnya sedang menjabat? Kalau ada, itu tandanya ada pergantian yang tidak
    pernah dilaporkan — telusuri kapan terjadinya.
@@ -294,6 +335,8 @@ berarti bergantung pada orang luar — persis keadaan yang ingin dihindari.
   disembunyikan — memang tidak ada kolomnya. Karena itu tidak ada lagi halaman
   Kartu Keluarga, dan angka "jumlah KK" hilang dari halaman depan.
 - **Warga tidak punya akun.** Yang bisa masuk hanya perangkat desa.
+- **Pergantian pengurus lewat pengajuan + persetujuan.** Admin mengajukan,
+  perangkat desa memutuskan; kursi penyetuju yang kosong dilewati.
 - **Kewenangan kelola akun ada pada Admin**, yang justru buta terhadap data
   warga. Dukuh, RW, dan RT membaca data tapi tidak bisa menyentuh akun.
 - **Akun berbentuk kursi**, dan daftar kursinya mengikuti RW/RT di data warga.
@@ -368,7 +411,8 @@ melakukan apa — justru pada peran yang paling perlu bisa dibedakan.
 1. Admin yang menjabat membuatkan **akun Admin baru** untuk penggantinya.
 2. Penggantinya masuk, **mengganti password awalnya** (dituntut aplikasi), dan
    memastikan ia bisa membuka menu **Akun Pengurus**.
-3. **Setelah langkah 2 terbukti berhasil**, akun Admin lama dicabut aksesnya.
+3. **Setelah langkah 2 terbukti berhasil**, akun Admin lama berhenti dipakai.
+   (Kursi Admin tidak ikut mekanisme persetujuan — ia bukan jabatan padukuhan.)
 4. Perbarui bagian [Akun layanan](#akun-layanan-untuk-yang-mengurus-teknis) di
    atas, termasuk kontaknya.
 

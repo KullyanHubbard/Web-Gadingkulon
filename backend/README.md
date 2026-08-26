@@ -1,7 +1,8 @@
 # Backend SIDUK
 
-FastAPI + SQLite (`sqlite3` stdlib, tanpa ORM). Dua tabel: `penduduk` dan
-`pengurus`.
+FastAPI + SQLite (`sqlite3` stdlib, tanpa ORM). Empat tabel: `penduduk`,
+`pengurus`, serta `pengajuan` + `persetujuan` (riwayat perpindahan jabatan,
+tidak pernah dihapus).
 
 **NIK dan Nomor Kartu Keluarga tidak disimpan sama sekali** — desa tidak
 mengizinkannya. `id` penduduk diambil dari kolom **Kode Warga** di Excel: kunci
@@ -21,6 +22,12 @@ di `docs/superpowers/specs/`.
 Akun berbentuk **kursi**: daftar jabatannya diturunkan dari alamat warga di
 data penduduk, bukan disimpan di tabel kedua, jadi kursi RT baru muncul sendiri
 begitu ada warga ber-RT itu. Satu kursi hanya boleh dihuni satu akun aktif.
+
+**Mengisi kursi kosong bebas; mengganti penghuni kursi terisi wajib lewat
+pengajuan yang disetujui.** Admin mengajukan, perangkat desa memutuskan:
+ganti Ketua RT butuh Ketua RW-nya + Dukuh, ganti Ketua RW butuh Dukuh, ganti
+Dukuh butuh seluruh Ketua RW. Kursi penyetuju yang sedang kosong **dilewati**,
+bukan ditunggu — tanpa itu satu kursi kosong mengunci pergantian selamanya.
 
 **Password awal dari Admin sekali pakai.** Akun baru bisa login tapi ditolak di
 semua endpoint lain sampai menggantinya lewat `POST /auth/ganti-password`.
@@ -101,8 +108,12 @@ VITE_API_BASE_URL=http://localhost:8000
 | GET    | `/publik/statistik`              | cacah per RW — **tanpa auth**                           |
 | GET    | `/pengurus`                      | daftar **kursi**, terisi & kosong — ADMIN                |
 | POST   | `/pengurus`                      | isi satu kursi kosong — ADMIN                           |
-| PATCH  | `/pengurus/{id}`                 | ubah nama / wilayah / status aktif — ADMIN              |
 | POST   | `/pengurus/{id}/reset-password`  | ganti password akun — ADMIN                             |
+| GET    | `/pergantian`                    | riwayat pengajuan — ADMIN                               |
+| GET    | `/pergantian/kandidat?q=`        | cari warga buat dropdown (nama + RT/RW) — ADMIN         |
+| POST   | `/pergantian`                    | ajukan pergantian kursi terisi — ADMIN                  |
+| GET    | `/pergantian/menunggu`           | pengajuan yang menunggu jawaban saya — PENGURUS         |
+| POST   | `/pergantian/{id}/jawab`         | satu suara, tidak bisa diubah — PENGURUS                |
 
 Filter `GET /penduduk` (semua opsional, digabung AND): `jenisKelamin`, `agama`,
 `golonganDarah`, `pendidikan`, `statusPerkawinan`, `statusHubunganKeluarga`,
@@ -112,8 +123,15 @@ Token JWT dikirim lewat header `Authorization: Bearer <token>`. Status `aktif`
 dan `harus_ganti_password` diperiksa tiap request, jadi akun yang dicabut
 aksesnya langsung tertolak walaupun tokennya belum kedaluwarsa.
 
-Tidak ada `DELETE /pengurus`: akun cukup dinonaktifkan supaya jejak audit tetap
-menunjuk ke akun yang ada.
+**Tidak ada `PATCH` maupun `DELETE /pengurus`.** Kursi hanya menjadi kosong
+lewat pergantian yang disetujui — kalau Admin bisa mengosongkannya sendiri, ia
+bisa mengisinya langsung dan persetujuan jadi hiasan yang bisa dilewati dalam
+dua klik.
+
+`/pergantian/kandidat` adalah **satu-satunya celah Admin ke data warga**: nama +
+RT/RW saja, minimal 2 huruf pencarian, maksimal 20 hasil. Celah ini tidak
+terhindarkan — Admin harus bisa menunjuk orang — jadi yang bisa dilakukan
+adalah membuatnya sesempit mungkin.
 
 ## Uji
 
@@ -121,6 +139,7 @@ menunjuk ke akun yang ada.
 .venv/bin/python -m app.data.db                                    # skema & impor menimpa
 .venv/bin/python -m app.data.agregat                               # kelompok umur & distribusi
 DATABASE_PATH=/tmp/uji.db .venv/bin/python -m app.data.pengurus     # kelola akun
+DATABASE_PATH=/tmp/uji2.db .venv/bin/python -m app.data.pergantian  # aturan penyetuju
 ```
 
 `httpx` tidak ada di `requirements.txt`, jadi `fastapi.testclient` tidak bisa
