@@ -13,7 +13,6 @@ export interface RincianRw {
   /** Mis. `'RW 19'` atau `'RT 1'` — sudah berbentuk tampilan. */
   label: string;
   totalPenduduk: number;
-  totalKK: number;
   totalLakiLaki: number;
   totalPerempuan: number;
   perKelompokUmur: Distribusi[];
@@ -27,16 +26,11 @@ export interface RincianRw {
 /**
  * Agregat yang boleh dilihat siapa pun, termasuk sebelum masuk.
  *
- * Hanya cacah — tidak ada NIK, nama, atau alamat. Apa pun yang ditambahkan ke
+ * Hanya cacah — tidak ada nama maupun alamat. Apa pun yang ditambahkan ke
  * sini otomatis menjadi konsumsi publik.
  */
 export interface StatistikPublik {
   totalPenduduk: number;
-  /**
-   * Se-desa, bukan jumlah dari `perRw`: satu nomor KK yang anggotanya terpisah
-   * RW akan terhitung dua kali kalau dijumlahkan sendiri di sini.
-   */
-  totalKK: number;
   totalLakiLaki: number;
   totalPerempuan: number;
   /** Rincian per RW, urut menaik menurut nomor RW. */

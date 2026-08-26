@@ -4,7 +4,6 @@ import type { Distribusi } from '@/types/statistik';
 
 export interface InfografisData {
   totalPenduduk: number;
-  totalKK: number;
   totalLakiLaki: number;
   totalPerempuan: number;
   perAgama: Distribusi[];
