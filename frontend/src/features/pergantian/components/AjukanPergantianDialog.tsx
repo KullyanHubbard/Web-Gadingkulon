@@ -29,7 +29,7 @@ export function AjukanPergantianDialog({
   const [cari, setCari] = useState('');
   const [terpilih, setTerpilih] = useState<WargaPilihan | null>(null);
   const debounced = useDebounce(cari);
-  const { data: hasil, isFetching } = useCariWarga(debounced);
+  const { data: hasil, isFetching } = useCariWarga(debounced, kursi?.kursi);
   const ajukan = useAjukanPergantian();
 
   function tutup() {

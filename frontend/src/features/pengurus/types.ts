@@ -40,11 +40,17 @@ export interface Kursi {
   calon: Calon | null;
 }
 
-/** Mengisi satu kursi kosong. `role`/`rw`/`rt` menunjuk kursi mana. */
+/**
+ * Mengisi satu kursi kosong. `role`/`rw`/`rt` menunjuk kursi mana.
+ *
+ * Orangnya ditunjuk lewat `wargaId`, bukan nama yang diketik: nama dari klien
+ * tidak bisa diperiksa backend, sedangkan Kode Warga bisa dicocokkan ke data
+ * penduduk — termasuk wilayahnya.
+ */
 export interface PengurusBaru {
   username: string;
   password: string;
-  nama: string;
+  wargaId: string;
   role: Role;
   rw?: string;
   rt?: string;

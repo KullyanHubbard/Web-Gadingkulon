@@ -14,10 +14,20 @@ export interface WargaPilihan {
   rw: string;
 }
 
-/** Cari warga untuk dipilih Admin. Backend mengembalikan kosong di bawah 2 huruf. */
-export async function cariWarga(q: string): Promise<WargaPilihan[]> {
+/**
+ * Cari warga untuk dipilih Admin. Backend mengembalikan kosong di bawah 2 huruf.
+ *
+ * `kursi` mempersempit hasil ke warga yang boleh mendudukinya — Ketua RT dari
+ * RT-nya, Ketua RW dari RW-nya, Dukuh dari mana pun. Backend menegakkan aturan
+ * yang sama saat menyimpan; penyempitan di sini supaya Admin tidak sempat
+ * memilih orang yang pasti ditolak.
+ */
+export async function cariWarga(
+  q: string,
+  kursi?: string,
+): Promise<WargaPilihan[]> {
   const { data } = await apiClient.get<WargaPilihan[]>('/pengurus/warga', {
-    params: { q },
+    params: { q, kursi },
   });
   return data;
 }

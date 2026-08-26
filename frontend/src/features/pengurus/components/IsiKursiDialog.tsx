@@ -36,7 +36,7 @@ export function IsiKursiDialog({ kursi, onClose }: IsiKursiDialogProps) {
   const [cari, setCari] = useState('');
   const [warga, setWarga] = useState<WargaPilihan | null>(null);
   const debounced = useDebounce(cari);
-  const { data: hasil, isFetching } = useCariWarga(debounced);
+  const { data: hasil, isFetching } = useCariWarga(debounced, kursi?.kursi);
 
   const {
     register,
@@ -72,7 +72,7 @@ export function IsiKursiDialog({ kursi, onClose }: IsiKursiDialogProps) {
     tambah.mutate(
       {
         ...values,
-        nama: warga.nama,
+        wargaId: warga.id,
         role: kursi.role,
         rw: kursi.rw ?? undefined,
         rt: kursi.rt ?? undefined,
@@ -93,7 +93,7 @@ export function IsiKursiDialog({ kursi, onClose }: IsiKursiDialogProps) {
           hint={
             kursi?.calon
               ? 'Sudah terpilih dari kolom Jabatan di file Excel. Cari nama lain kalau orangnya berbeda.'
-              : undefined
+              : 'Hanya warga wilayah kursi ini yang muncul.'
           }
           cari={cari}
           onCariChange={setCari}

@@ -163,6 +163,11 @@ Jabatan tidak perlu dipilih — sudah ditentukan oleh baris kursi yang diklik.
 Namanya juga tidak diketik: Admin tidak boleh melihat data warga, jadi ia
 memilih dari daftar, bukan mengarang dari ingatan.
 
+**Yang muncul di daftar hanya warga wilayah kursi itu.** Ketua RT 003 hanya
+bisa diisi warga RT 003, Ketua RW 019 hanya warga RW 019. Pak Dukuh boleh dari
+wilayah mana pun di padukuhan. Aturan yang sama berlaku saat mengajukan
+pergantian.
+
 ### Password awal hanya sekali pakai
 
 Password yang dibuat Admin **tidak bisa dipakai untuk melihat apa pun.** Saat
@@ -278,6 +283,9 @@ bisa memutuskan sendirian.
 
 **Warga yang diusulkan tidak boleh sedang menjabat di kursi lain.** Satu orang
 satu jabatan.
+
+**Warga yang diusulkan harus warga wilayah kursi itu.** Ketua RW 019 harus
+warga RW 019; Ketua RT 003 harus warga RT 003. Pak Dukuh boleh dari mana pun.
 
 **Pengajuan yang tidak dijawab siapa pun gugur setelah 30 hari**, begitu juga
 kalau warga yang diusulkan ternyata pindah atau meninggal.

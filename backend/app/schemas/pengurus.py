@@ -52,11 +52,16 @@ class WargaPilihan(BaseModel):
 
 
 class PengurusBaru(BaseModel):
-    """Mengisi satu kursi kosong. `role`/`rw`/`rt` menunjuk kursi mana."""
+    """Mengisi satu kursi kosong. `role`/`rw`/`rt` menunjuk kursi mana.
+
+    Orangnya ditunjuk lewat `wargaId`, bukan nama yang diketik: nama dari
+    klien tidak bisa diperiksa, sedangkan Kode Warga bisa dicocokkan ke data
+    penduduk — termasuk wilayahnya.
+    """
 
     username: str = Field(min_length=3, max_length=32)
     password: str = Field(min_length=8)
-    nama: str = Field(min_length=1)
+    wargaId: str = Field(min_length=1)
     role: Role
     rw: Optional[str] = None
     rt: Optional[str] = None

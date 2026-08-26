@@ -70,12 +70,32 @@ MIN_CARI = 2
 MAKS_HASIL = 20
 
 
+def _warga_untuk_kursi(warga_id: str, role: str, rw: str | None, rt: str | None):
+    """Warga yang sah menduduki kursi ini, atau `HTTPException` yang menjelaskan
+    kenapa tidak."""
+    warga = next((w for w in DAFTAR_PENDUDUK if w.id == warga_id), None)
+    if warga is None or warga.statusKependudukan != "AKTIF":
+        raise HTTPException(404, "Warga tidak ditemukan atau sudah tidak aktif.")
+    if not data.cocok_wilayah(role, rw, rt, warga.alamat.rw, warga.alamat.rt):
+        raise HTTPException(
+            409,
+            f"{warga.nama} warga RT {warga.alamat.rt}/RW {warga.alamat.rw}, "
+            f"tidak bisa menduduki kursi {data.jabatan_dari(role, rw, rt)}.",
+        )
+    return warga
+
+
 @router.get("/warga", response_model=list[WargaPilihan])
 def cari_warga(
-    q: str = Query(""), _admin: AuthUser = Depends(current_admin)
+    q: str = Query(""),
+    kursi: str = Query(""),
+    _admin: AuthUser = Depends(current_admin),
 ) -> list[WargaPilihan]:
     """Cari warga untuk dipilih Admin — mengisi kursi kosong maupun mengajukan
     pergantian. Nama + RT/RW saja.
+
+    `kursi` opsional: kalau diisi, hasilnya cuma warga yang boleh menduduki
+    kursi itu (Ketua RT dari RT-nya, Ketua RW dari RW-nya, Dukuh dari mana pun).
 
     Ini satu-satunya celah Admin ke data warga, dan tidak terhindarkan: ia harus
     bisa menunjuk orang. Yang bisa dilakukan adalah membuatnya sesempit
@@ -87,10 +107,21 @@ def cari_warga(
     kata = q.strip().lower()
     if len(kata) < MIN_CARI:
         return []
+    # `kursi` mempersempit hasil ke warga yang memang boleh mendudukinya. Bukan
+    # sekadar kenyamanan: makin sempit, makin sedikit data warga yang terbuka
+    # untuk Admin.
+    target = next((k for k in data.daftar_kursi() if k.kursi == kursi), None)
     cocok = [
         w
         for w in DAFTAR_PENDUDUK
-        if kata in w.nama.lower() and w.statusKependudukan == "AKTIF"
+        if kata in w.nama.lower()
+        and w.statusKependudukan == "AKTIF"
+        and (
+            target is None
+            or data.cocok_wilayah(
+                target.role, target.rw, target.rt, w.alamat.rw, w.alamat.rt
+            )
+        )
     ]
     return [
         WargaPilihan(id=w.id, nama=w.nama, rt=w.alamat.rt, rw=w.alamat.rw)
@@ -102,11 +133,14 @@ def cari_warga(
 def tambah_pengurus(
     payload: PengurusBaru, admin: AuthUser = Depends(current_admin)
 ) -> PengurusOut:
+    warga = _warga_untuk_kursi(
+        payload.wargaId, payload.role, payload.rw, payload.rt
+    )
     try:
         baru = data.tambah(
             username=payload.username,
             password=payload.password,
-            nama=payload.nama,
+            nama=warga.nama,
             role=payload.role,
             rw=payload.rw,
             rt=payload.rt,

@@ -118,7 +118,7 @@ VITE_API_BASE_URL=http://localhost:8000
 | GET    | `/infografis`                    | agregat lengkap — semua pengurus                        |
 | GET    | `/publik/statistik`              | cacah per RW — **tanpa auth**                           |
 | GET    | `/pengurus`                      | daftar **kursi**, terisi & kosong — ADMIN                |
-| GET    | `/pengurus/warga?q=`             | cari warga buat dropdown (nama + RT/RW) — ADMIN         |
+| GET    | `/pengurus/warga?q=&kursi=`      | cari warga buat dropdown (nama + RT/RW) — ADMIN         |
 | POST   | `/pengurus`                      | isi satu kursi kosong — ADMIN                           |
 | POST   | `/pengurus/{id}/reset-password`  | ganti password akun — ADMIN                             |
 | GET    | `/pergantian`                    | riwayat pengajuan — ADMIN                               |
@@ -139,8 +139,15 @@ lewat pergantian yang disetujui — kalau Admin bisa mengosongkannya sendiri, ia
 bisa mengisinya langsung dan persetujuan jadi hiasan yang bisa dilewati dalam
 dua klik.
 
+**Kandidat wajib warga wilayah kursinya**: Ketua RT dari RT itu, Ketua RW dari
+RW itu, Dukuh dari mana pun (`pengurus.cocok_wilayah`). Ditegakkan saat mengisi
+kursi kosong maupun mengajukan pergantian. Karena itu `POST /pengurus` menerima
+`wargaId`, bukan `nama` — nama dari klien tidak bisa diperiksa, Kode Warga bisa.
+
 `/pengurus/warga` adalah **satu-satunya celah Admin ke data warga**: nama +
-RT/RW saja, minimal 2 huruf pencarian, maksimal 20 hasil. Celah ini tidak
+RT/RW saja, minimal 2 huruf pencarian, maksimal 20 hasil. `?kursi=`
+mempersempitnya ke warga yang boleh menduduki kursi itu — makin sempit, makin
+sedikit data warga yang terbuka untuk Admin. Celah ini tidak
 terhindarkan — Admin harus bisa menunjuk orang — jadi yang bisa dilakukan
 adalah membuatnya sesempit mungkin.
 

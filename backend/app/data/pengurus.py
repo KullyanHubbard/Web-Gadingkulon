@@ -78,6 +78,23 @@ def kursi_dari(role: str, rw: str | None, rt: str | None) -> str:
     return role
 
 
+def cocok_wilayah(
+    role: str, rw: str | None, rt: str | None, warga_rw: str, warga_rt: str
+) -> bool:
+    """Apakah seorang warga boleh menduduki kursi ini.
+
+    Ketua RT harus warga RT itu, Ketua RW harus warga RW itu, dan Dukuh boleh
+    dari mana pun di padukuhan. Ditulis di sini, bukan di router: dipakai dua
+    jalur — mengisi kursi kosong dan mengajukan pergantian — dan aturannya
+    tidak boleh berbeda di antara keduanya.
+    """
+    if role == ROLE_RT:
+        return warga_rw == rw and warga_rt == rt
+    if role == ROLE_RW:
+        return warga_rw == rw
+    return True
+
+
 def _db():
     return db.koneksi(settings.DATABASE_FILE)
 

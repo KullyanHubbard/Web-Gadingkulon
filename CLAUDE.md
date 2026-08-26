@@ -432,10 +432,17 @@ Filter `GET /penduduk` (semua opsional, digabung AND, disaring di memori oleh
 `statusPerkawinan`, `statusHubunganKeluarga`, `pekerjaan`, `rt`, `rw`,
 `kelompokUmur`.
 
+**Kandidat wajib warga wilayah kursinya** — Ketua RT dari RT itu, Ketua RW dari
+RW itu, Dukuh dari mana pun (`pengurus.cocok_wilayah`). Ditegakkan di dua jalur
+sekaligus: mengisi kursi kosong dan mengajukan pergantian. `POST /pengurus`
+menerima `wargaId`, **bukan** `nama` — nama dari klien tidak bisa diperiksa,
+Kode Warga bisa.
+
 **Admin memilih warga lewat `GET /pengurus/warga`, bukan mengetik namanya.** Ia
 buta terhadap data kependudukan, jadi tidak punya cara tahu nama siapa yang
 benar. Endpoint itu satu-satunya celahnya — nama + RT/RW saja, minimal 2 huruf,
-maksimal 20 hasil — dan dipakai dua tempat: mengisi kursi kosong dan memilih
+maksimal 20 hasil, dan bisa dipersempit ke satu kursi lewat `?kursi=` — dipakai
+dua tempat: mengisi kursi kosong dan memilih
 kandidat pergantian. Klien bersamanya di `lib/warga-api.ts` +
 `hooks/use-cari-warga.ts` + `components/ui/PilihWarga.tsx`, bukan di dalam
 salah satu fitur (§4).
