@@ -148,7 +148,8 @@ def ubah_warga(user: AuthUser, id: str, ubahan: dict) -> Penduduk:
     catat_audit(
         aktor=user.username,
         aksi="ubah-warga",
-        sasaran=f"{baru.nama} ({baru.id})",
+        sasaran=baru.nama,
+        sasaran_id=baru.id,
         perubahan="; ".join(perubahan),
     )
     return baru
@@ -169,7 +170,8 @@ def tambah_warga(user: AuthUser, data: dict) -> Penduduk:
     catat_audit(
         aktor=user.username,
         aksi="tambah-warga",
-        sasaran=f"{baru.nama} ({baru.id})",
+        sasaran=baru.nama,
+        sasaran_id=baru.id,
         perubahan=f"RT {baru.alamat.rt}/RW {baru.alamat.rw}",
     )
     return baru

@@ -139,6 +139,7 @@ VITE_API_BASE_URL=http://localhost:8000
 | POST   | `/pergantian`                    | ajukan pergantian kursi terisi — ADMIN                  |
 | GET    | `/pergantian/menunggu`           | pengajuan yang menunggu jawaban saya — PENGURUS         |
 | POST   | `/pergantian/{id}/jawab`         | satu suara, tidak bisa diubah — PENGURUS                |
+| GET    | `/audit`                         | riwayat: data warga se-wilayah (PENGURUS) / akun (ADMIN) |
 
 Filter `GET /penduduk` (semua opsional, digabung AND): `jenisKelamin`, `agama`,
 `golonganDarah`, `pendidikan`, `statusPerkawinan`, `statusHubunganKeluarga`,
@@ -175,6 +176,7 @@ adalah membuatnya sesempit mungkin.
 .venv/bin/python -m app.data.agregat                               # kelompok umur & distribusi
 DATABASE_PATH=/tmp/uji.db .venv/bin/python -m app.data.pengurus     # kelola akun
 DATABASE_PATH=/tmp/uji2.db .venv/bin/python -m app.data.pergantian  # aturan penyetuju
+.venv/bin/python -m app.core.ratelimit                             # batas login
 ```
 
 `httpx` tidak ada di `requirements.txt`, jadi `fastapi.testclient` tidak bisa
@@ -185,5 +187,10 @@ File `data/siduk.db` di-gitignore — **jangan pernah di-commit.** Backup-nya
 menyalin file, bukan commit.
 
 **Audit log tersimpan permanen** di tabel `audit_log` — siapa mengubah apa,
-kapan, dan nilai sebelum → sesudah tiap kolom. Belum ada endpoint untuk
-membacanya; sementara lewat `app/core/audit.riwayat()`.
+kapan, dan nilai sebelum → sesudah tiap kolom. Dibaca lewat `GET /audit`, dan
+isinya mengikuti kewenangan: pengurus mendapat riwayat data warga di
+wilayahnya, Admin hanya riwayat kelola akun.
+
+**Login dibatasi** (`app/core/ratelimit.py`): 5 percobaan gagal per username
+dan 20 per IP dalam 15 menit, lalu 429 beserta `Retry-After`. Batas per-IP
+sengaja longgar — satu jaringan balai desa dipakai banyak pengurus sekaligus.

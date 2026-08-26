@@ -26,6 +26,7 @@ const InfografisPage = lazy(
   () => import('@/pages/admin/infografis/InfografisPage'),
 );
 const PengurusPage = lazy(() => import('@/pages/admin/pengurus/PengurusPage'));
+const RiwayatPage = lazy(() => import('@/pages/admin/riwayat/RiwayatPage'));
 const NotFoundPage = lazy(() => import('@/pages/not-found/NotFoundPage'));
 
 export function AppRoutes() {
@@ -53,7 +54,10 @@ export function AppRoutes() {
                 />
               </Route>
 
-              {/* Kelola akun: Admin saja, dan ia tidak punya halaman lain. */}
+              {/* Riwayat: dua peran, isi berbeda — backend yang memilah. */}
+            <Route path={paths.admin.riwayat} element={<RiwayatPage />} />
+
+            {/* Kelola akun: Admin saja, dan ia tidak punya halaman lain. */}
               <Route element={<RequireRole roles={['ADMIN']} />}>
                 <Route path={paths.admin.pengurus} element={<PengurusPage />} />
               </Route>

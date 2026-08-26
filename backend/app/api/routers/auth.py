@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from app.core import ratelimit
 from app.core.security import buat_token, cocok_rahasia, urai_token
 from app.data import pengurus as data_pengurus
 from app.schemas.auth import (
@@ -87,16 +88,41 @@ async def current_pengurus(user: AuthUser = Depends(current_user)) -> AuthUser:
     return user
 
 
+def _lama(detik: int) -> str:
+    """Waktu tunggu dalam bahasa orang, bukan detik mentah."""
+    menit = (detik + 59) // 60
+    return f"{menit} menit" if menit > 1 else "kurang dari semenit"
+
+
 @router.post("/login", response_model=Session)
-async def login(payload: PetugasCredentials) -> Session:
+async def login(payload: PetugasCredentials, request: Request) -> Session:
+    ip = request.client.host if request.client else "tidak diketahui"
+
+    tunggu = ratelimit.sisa_tunggu(payload.username, ip)
+    if tunggu:
+        # `Retry-After` supaya perkakas yang membacanya tahu kapan boleh lagi;
+        # pesannya untuk orang yang membacanya di layar.
+        raise HTTPException(
+            429,
+            "Terlalu banyak percobaan masuk yang gagal. "
+            f"Coba lagi {_lama(tunggu)} lagi, atau hubungi Admin kalau Anda "
+            "lupa password.",
+            headers={"Retry-After": str(tunggu)},
+        )
+
     hasil = data_pengurus.cari_by_username(payload.username)
     if hasil is None or not cocok_rahasia(payload.password, hasil[1]):
+        ratelimit.catat_gagal(payload.username, ip)
         raise HTTPException(401, "Username atau password salah.")
     p, _ = hasil
     # Dibedakan dari salah password: pengurus yang akunnya dimatikan perlu tahu
     # harus menghubungi siapa, bukan mengira dirinya salah ketik.
     if not p.aktif:
         raise HTTPException(403, PESAN_NONAKTIF)
+    # Dinolkan hanya setelah password terbukti benar — akun nonaktif di atas
+    # sengaja tidak menolkan, supaya penebakan tidak dapat jalan memutar lewat
+    # akun yang kebetulan sudah dicabut.
+    ratelimit.reset(payload.username)
     user = ke_auth_user(p)
     return Session(token=buat_token(user.id), user=user)
 

@@ -130,6 +130,11 @@ permanen**: siapa yang mengubah, kapan, kolom apa, dari apa jadi apa. Itu bukan
 pengawasan terhadap pengurus — itu supaya kalau ada data yang keliru, bisa
 ditelusuri kembali dan diperbaiki, bukan ditebak.
 
+Catatannya bisa dibaca sendiri di menu **Riwayat Perubahan**, berisi perubahan
+data warga di wilayah Anda. Pak Dukuh melihat seluruh padukuhan. Admin tidak
+melihat riwayat data warga sama sekali — yang ia lihat cuma riwayat pembuatan
+akun dan reset password.
+
 ### Menambah warga baru
 
 Tekan **+ Tambah Warga**. RT dan RW-nya otomatis wilayah Anda sendiri. Nomor
@@ -226,6 +231,16 @@ Admin. Klik gambar orang di pojok kanan atas → **Ganti Password**.
 
 **JANGAN mereset password atas permintaan lewat telepon, SMS, atau WhatsApp.**
 Verifikasi tatap muka adalah satu-satunya pengaman yang dimiliki sistem ini.
+
+### Kalau muncul "Terlalu banyak percobaan masuk yang gagal"
+
+Aplikasi mengunci sebuah username selama **15 menit** setelah 5 kali salah
+password. Ini menahan orang menebak-nebak password dari luar.
+
+Yang harus dilakukan: **tunggu**, jangan mencoba terus — tiap percobaan baru
+tidak memperpanjang kuncinya, tapi juga tidak mempercepatnya. Kalau memang
+lupa password, temui Admin untuk direset; resetnya tetap bisa dilakukan
+walaupun akunnya sedang terkunci.
 
 ---
 

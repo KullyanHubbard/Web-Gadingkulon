@@ -12,5 +12,7 @@ export const paths = {
     infografis: '/admin/infografis',
     /** Kelola akun pengurus. ADMIN saja. */
     pengurus: '/admin/pengurus',
+    /** Riwayat perubahan. Isinya beda menurut peran; lihat RiwayatPage. */
+    riwayat: '/admin/riwayat',
   },
 } as const;

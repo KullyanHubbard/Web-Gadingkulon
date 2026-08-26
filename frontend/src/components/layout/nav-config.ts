@@ -33,6 +33,13 @@ const statistikDesa: NavItem = {
   end: true,
 };
 
+/** Muncul di semua peran, isinya yang berbeda — jadi warnanya ditulis sekali. */
+const riwayat: NavItem = {
+  label: 'Riwayat Perubahan',
+  to: paths.admin.riwayat,
+  aksen: CHART_KATEGORI_COLORS[1],
+};
+
 /**
  * Menu navigasi sesuai peran.
  *
@@ -49,6 +56,7 @@ export function navItemsForRole(role: Role | undefined): NavItem[] {
         icon: ikonId,
         aksen: CHART_KATEGORI_COLORS[2],
       },
+      riwayat,
       statistikDesa,
     ];
   }
@@ -71,6 +79,7 @@ export function navItemsForRole(role: Role | undefined): NavItem[] {
       icon: ikonChartPie,
       aksen: CHART_KATEGORI_COLORS[4],
     },
+    riwayat,
     statistikDesa,
   ];
 }

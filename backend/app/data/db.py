@@ -136,6 +136,9 @@ CREATE TABLE IF NOT EXISTS audit_log (
     aktor       TEXT NOT NULL,
     aksi        TEXT NOT NULL,
     sasaran     TEXT NOT NULL,
+    -- Kode Warga atau id akun yang dikenai tindakan. Dipakai menyaring riwayat
+    -- per wilayah; `sasaran` yang berupa teks tidak bisa dipakai untuk itu.
+    sasaran_id  TEXT,
     perubahan   TEXT
 );
 
@@ -168,6 +171,7 @@ def buka(path: Path) -> sqlite3.Connection:
 # alat yang sebenarnya.
 _TAMBALAN: list[tuple[str, str, str]] = [
     ("pengurus", "warga_id", "TEXT"),
+    ("audit_log", "sasaran_id", "TEXT"),
 ]
 
 

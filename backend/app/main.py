@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.routers import (
+    audit,
     auth,
     infografis,
     penduduk,
@@ -28,8 +29,16 @@ app.add_middleware(
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request, exc: HTTPException) -> JSONResponse:
     """`{"message": ...}`, bukan default `{"detail": ...}` FastAPI — samakan
-    dengan bentuk yang dibaca interceptor axios di `lib/api-client.ts`."""
-    return JSONResponse(status_code=exc.status_code, content={"message": exc.detail})
+    dengan bentuk yang dibaca interceptor axios di `lib/api-client.ts`.
+
+    `headers` ikut diteruskan: tanpa itu `Retry-After` pada 429 hilang, dan
+    yang tersisa cuma pesan teks.
+    """
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"message": exc.detail},
+        headers=exc.headers,
+    )
 
 
 app.include_router(penduduk.router)
@@ -38,6 +47,7 @@ app.include_router(auth.router)
 app.include_router(infografis.router)
 app.include_router(pengurus.router)
 app.include_router(pergantian.router)
+app.include_router(audit.router)
 
 
 @app.get("/health")

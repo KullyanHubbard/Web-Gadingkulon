@@ -105,6 +105,7 @@ NIA-WEB/
 │       │   ├── auth/             # login + sesi + ganti password
 │       │   ├── pengurus/         # kursi & akun (ADMIN)
 │       │   ├── pergantian/       # pengajuan + persetujuan jabatan
+│       │   ├── audit/            # riwayat perubahan
 │       │   ├── penduduk/         # daftar + filter kategori
 │       │   ├── infografis/       # agregat untuk pengurus (di balik login)
 │       │   └── statistik-publik/ # agregat halaman depan (tanpa login)
@@ -257,9 +258,13 @@ untuk alasan lengkapnya):**
 - **Tidak ada OTP, SMS, WhatsApp, atau email di jalur autentikasi.** Syarat nol
   biaya bersifat mutlak. Password baru disampaikan tatap muka; itu satu-satunya
   jalur, dan disengaja.
-- **Tidak ada rate limit** — `app/core/ratelimit.py` ikut dicabut bersama jalur
-  warga. Jumlah akun sedikit dan semuanya dibuat manual oleh ADMIN. Tambahkan
-  kalau aplikasi nanti terbuka ke internet luas.
+- **Rate limit login: dua ember, longgarnya sengaja berbeda.** Per username
+  ketat (5 per 15 menit); per IP longgar (20 per 15 menit). Kalau per-IP ikut
+  ketat, satu jaringan balai desa bisa terkunci seluruhnya gara-gara tiga orang
+  salah ketik. Login berhasil menolkan ember username saja — kalau ember IP
+  ikut dinolkan, pemegang satu kredensial sah bisa membersihkan jejaknya tiap
+  kali hampir kena batas. Hitungannya di memori proses (`ponytail:` di
+  `app/core/ratelimit.py`).
 
 **Mekanik:**
 
@@ -304,6 +309,7 @@ dependensinya:
 .venv/bin/python -m app.data.db         # self-check SQLite (skema + impor menimpa)
 .venv/bin/python -m app.data.agregat    # self-check kelompok umur & distribusi
 DATABASE_PATH=/tmp/uji.db .venv/bin/python -m app.data.pengurus   # self-check kelola akun
+.venv/bin/python -m app.core.ratelimit  # self-check batas percobaan login
 .venv/bin/python -m app.data.impor_excel ../docs/data-penduduk.xlsx   # isi data (MENIMPA)
 ```
 
@@ -349,8 +355,8 @@ Struktur saat ini (lihat `backend/README.md` untuk cara menjalankan):
 backend/
 ├── app/
 │   ├── main.py            # entrypoint FastAPI, CORS, exception handler, bootstrap
-│   ├── core/              # security (JWT/bcrypt) + audit log (masih in-memory)
-│   ├── api/routers/       # auth, penduduk, pengurus, pergantian, publik, infografis
+│   ├── core/              # security (JWT/bcrypt), ratelimit, audit log (di DB)
+│   ├── api/routers/       # auth, penduduk, pengurus, pergantian, audit, publik, infografis
 │   ├── schemas/           # Pydantic — cerminan tipe frontend, harus sinkron manual
 │   └── data/              # db.py (SQLite) + store.py (cache penduduk, dibaca router)
 │                          # + pengurus.py (akun & kursi) + pergantian.py (usulan)
@@ -453,6 +459,7 @@ Kontrak endpoint yang **sudah diimplementasikan** (bentuknya sinkron dengan
 | POST   | `/pergantian`                    | ajukan pergantian kursi **terisi** — ADMIN              |
 | GET    | `/pergantian/menunggu`           | pengajuan yang menunggu jawaban saya — PENGURUS         |
 | POST   | `/pergantian/{id}/jawab`         | satu suara, tidak bisa diubah — PENGURUS                |
+| GET    | `/audit`                         | riwayat: data warga se-wilayah (PENGURUS) / kelola akun (ADMIN) |
 
 Filter `GET /penduduk` (semua opsional, digabung AND, disaring di memori oleh
 `penduduk.saring`): `jenisKelamin`, `agama`, `golonganDarah`, `pendidikan`,
@@ -511,6 +518,10 @@ harus di atas `/penduduk/{id}`, kalau tidak ia terbaca sebagai sebuah id.
   (`app/main.py:_wajib_diisi`), atau kalau tabel `pengurus` kosong tapi
   `ADMIN_USERNAME`/`ADMIN_PASSWORD` belum diisi. Defaultnya tetap ada supaya
   perkakas baris perintah jalan tanpa `.env`; yang menolak adalah startup.
+- ✅ Riwayat perubahan mengikuti kewenangan: PENGURUS melihat riwayat data
+  warga **di wilayahnya**, ADMIN hanya riwayat kelola akun. Dua daftar aksinya
+  (`audit.AKSI_WARGA` / `AKSI_AKUN`) berpotongan kosong, sama seperti
+  kewenangan yang menghasilkannya.
 - ✅ `deletedAt` (salah input) disaring di `app/data/store.py`, satu tempat.
   `PINDAH`/`MENINGGAL` sengaja **tidak** disaring: datanya sah, dan keputusan
   sementaranya tetap dihitung.
@@ -521,11 +532,6 @@ kondisi final:
 - ⬜ **Sesi server-side menggantikan JWT.** Sekarang pencabutan sudah berlaku
   seketika lewat pemeriksaan `aktif` tiap request, jadi prioritasnya turun —
   tapi token yang sah sampai TTL habis tetap bukan model yang benar.
-- ⬜ **Halaman baca audit log.** Tabelnya sudah ada dan terisi (nilai sebelum →
-  sesudah tiap kolom), tapi belum ada endpoint maupun layar untuk membacanya —
-  sekarang lewat `app/core/audit.riwayat()` dari baris perintah.
-- ⬜ **Rate limit login pengurus.** Dicabut bersama jalur warga; belum ada
-  penggantinya. Satu-satunya lubang keamanan yang tersisa dari daftar awal.
 - ⬜ **Status kependudukan (`PINDAH`/`MENINGGAL`)** ikut disaring dari daftar
   atau statistik. Sekarang tetap dihitung, sesuai keputusan sementara di
   `docs/PROSEDUR-PENGURUS.md`.
