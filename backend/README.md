@@ -1,30 +1,65 @@
-# Backend SIDUK (dummy)
+# Backend SIDUK
 
-FastAPI. Data penduduk di SQLite, di-seed dari generator dummy (CLAUDE.md §11).
-200 Kartu Keluarga, tiap KK 3-5 anggota (diacak, seed tetap jadi datanya sama
-tiap restart). Generator ada di `app/data/dummy.py`.
+FastAPI + SQLite (`sqlite3` stdlib, tanpa ORM). Dua tabel: `penduduk` dan
+`pengurus`.
 
-Bentuk datanya sudah mengikuti skema yang direncanakan untuk database, jadi
-impor data asli nanti tinggal mengisi tabel dengan kolom yang sama:
+**NIK dan Nomor Kartu Keluarga tidak disimpan sama sekali** — desa tidak
+mengizinkannya. `id` penduduk adalah UUID yang dibangkitkan saat impor, bukan
+turunan data apa pun. Lihat
+`docs/superpowers/specs/2026-08-26-hapus-nik-kk-auth-pengurus-design.md`.
+
+**Warga tidak punya akun.** Yang bisa masuk hanya perangkat desa: `ADMIN`
+(Dukuh — plus kelola akun) dan `PENGURUS` (Ketua RW/RT).
 
 | Kolom                | Isi                                                    |
 | -------------------- | ------------------------------------------------------ |
 | `statusKependudukan` | `AKTIF` / `PINDAH` / `MENINGGAL` — datanya sah, tetap ikut daftar & statistik |
 | `deletedAt`          | ISO date atau `null` — salah input, **tidak pernah** ikut daftar & statistik |
 
-Penyaringan `deletedAt` ada di `app/data/store.py`, satu tempat, bukan di
-tiap router. Cacah saat ini: 801 baris digenerate, 3 bertanda `deletedAt`,
-jadi 798 yang terlihat lewat API.
+Penyaringan `deletedAt` ada di `app/data/store.py`, satu tempat, bukan di tiap
+router.
 
 ## Jalankan
 
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
+
+cp .env.example .env      # WAJIB: isi ADMIN_USERNAME & ADMIN_PASSWORD
 .venv/bin/uvicorn app.main:app --reload --port 8000
 ```
 
+**Backend menolak jalan kalau tabel `pengurus` kosong dan `ADMIN_USERNAME` /
+`ADMIN_PASSWORD` belum diisi.** Dua nilai itu dipakai sekali, untuk membuat akun
+Dukuh pertama; setelah akun itu ada, nilainya tidak dipakai lagi. Memakai
+default berarti ada instalasi yang berjalan dengan password yang tertulis di
+kode publik — karena itu tidak ada defaultnya.
+
 Docs interaktif: http://localhost:8000/docs
+
+## Isi data penduduk
+
+Database kosong tetap kosong — tidak ada seeding otomatis. Data masuk dari file
+Excel pendataan:
+
+```bash
+.venv/bin/pip install openpyxl   # sekali, alat ini saja yang butuh
+.venv/bin/python -m app.data.impor_excel ../docs/data-penduduk.xlsx
+```
+
+**Setiap impor MENIMPA seluruh tabel penduduk.** File yang diimpor harus selalu
+lengkap, bukan berisi warga baru saja. Tanpa NIK tidak ada kunci yang bisa
+dipercaya untuk mengenali orang yang sama antar-impor, jadi tidak ada dedup —
+Excel adalah sumber kebenaran tunggal.
+
+Restart backend setelah impor: `store.py` membaca tabel sekali saat start.
+
+Formulir kosong untuk pengurus dibangkitkan dari definisi kolom yang sama:
+
+```bash
+.venv/bin/python -m tools.buat_template_excel   # -> docs/template-data-penduduk.xlsx
+.venv/bin/python -m tools.buat_data_contoh      # -> docs/data-penduduk.xlsx (data karangan)
+```
 
 ## Sambungkan ke frontend
 
@@ -36,32 +71,45 @@ VITE_API_BASE_URL=http://localhost:8000
 
 ## Endpoint
 
-| Method | Path                           | Untuk                                     |
-| ------ | ------------------------------- | -------------------------------------------- |
-| POST   | `/auth/login`                   | pengurus: username + password               |
-| POST   | `/auth/warga/login`             | warga: NIK + PIN                             |
-| POST   | `/auth/warga/aktivasi/cek`      | NIK + tanggal lahir → tiket (throttled)      |
-| POST   | `/auth/warga/aktivasi/set-pin`  | tiket + PIN baru → sesi                      |
-| PATCH  | `/auth/me/kontak`               | simpan noHp/email opsional (perlu token)     |
-| GET    | `/auth/warga/akun`              | hanya ADMIN — NIK yang akunnya sudah aktif   |
-| POST   | `/auth/warga/{nik}/reset-pin`   | hanya ADMIN — hapus akun, warga aktivasi ulang; tercatat di audit log |
-| POST   | `/auth/logout`                  | —                                             |
-| GET    | `/penduduk`                     | daftar (`page`, `pageSize`, `search`)        |
-| GET    | `/penduduk/nik/{nik}`           | detail per NIK                                |
-| GET    | `/kartu-keluarga/{noKK}`        | KK + anggota                                  |
-| GET    | `/publik/statistik`             | cacah per RW — tanpa auth                     |
-| GET    | `/infografis`                   | agregat lengkap — hanya ADMIN                 |
+| Method | Path                             | Untuk                                                  |
+| ------ | -------------------------------- | ------------------------------------------------------ |
+| POST   | `/auth/login`                    | pengurus: username + password → `{ token, user }`      |
+| POST   | `/auth/logout`                   | —                                                      |
+| GET    | `/penduduk`                      | daftar: `page`, `pageSize`, `search` (nama) + filter    |
+| GET    | `/penduduk/filter-opsi`          | pilihan RT / RW / pekerjaan dari isi data              |
+| GET    | `/penduduk/{id}`                 | detail satu warga                                       |
+| GET    | `/infografis`                    | agregat lengkap — semua pengurus                        |
+| GET    | `/publik/statistik`              | cacah per RW — **tanpa auth**                           |
+| GET    | `/pengurus`                      | daftar akun — ADMIN                                     |
+| POST   | `/pengurus`                      | tambah akun — ADMIN                                     |
+| PATCH  | `/pengurus/{id}`                 | ubah nama / wilayah / status aktif — ADMIN              |
+| POST   | `/pengurus/{id}/reset-password`  | ganti password akun — ADMIN                             |
 
-Token JWT dikirim lewat header `Authorization: Bearer <token>`.
+Filter `GET /penduduk` (semua opsional, digabung AND): `jenisKelamin`, `agama`,
+`golonganDarah`, `pendidikan`, `statusPerkawinan`, `statusHubunganKeluarga`,
+`pekerjaan`, `rt`, `rw`, `kelompokUmur`.
 
-**Data penduduk & akun warga** tinggal di SQLite (`data/siduk.db`, dibuat
-otomatis saat backend pertama kali jalan lalu diisi dari generator dummy) —
-selamat melewati restart. Akun warga wajib ikut di sini: kalau PIN disimpan di
-memori, tiap restart semua warga otomatis kembali ke keadaan "belum punya PIN"
-dan tombol Reset PIN pengurus tidak menentukan apa pun. Mau dataset baru? Hapus
-filenya, jalankan ulang. File itu di-gitignore: jangan pernah di-commit,
-apalagi setelah berisi NIK asli.
+Token JWT dikirim lewat header `Authorization: Bearer <token>`. Status `aktif`
+diperiksa tiap request, jadi akun yang dinonaktifkan langsung tertolak walaupun
+tokennya belum kedaluwarsa.
 
-**Sisanya masih di memori proses** dan hilang tiap restart: akun pengurus
-(di-seed identik tiap start, jadi tidak berubah), tiket aktivasi, rate limit,
-audit log.
+Tidak ada `DELETE /pengurus`: akun cukup dinonaktifkan supaya jejak audit tetap
+menunjuk ke akun yang ada.
+
+## Uji
+
+```bash
+.venv/bin/python -m app.data.db                                    # skema & impor menimpa
+.venv/bin/python -m app.data.agregat                               # kelompok umur & distribusi
+DATABASE_PATH=/tmp/uji.db .venv/bin/python -m app.data.pengurus     # kelola akun
+```
+
+`httpx` tidak ada di `requirements.txt`, jadi `fastapi.testclient` tidak bisa
+dipakai. Uji ujung-ke-ujung: jalankan uvicorn di port lain dengan
+`DATABASE_PATH` sementara, lalu panggil pakai `urllib` stdlib.
+
+File `data/siduk.db` di-gitignore — **jangan pernah di-commit.** Backup-nya
+menyalin file, bukan commit.
+
+**Yang masih di memori dan hilang tiap restart:** audit log
+(`app/core/audit.py`, baru `print()` ke console).
