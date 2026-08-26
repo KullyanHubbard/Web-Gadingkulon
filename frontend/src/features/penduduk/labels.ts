@@ -1,6 +1,8 @@
 import type {
   Agama,
+  GolonganDarah,
   JenisKelamin,
+  KelompokUmur,
   Pendidikan,
   StatusHubunganKeluarga,
   StatusPerkawinan,
@@ -42,6 +44,15 @@ export const pendidikanLabel: Record<Pendidikan, string> = {
   S3: 'Doktor (S3)',
 };
 
+export const golonganDarahLabel: Record<GolonganDarah, string> = {
+  A: 'A',
+  B: 'B',
+  AB: 'AB',
+  O: 'O',
+  TIDAK_TAHU: 'Tidak Tahu',
+};
+
+/** Nomor KK tidak didata lagi, tapi peran tiap orang di keluarganya tetap. */
 export const statusHubunganLabel: Record<StatusHubunganKeluarga, string> = {
   KEPALA_KELUARGA: 'Kepala Keluarga',
   ISTRI: 'Istri',
@@ -49,6 +60,17 @@ export const statusHubunganLabel: Record<StatusHubunganKeluarga, string> = {
   FAMILI_LAIN: 'Famili Lain',
   LAINNYA: 'Lainnya',
 };
+
+/** Urutan tampil kelompok umur — sama dengan `KELOMPOK_UMUR` di backend. */
+export const kelompokUmurOpsi: readonly KelompokUmur[] = [
+  '0-5',
+  '6-12',
+  '13-17',
+  '18-25',
+  '26-40',
+  '41-60',
+  '60+',
+];
 
 /**
  * Terjemahkan label enum mentah pada distribusi menjadi label manusiawi.

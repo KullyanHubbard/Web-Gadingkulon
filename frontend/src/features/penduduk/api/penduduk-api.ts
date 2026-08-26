@@ -1,15 +1,15 @@
 import { apiClient } from '@/lib/api-client';
 import type { Paginated, PaginationParams } from '@/types/api';
-import type { KartuKeluarga, Penduduk } from '@/types/penduduk';
+import type { FilterOpsi, FilterPenduduk, Penduduk } from '@/types/penduduk';
 
-/** Kontrak API data kependudukan. */
+/** Kontrak API data kependudukan. Semua endpoint butuh sesi pengurus. */
 export interface PendudukApi {
-  /** Daftar penduduk dengan paginasi & pencarian (khusus admin). */
-  list(params: PaginationParams): Promise<Paginated<Penduduk>>;
-  /** Cari satu penduduk berdasarkan NIK. */
-  getByNik(nik: string): Promise<Penduduk | null>;
-  /** Ambil kartu keluarga (beserta anggotanya) berdasarkan nomor KK. */
-  getKartuKeluarga(noKK: string): Promise<KartuKeluarga | null>;
+  /** Daftar penduduk: paginasi, cari nama, dan filter kategori (AND). */
+  list(params: PaginationParams & FilterPenduduk): Promise<Paginated<Penduduk>>;
+  /** Detail satu penduduk. `id` dibangkitkan saat impor, bukan NIK. */
+  getById(id: string): Promise<Penduduk | null>;
+  /** Pilihan filter non-enum (RT, RW, pekerjaan) dari isi data. */
+  filterOpsi(): Promise<FilterOpsi>;
 }
 
 export const pendudukApi: PendudukApi = {
@@ -19,14 +19,12 @@ export const pendudukApi: PendudukApi = {
     });
     return data;
   },
-  async getByNik(nik) {
-    const { data } = await apiClient.get<Penduduk>(`/penduduk/nik/${nik}`);
+  async getById(id) {
+    const { data } = await apiClient.get<Penduduk>(`/penduduk/${id}`);
     return data;
   },
-  async getKartuKeluarga(noKK) {
-    const { data } = await apiClient.get<KartuKeluarga>(
-      `/kartu-keluarga/${noKK}`,
-    );
+  async filterOpsi() {
+    const { data } = await apiClient.get<FilterOpsi>('/penduduk/filter-opsi');
     return data;
   },
 };

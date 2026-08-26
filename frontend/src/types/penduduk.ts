@@ -37,12 +37,12 @@ export interface Alamat {
   kodePos: string;
 }
 
+/**
+ * Satu warga. `id` UUID dibangkitkan saat impor Excel — NIK & Nomor KK tidak
+ * disimpan sama sekali, jadi tidak ada kunci turunan data.
+ */
 export interface Penduduk {
   id: string;
-  /** Nomor Induk Kependudukan (16 digit). */
-  nik: string;
-  /** Nomor Kartu Keluarga (16 digit). */
-  noKK: string;
   nama: string;
   jenisKelamin: JenisKelamin;
   tempatLahir: string;
@@ -61,9 +61,36 @@ export interface Penduduk {
   deletedAt: string | null;
 }
 
-export interface KartuKeluarga {
-  noKK: string;
-  kepalaKeluarga: string;
-  alamat: Alamat;
-  anggota: Penduduk[];
+/**
+ * Kelompok umur untuk filter & statistik. Harus sama persis dengan
+ * `KELOMPOK_UMUR` di `backend/app/data/agregat.py`.
+ */
+export type KelompokUmur =
+  | '0-5'
+  | '6-12'
+  | '13-17'
+  | '18-25'
+  | '26-40'
+  | '41-60'
+  | '60+';
+
+/** Filter daftar penduduk. Semua opsional, digabung AND oleh backend. */
+export interface FilterPenduduk {
+  jenisKelamin?: JenisKelamin;
+  agama?: Agama;
+  golonganDarah?: GolonganDarah;
+  pendidikan?: Pendidikan;
+  statusPerkawinan?: StatusPerkawinan;
+  statusHubunganKeluarga?: StatusHubunganKeluarga;
+  pekerjaan?: string;
+  rt?: string;
+  rw?: string;
+  kelompokUmur?: KelompokUmur;
+}
+
+/** Pilihan filter yang bukan enum — hanya bisa diketahui dari isi data. */
+export interface FilterOpsi {
+  rt: string[];
+  rw: string[];
+  pekerjaan: string[];
 }

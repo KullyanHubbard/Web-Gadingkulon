@@ -1,18 +1,23 @@
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { PaginationParams } from '@/types/api';
+import type { FilterPenduduk } from '@/types/penduduk';
 import { pendudukApi } from '../api/penduduk-api';
 
-/** Query keys terpusat agar caching konsisten & mudah di-invalidate. */
+type ListParams = PaginationParams & FilterPenduduk;
+
+/**
+ * Query keys terpusat agar caching konsisten & mudah di-invalidate. `params`
+ * ikut masuk key: tiap kombinasi filter punya cache sendiri.
+ */
 export const pendudukKeys = {
   all: ['penduduk'] as const,
-  list: (params: PaginationParams) =>
-    [...pendudukKeys.all, 'list', params] as const,
-  byNik: (nik: string) => [...pendudukKeys.all, 'nik', nik] as const,
-  kk: (noKK: string) => [...pendudukKeys.all, 'kk', noKK] as const,
+  list: (params: ListParams) => [...pendudukKeys.all, 'list', params] as const,
+  byId: (id: string) => [...pendudukKeys.all, 'id', id] as const,
+  filterOpsi: () => [...pendudukKeys.all, 'filter-opsi'] as const,
 };
 
-/** Daftar penduduk (admin) dengan paginasi + pencarian. */
-export function usePendudukList(params: PaginationParams) {
+/** Daftar penduduk dengan paginasi, pencarian nama, dan filter kategori. */
+export function usePendudukList(params: ListParams) {
   return useQuery({
     queryKey: pendudukKeys.list(params),
     queryFn: () => pendudukApi.list(params),
@@ -20,20 +25,23 @@ export function usePendudukList(params: PaginationParams) {
   });
 }
 
-/** Detail penduduk berdasarkan NIK. */
-export function usePendudukByNik(nik: string, enabled = true) {
+/** Detail penduduk berdasarkan id. */
+export function usePendudukById(id: string, enabled = true) {
   return useQuery({
-    queryKey: pendudukKeys.byNik(nik),
-    queryFn: () => pendudukApi.getByNik(nik),
-    enabled: enabled && nik.trim().length > 0,
+    queryKey: pendudukKeys.byId(id),
+    queryFn: () => pendudukApi.getById(id),
+    enabled: enabled && id.trim().length > 0,
   });
 }
 
-/** Kartu keluarga berdasarkan nomor KK. */
-export function useKartuKeluarga(noKK: string, enabled = true) {
+/**
+ * Pilihan RT/RW/pekerjaan untuk dropdown filter. Jarang berubah — data
+ * penduduk read-only sampai impor Excel berikutnya.
+ */
+export function useFilterOpsi() {
   return useQuery({
-    queryKey: pendudukKeys.kk(noKK),
-    queryFn: () => pendudukApi.getKartuKeluarga(noKK),
-    enabled: enabled && noKK.trim().length > 0,
+    queryKey: pendudukKeys.filterOpsi(),
+    queryFn: () => pendudukApi.filterOpsi(),
+    staleTime: 5 * 60 * 1000,
   });
 }

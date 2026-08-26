@@ -11,24 +11,24 @@ interface LokasiAsal {
   hash?: string;
 }
 
-/** Awalan path yang hanya boleh diakses role tertentu. */
-const areaKhususAdmin = paths.admin.root;
+/**
+ * Satu-satunya halaman yang dibatasi role. Seluruh `/admin/*` lain terbuka
+ * untuk semua pengurus — baca tidak dibatasi peran maupun wilayah.
+ */
+const areaKhususAdmin = paths.admin.pengurus;
 
 function bolehDibukaOleh(role: Role | undefined, pathname: string): boolean {
-  const menujuAreaAdmin =
-    pathname === areaKhususAdmin || pathname.startsWith(`${areaKhususAdmin}/`);
-  return menujuAreaAdmin ? role === 'ADMIN' : true;
+  return pathname === areaKhususAdmin ? role === 'ADMIN' : true;
 }
 
 /**
  * Arahkan pengguna setelah berhasil masuk.
  *
- * Dipakai dua halaman masuk (warga & pengurus) sehingga aturannya hanya ada di
- * satu tempat. Dua hal yang dijaga di sini:
+ * Dua hal yang dijaga di sini:
  *
- * 1. `from` diperiksa terhadap role. Warga yang tautannya menuju `/admin/*`
- *    dulu dilempar ke sana lalu langsung ditendang balik oleh `RequireRole`;
- *    sekarang ia mendarat di berandanya sendiri.
+ * 1. `from` diperiksa terhadap role. Pengurus yang tautannya menuju halaman
+ *    kelola akun dulu dilempar ke sana lalu langsung ditendang balik oleh
+ *    `RequireRole`; sekarang ia mendarat di halaman awalnya sendiri.
  * 2. `search` & `hash` ikut dibawa, bukan cuma `pathname`.
  */
 export function useRedirectAfterLogin(): (session: Session) => void {
