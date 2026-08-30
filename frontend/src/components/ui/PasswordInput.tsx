@@ -2,7 +2,10 @@ import { forwardRef, useState, type ComponentProps } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { Input } from './Input';
 
-type PasswordInputProps = Omit<ComponentProps<typeof Input>, 'type' | 'trailing'>;
+type PasswordInputProps = Omit<
+  ComponentProps<typeof Input>,
+  'type' | 'trailing'
+>;
 
 /**
  * Kolom rahasia (PIN / password) dengan tombol lihat-sembunyikan.

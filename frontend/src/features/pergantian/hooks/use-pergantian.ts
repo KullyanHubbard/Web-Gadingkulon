@@ -34,7 +34,7 @@ function useSegarkan() {
   const queryClient = useQueryClient();
   return () => {
     void queryClient.invalidateQueries({ queryKey: pergantianKeys.all });
-    // Kursi ikut berubah begitu sebuah pengajuan lolos.
+    // Daftar jabatan ikut berubah begitu sebuah pengajuan lolos.
     void queryClient.invalidateQueries({ queryKey: ['pengurus'] });
   };
 }
@@ -42,8 +42,13 @@ function useSegarkan() {
 export function useAjukanPergantian() {
   const segarkan = useSegarkan();
   return useMutation({
-    mutationFn: ({ kursi, kandidatId }: { kursi: string; kandidatId: string }) =>
-      pergantianApi.ajukan(kursi, kandidatId),
+    mutationFn: ({
+      jabatanKode,
+      kandidatId,
+    }: {
+      jabatanKode: string;
+      kandidatId: string;
+    }) => pergantianApi.ajukan(jabatanKode, kandidatId),
     onSuccess: segarkan,
   });
 }

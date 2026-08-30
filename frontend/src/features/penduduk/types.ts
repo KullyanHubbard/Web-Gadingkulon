@@ -1,6 +1,8 @@
 /**
  * Model domain Kependudukan, mengacu field kartu keluarga (KK) & KTP Indonesia.
- * Di `types/` karena penduduk & infografis sama-sama memakainya (CLAUDE.md §4).
+ * Hanya fitur ini yang memakainya, jadi tinggal di dalam fiturnya (CLAUDE.md §4).
+ * Naikkan ke `types/` kalau nanti ada fitur lain yang butuh — seperti
+ * `types/statistik.ts`, yang memang dipakai lintas fitur.
  */
 
 export type JenisKelamin = 'LAKI_LAKI' | 'PEREMPUAN';
@@ -57,8 +59,8 @@ export interface Penduduk {
   kewarganegaraan: string;
   /**
    * Jabatan dari kolom "Jabatan" file Excel. BUKAN penentu kewenangan — yang
-   * menentukan tetap akun pengurus. Dibaca hanya untuk mencalonkan penghuni
-   * kursi yang masih kosong.
+   * menentukan tetap akun pengurus. Dibaca hanya untuk mencalonkan pemegang
+   * jabatan yang masih kosong.
    */
   jabatan: 'WARGA' | 'DUKUH' | 'RW' | 'RT';
   alamat: Alamat;
@@ -72,13 +74,7 @@ export interface Penduduk {
  * `KELOMPOK_UMUR` di `backend/app/data/agregat.py`.
  */
 export type KelompokUmur =
-  | '0-5'
-  | '6-12'
-  | '13-17'
-  | '18-25'
-  | '26-40'
-  | '41-60'
-  | '60+';
+  '0-5' | '6-12' | '13-17' | '18-25' | '26-40' | '41-60' | '60+';
 
 /** Filter daftar penduduk. Semua opsional, digabung AND oleh backend. */
 export interface FilterPenduduk {

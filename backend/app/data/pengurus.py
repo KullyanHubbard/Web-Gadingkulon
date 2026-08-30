@@ -35,7 +35,7 @@ class Pengurus:
     rt: str | None
     aktif: bool
     harus_ganti_password: bool = False
-    # Kode Warga orang yang menduduki kursi ini. `None` untuk ADMIN — ia akun
+    # Kode Warga orang yang memegang jabatan ini. `None` untuk ADMIN — ia akun
     # layanan, bukan warga padukuhan.
     warga_id: str | None = None
 
@@ -44,10 +44,10 @@ class Pengurus:
         return jabatan_dari(self.role, self.rw, self.rt)
 
     @property
-    def kursi(self) -> str:
-        """Penanda kursi yang diduduki, dipakai menjodohkan akun dengan daftar
-        kursi yang diturunkan dari data penduduk."""
-        return kursi_dari(self.role, self.rw, self.rt)
+    def kode_jabatan(self) -> str:
+        """Kunci jabatan yang dipegang, dipakai menjodohkan akun dengan daftar
+        jabatan yang diturunkan dari data penduduk."""
+        return kode_jabatan_dari(self.role, self.rw, self.rt)
 
 
 def jabatan_dari(role: str, rw: str | None, rt: str | None) -> str:
@@ -67,11 +67,15 @@ def jabatan_dari(role: str, rw: str | None, rt: str | None) -> str:
     return role
 
 
-def kursi_dari(role: str, rw: str | None, rt: str | None) -> str:
-    """Penanda satu kursi, mis. `DUKUH`, `RW:019`, `RT:019/001`.
+def kode_jabatan_dari(role: str, rw: str | None, rt: str | None) -> str:
+    """Kunci satu jabatan, mis. `DUKUH`, `RW:019`, `RT:019/001`.
+
+    Bukan label yang dibaca orang — itu `jabatan_dari()`. Kunci ini yang
+    menjodohkan akun dengan daftar jabatan, dan yang disimpan di kolom
+    `pengajuan.jabatan_kode`.
 
     RT memakai RW-nya sekaligus karena nomor RT hanya unik di dalam RW-nya —
-    "RT 001" tanpa RW bisa menunjuk dua kursi berbeda begitu padukuhan punya
+    "RT 001" tanpa RW bisa menunjuk dua jabatan berbeda begitu padukuhan punya
     dua RW yang sama-sama bernomor RT 001.
     """
     if role == ROLE_RW:
@@ -84,11 +88,11 @@ def kursi_dari(role: str, rw: str | None, rt: str | None) -> str:
 def cocok_wilayah(
     role: str, rw: str | None, rt: str | None, warga_rw: str, warga_rt: str
 ) -> bool:
-    """Apakah seorang warga boleh menduduki kursi ini.
+    """Apakah seorang warga boleh memegang jabatan ini.
 
     Ketua RT harus warga RT itu, Ketua RW harus warga RW itu, dan Dukuh boleh
     dari mana pun di padukuhan. Ditulis di sini, bukan di router: dipakai dua
-    jalur — mengisi kursi kosong dan mengajukan pergantian — dan aturannya
+    jalur — mengisi jabatan kosong dan mengajukan pergantian — dan aturannya
     tidak boleh berbeda di antara keduanya.
     """
     if role == ROLE_RT:
@@ -149,9 +153,10 @@ def tambah(
     rt: str | None = None,
     warga_id: str | None = None,
 ) -> Pengurus:
-    """Raise `ValueError` kalau username sudah dipakai, kursinya sudah diduduki
-    akun aktif, atau orangnya sedang menduduki kursi lain. Akun baru selalu lahir dengan `harus_ganti_password`
-    menyala: password dari Admin sekali pakai."""
+    """Raise `ValueError` kalau username sudah dipakai, jabatannya sudah dipegang
+    akun aktif, atau orangnya sedang memegang jabatan lain. Akun baru selalu
+    lahir dengan `harus_ganti_password` menyala: password dari Admin sekali
+    pakai."""
     baru = Pengurus(
         id=str(uuid.uuid4()),
         username=username,
@@ -169,25 +174,25 @@ def tambah(
         ).fetchone()
         if sudah:
             raise ValueError(f"Username '{username}' sudah dipakai.")
-        # Satu kursi satu orang. Diperiksa di sini, bukan lewat UNIQUE di SQL:
-        # akun nonaktif dari penghuni lama tetap tersimpan pada kursi yang sama,
-        # jadi constraint kolom akan menolak penggantinya.
-        penghuni = [
+        # Satu jabatan satu orang. Diperiksa di sini, bukan lewat UNIQUE di SQL:
+        # akun nonaktif dari pemegang lama tetap tersimpan pada jabatan yang
+        # sama, jadi constraint kolom akan menolak penggantinya.
+        pemegang = [
             _dari_row(r)
             for r in conn.execute("SELECT * FROM pengurus WHERE aktif = 1")
         ]
-        if any(p.kursi == baru.kursi for p in penghuni):
-            raise ValueError(f"Kursi {baru.jabatan} sudah ada yang menduduki.")
+        if any(p.kode_jabatan == baru.kode_jabatan for p in pemegang):
+            raise ValueError(f"Jabatan {baru.jabatan} sudah ada yang memegang.")
         # Satu orang satu jabatan. Dibandingkan lewat Kode Warga, bukan nama:
         # dua orang yang benar-benar senama akan saling menghalangi kalau
         # namanya yang dipakai.
         lain = next(
-            (p for p in penghuni if baru.warga_id and p.warga_id == baru.warga_id),
+            (p for p in pemegang if baru.warga_id and p.warga_id == baru.warga_id),
             None,
         )
         if lain is not None:
             raise ValueError(
-                f"{baru.nama} sedang menduduki kursi {lain.jabatan}. "
+                f"{baru.nama} sedang memegang jabatan {lain.jabatan}. "
                 "Satu orang satu jabatan."
             )
         with conn:
@@ -265,37 +270,39 @@ def ganti_password(id: str, password: str, *, oleh_admin: bool) -> bool:
 
 @dataclass
 class Calon:
-    """Warga yang ditandai memegang kursi ini di kolom "Jabatan" file Excel."""
+    """Warga yang ditandai memegang jabatan ini di kolom "Jabatan" file Excel."""
 
     id: str
     nama: str
 
 
 @dataclass
-class Kursi:
+class Jabatan:
     """Satu jabatan yang ada di padukuhan, terisi maupun kosong."""
 
-    kursi: str
+    #: Kunci, mis. `RT:019/001` — lihat `kode_jabatan_dari()`.
+    kode: str
     role: str
     rw: str | None
     rt: str | None
-    jabatan: str
-    penghuni: Pengurus | None
-    # Hanya diisi untuk kursi KOSONG. Begitu ada penghuninya, kolom Jabatan di
+    #: Label yang dibaca orang, mis. "Ketua RT 001".
+    label: str
+    pemegang: Pengurus | None
+    # Hanya diisi untuk jabatan KOSONG. Begitu ada pemegangnya, kolom Jabatan di
     # Excel diabaikan — kalau tidak, satu impor yang belum diperbarui bisa
     # membatalkan pergantian yang sudah disetujui.
     calon: Calon | None = None
 
 
-def daftar_kursi() -> list[Kursi]:
-    """Seluruh kursi pengurus, diturunkan dari alamat warga di data penduduk.
+def daftar_jabatan() -> list[Jabatan]:
+    """Seluruh jabatan pengurus, diturunkan dari alamat warga di data penduduk.
 
     Tidak ada tabel atau berkas konfigurasi berisi daftar RW/RT: pasangan yang
     benar-benar ada di padukuhan sudah tercatat di kolom alamat tiap warga.
     Menyimpannya di tempat kedua berarti dua sumber kebenaran yang bisa berbeda
     diam-diam ketika padukuhan memekarkan sebuah RT.
 
-    Konsekuensinya diterima sadar: kursi baru baru muncul setelah ada warga
+    Konsekuensinya diterima sadar: jabatan baru baru muncul setelah ada warga
     ber-RT itu di data — dan itu urutan yang benar, RT tanpa warga tidak perlu
     akun.
     """
@@ -303,7 +310,7 @@ def daftar_kursi() -> list[Kursi]:
 
     warga = semua_penduduk()
     # Wilayah diturunkan dari warga AKTIF saja: satu orang yang sudah pindah
-    # tidak boleh memunculkan kursi RT yang sebenarnya sudah tidak berpenghuni.
+    # tidak boleh memunculkan jabatan RT yang sebenarnya sudah tidak dipegang.
     wilayah = sorted(
         {(p.alamat.rw, p.alamat.rt) for p in warga if p.statusKependudukan == "AKTIF"}
     )
@@ -311,29 +318,31 @@ def daftar_kursi() -> list[Kursi]:
     rencana += [(ROLE_RW, rw, None) for rw in sorted({rw for rw, _ in wilayah})]
     rencana += [(ROLE_RT, rw, rt) for rw, rt in wilayah]
 
-    aktif = {p.kursi: p for p in daftar() if p.aktif}
+    aktif = {p.kode_jabatan: p for p in daftar() if p.aktif}
 
-    # Calon dari kolom "Jabatan" Excel, dipetakan ke kursi yang sama bentuknya.
+    # Calon dari kolom "Jabatan" Excel, dipetakan ke kunci yang sama bentuknya.
+    # `w.jabatan` di sini kolom Excel milik warga ('WARGA'/'DUKUH'/'RW'/'RT'),
+    # BUKAN label jabatan pengurus — dua hal berbeda yang kebetulan senama.
     calon: dict[str, Calon] = {}
     for w in warga:
         if w.jabatan == "WARGA" or w.statusKependudukan != "AKTIF":
             continue
-        kunci = kursi_dari(w.jabatan, w.alamat.rw, w.alamat.rt)
+        kunci = kode_jabatan_dari(w.jabatan, w.alamat.rw, w.alamat.rt)
         calon.setdefault(kunci, Calon(id=w.id, nama=w.nama))
 
     hasil = []
     for role, rw, rt in rencana:
-        kunci = kursi_dari(role, rw, rt)
-        penghuni = aktif.get(kunci)
+        kunci = kode_jabatan_dari(role, rw, rt)
+        pemegang = aktif.get(kunci)
         hasil.append(
-            Kursi(
-                kursi=kunci,
+            Jabatan(
+                kode=kunci,
                 role=role,
                 rw=rw,
                 rt=rt,
-                jabatan=jabatan_dari(role, rw, rt),
-                penghuni=penghuni,
-                calon=None if penghuni else calon.get(kunci),
+                label=jabatan_dari(role, rw, rt),
+                pemegang=pemegang,
+                calon=None if pemegang else calon.get(kunci),
             )
         )
     return hasil
@@ -391,9 +400,11 @@ def demo() -> None:
     assert jabatan_dari(ROLE_RT, "019", "001") == "Ketua RT 001"
 
     # Nomor RT hanya unik di dalam RW-nya, jadi dua RT bernomor sama di RW
-    # berbeda wajib jadi dua kursi berbeda.
-    assert kursi_dari(ROLE_RT, "019", "001") != kursi_dari(ROLE_RT, "020", "001")
-    assert kursi_dari(ROLE_DUKUH, None, None) == "DUKUH"
+    # berbeda wajib jadi dua jabatan berbeda.
+    assert kode_jabatan_dari(ROLE_RT, "019", "001") != kode_jabatan_dari(
+        ROLE_RT, "020", "001"
+    )
+    assert kode_jabatan_dari(ROLE_DUKUH, None, None) == "DUKUH"
 
     p = tambah("uji-rt", "rahasia", "Fajar", ROLE_RT, rw="019", rt="001",
                warga_id="W0001")
@@ -413,7 +424,7 @@ def demo() -> None:
 
     try:
         tambah("uji-rt2", "lain", "Kembar", ROLE_RT, rw="019", rt="001")
-        raise AssertionError("kursi yang sudah diduduki harus ditolak")
+        raise AssertionError("jabatan yang sudah dipegang harus ditolak")
     except ValueError:
         pass
 
@@ -431,12 +442,12 @@ def demo() -> None:
     assert kembar.jabatan == "Ketua RW 020"
     assert kembar.warga_id == "W9999"
 
-    # Kursi yang sama boleh diisi lagi setelah penghuninya dinonaktifkan —
+    # Jabatan yang sama boleh diisi lagi setelah pemegangnya dinonaktifkan —
     # itulah jalur pergantian pengurus.
     assert ubah(p.id, aktif=False).aktif is False  # type: ignore[union-attr]
     pengganti = tambah("uji-rt2", "rahasia", "Bagus", ROLE_RT, rw="019", rt="001",
                        warga_id="W0002")
-    assert pengganti.kursi == p.kursi
+    assert pengganti.kode_jabatan == p.kode_jabatan
 
     # Ganti password sendiri memadamkan penanda; reset Admin menyalakannya lagi.
     assert ganti_password(pengganti.id, "password-baru", oleh_admin=False) is True

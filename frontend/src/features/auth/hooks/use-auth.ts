@@ -39,9 +39,7 @@ export function useLoginPetugas() {
         // Akun berhasil masuk, tapi perannya tidak sesuai yang dipilih di layar.
         // Cabut kembali sesi yang telanjur dibuat di backend.
         await authApi.logout(session.token).catch(() => undefined);
-        const p = ROLE_PENGURUS.includes(expectedRole)
-          ? expectedRole
-          : 'Admin';
+        const p = ROLE_PENGURUS.includes(expectedRole) ? expectedRole : 'Admin';
         throw new Error(`Username atau password salah untuk akun ${p}.`);
       }
 

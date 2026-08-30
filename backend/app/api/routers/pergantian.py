@@ -4,7 +4,7 @@ Pembagiannya tegas dan itu inti seluruh mekanisme ini:
 
 - `POST /pergantian` dan `GET /pergantian` — **ADMIN saja**. Ia mengajukan dan
   melihat, tidak pernah menyetujui. Pencarian warga untuk memilih kandidat ada
-  di `GET /pengurus/warga` — dipakai juga saat mengisi kursi kosong, jadi
+  di `GET /pengurus/warga` — dipakai juga saat mengisi jabatan kosong, jadi
   tempatnya bukan di sini.
 - `GET /pergantian/menunggu` dan `POST /pergantian/{id}/jawab` — **pengurus
   saja**. Admin ditolak `current_pengurus`, jadi tidak ada jalan memutar lewat
@@ -31,7 +31,7 @@ router = APIRouter(prefix="/pergantian", tags=["pergantian"])
 def _keluaran(p: data.Pengajuan) -> PengajuanOut:
     return PengajuanOut(
         id=p.id,
-        kursi=p.kursi,
+        jabatanKode=p.jabatan_kode,
         role=p.role,  # type: ignore[arg-type]
         rw=p.rw,
         rt=p.rt,
@@ -70,7 +70,7 @@ def ajukan(
 ) -> PengajuanOut:
     try:
         p = data.ajukan(
-            kursi=payload.kursi,
+            jabatan_kode=payload.jabatanKode,
             kandidat_id=payload.kandidatId,
             oleh=admin.username,
         )

@@ -3,36 +3,36 @@ import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { QueryBoundary } from '@/components/ui/QueryBoundary';
 import { Table, Td, Th } from '@/components/ui/Table';
 import ikonKeyRound from '@/assets/icons/nav/key-round.svg';
-import type { Kursi } from '../types';
+import type { Jabatan } from '../types';
 
-interface DaftarKursiViewProps {
+interface DaftarJabatanViewProps {
   isLoading: boolean;
   isError: boolean;
-  kursi: Kursi[] | undefined;
+  jabatan: Jabatan[] | undefined;
   sedangMengubah: boolean;
-  onIsiKursi: (kursi: Kursi) => void;
-  onResetPassword: (kursi: Kursi) => void;
-  onAjukanPergantian: (kursi: Kursi) => void;
+  onIsiJabatan: (jabatan: Jabatan) => void;
+  onResetPassword: (jabatan: Jabatan) => void;
+  onAjukanPergantian: (jabatan: Jabatan) => void;
 }
 
-/** Tabel kursi padukuhan beserta aksinya. Tampilan saja. */
-export function DaftarKursiView({
+/** Tabel jabatan padukuhan beserta aksinya. Tampilan saja. */
+export function DaftarJabatanView({
   isLoading,
   isError,
-  kursi,
+  jabatan,
   sedangMengubah,
-  onIsiKursi,
+  onIsiJabatan,
   onResetPassword,
   onAjukanPergantian,
-}: DaftarKursiViewProps) {
+}: DaftarJabatanViewProps) {
   return (
-    <Card className="overflow-hidden shadow-sm border-slate-200">
+    <Card className="overflow-hidden border-slate-200 shadow-sm">
       <CardHeader title="Daftar Akun" />
       <CardContent className="p-0">
         <QueryBoundary
           isLoading={isLoading}
           isError={isError}
-          data={kursi}
+          data={jabatan}
           errorMessage="Gagal memuat daftar akun pengurus."
         >
           {(daftar) => (
@@ -47,32 +47,41 @@ export function DaftarKursiView({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {daftar.map((k) => (
-                  <tr key={k.kursi} className="hover:bg-slate-50/80 transition-colors">
-                    <Td className="font-semibold text-slate-900">{k.jabatan}</Td>
+                {daftar.map((j) => (
+                  <tr
+                    key={j.kode}
+                    className="transition-colors hover:bg-slate-50/80"
+                  >
+                    <Td className="font-semibold text-slate-900">{j.label}</Td>
                     <Td className="font-medium text-slate-800">
-                      {k.penghuni ? (
-                        k.penghuni.nama
-                      ) : k.calon ? (
-                        <span className="text-slate-500 font-normal">
-                          {k.calon.nama}{' '}
-                          <span className="text-xs text-slate-400">(dari data warga)</span>
+                      {j.pemegang ? (
+                        j.pemegang.nama
+                      ) : j.calon ? (
+                        <span className="font-normal text-slate-500">
+                          {j.calon.nama}{' '}
+                          <span className="text-xs text-slate-400">
+                            (dari data warga)
+                          </span>
                         </span>
                       ) : (
-                        <span className="text-slate-400 font-normal">—</span>
+                        <span className="font-normal text-slate-400">—</span>
                       )}
                     </Td>
-                    <Td className="text-slate-600 font-mono text-xs">
-                      {k.penghuni?.username ?? <span className="text-slate-400 font-sans text-sm">—</span>}
+                    <Td className="font-mono text-xs text-slate-600">
+                      {j.pemegang?.username ?? (
+                        <span className="font-sans text-sm text-slate-400">
+                          —
+                        </span>
+                      )}
                     </Td>
                     <Td>
-                      {k.penghuni ? (
+                      {j.pemegang ? (
                         <div className="flex items-center gap-2">
                           <span
-                            className={`h-2 w-2 rounded-full ${k.penghuni.harusGantiPassword ? 'bg-amber-400' : 'bg-emerald-500'}`}
+                            className={`h-2 w-2 rounded-full ${j.pemegang.harusGantiPassword ? 'bg-amber-400' : 'bg-emerald-500'}`}
                           />
                           <span className="text-sm font-medium text-slate-700">
-                            {k.penghuni.harusGantiPassword
+                            {j.pemegang.harusGantiPassword
                               ? 'Belum ganti password'
                               : 'Aktif'}
                           </span>
@@ -80,26 +89,28 @@ export function DaftarKursiView({
                       ) : (
                         <div className="flex items-center gap-2">
                           <span className="h-2 w-2 rounded-full bg-slate-300" />
-                          <span className="text-sm font-medium text-slate-400">Kosong</span>
+                          <span className="text-sm font-medium text-slate-400">
+                            Kosong
+                          </span>
                         </div>
                       )}
                     </Td>
                     <Td>
-                      {k.penghuni ? (
+                      {j.pemegang ? (
                         <div className="flex items-center gap-3">
                           <Button
                             size="sm"
                             variant="secondary"
                             disabled={sedangMengubah}
-                            onClick={() => onAjukanPergantian(k)}
+                            onClick={() => onAjukanPergantian(j)}
                           >
                             Ajukan Pergantian
                           </Button>
                           <button
                             type="button"
-                            className="flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors py-1 px-2 rounded-md hover:bg-slate-100"
+                            className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
                             title="Reset Password"
-                            onClick={() => onResetPassword(k)}
+                            onClick={() => onResetPassword(j)}
                           >
                             <span
                               aria-hidden
@@ -113,7 +124,11 @@ export function DaftarKursiView({
                           </button>
                         </div>
                       ) : (
-                        <Button size="sm" variant="secondary" onClick={() => onIsiKursi(k)}>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => onIsiJabatan(j)}
+                        >
                           + Buat Akun
                         </Button>
                       )}

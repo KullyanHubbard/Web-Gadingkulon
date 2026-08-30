@@ -5,11 +5,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import type { PaginationParams } from '@/types/api';
-import type {
-  FilterPenduduk,
-  PendudukBaru,
-  PendudukUbah,
-} from '@/types/penduduk';
+import type { FilterPenduduk, PendudukBaru, PendudukUbah } from '../types';
 import { pendudukApi } from '../api/penduduk-api';
 
 type ListParams = PaginationParams & FilterPenduduk;
@@ -31,15 +27,6 @@ export function usePendudukList(params: ListParams) {
     queryKey: pendudukKeys.list(params),
     queryFn: () => pendudukApi.list(params),
     placeholderData: keepPreviousData,
-  });
-}
-
-/** Detail penduduk berdasarkan id. */
-export function usePendudukById(id: string, enabled = true) {
-  return useQuery({
-    queryKey: pendudukKeys.byId(id),
-    queryFn: () => pendudukApi.getById(id),
-    enabled: enabled && id.trim().length > 0,
   });
 }
 

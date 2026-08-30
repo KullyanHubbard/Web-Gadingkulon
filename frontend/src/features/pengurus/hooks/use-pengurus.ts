@@ -5,24 +5,24 @@ import type { PengurusBaru } from '../types';
 /** Query keys terpusat agar caching konsisten & mudah di-invalidate. */
 export const pengurusKeys = {
   all: ['pengurus'] as const,
-  kursi: () => [...pengurusKeys.all, 'kursi'] as const,
+  jabatan: () => [...pengurusKeys.all, 'jabatan'] as const,
 };
 
-export function useDaftarKursi() {
+export function useDaftarJabatan() {
   return useQuery({
-    queryKey: pengurusKeys.kursi(),
-    queryFn: () => pengurusApi.daftarKursi(),
+    queryKey: pengurusKeys.jabatan(),
+    queryFn: () => pengurusApi.daftarJabatan(),
   });
 }
 
-/** Setiap mutasi menyegarkan daftar kursi — tabelnya harus langsung berubah. */
-function useSegarkanKursi() {
+/** Setiap mutasi menyegarkan daftar jabatan — tabelnya harus langsung berubah. */
+function useSegarkanJabatan() {
   const queryClient = useQueryClient();
   return () => queryClient.invalidateQueries({ queryKey: pengurusKeys.all });
 }
 
 export function useTambahPengurus() {
-  const segarkan = useSegarkanKursi();
+  const segarkan = useSegarkanJabatan();
   return useMutation({
     mutationFn: (payload: PengurusBaru) => pengurusApi.tambah(payload),
     onSuccess: segarkan,
@@ -30,7 +30,7 @@ export function useTambahPengurus() {
 }
 
 export function useResetPassword() {
-  const segarkan = useSegarkanKursi();
+  const segarkan = useSegarkanJabatan();
   return useMutation({
     mutationFn: ({ id, password }: { id: string; password: string }) =>
       pengurusApi.resetPassword(id, password),

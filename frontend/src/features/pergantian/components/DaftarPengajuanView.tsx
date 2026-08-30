@@ -61,7 +61,9 @@ export function DaftarPengajuanView({
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={`h-2 w-2 rounded-full ${warnaStatus[p.status]}`} />
+                      <span
+                        className={`h-2 w-2 rounded-full ${warnaStatus[p.status]}`}
+                      />
                       <span className="text-sm font-medium text-slate-700">
                         {labelStatus[p.status]}
                       </span>

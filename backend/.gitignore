@@ -2,7 +2,12 @@
 # sungguhan, satu commit menaruh data kependudukan sedesa di riwayat git
 # secara permanen, dan riwayat git tidak bisa dibersihkan setengah-setengah.
 # Backup-nya menyalin file, bukan commit.
-data/
+#
+# Berpangkal `/`: tanpa itu polanya juga cocok dengan `app/data/` — dan seluruh
+# lapisan data aplikasi jadi tak terlihat git. Berkas yang sudah terlacak tetap
+# aman, jadi kesalahannya baru muncul saat ada yang MENAMBAH berkas di sana:
+# file barunya hilang diam-diam dari `git status`.
+/data/
 *.db
 
 # Virtualenv & bytecode

@@ -1,89 +1,14 @@
+import { WADAH } from '@/components/layout/wadah';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { PetaPadukuhan } from '@/components/ui/PetaPadukuhan';
 import { QueryBoundary } from '@/components/ui/QueryBoundary';
 import { useStatistikPublik } from '@/features/statistik-publik/hooks/use-statistik-publik';
-import {
-  BATAS_WILAYAH,
-  PADUKUHAN,
-  SEJARAH_PADUKUHAN,
-  STRUKTUR_ORGANISASI,
-  type PosisiOrganisasi,
-} from '@/lib/padukuhan';
+import { BATAS_WILAYAH, PADUKUHAN, SEJARAH_PADUKUHAN } from '@/lib/padukuhan';
 import { formatAngka } from '@/lib/utils';
+import { BaganOrganisasi } from './components/BaganOrganisasi';
+import { BarisKeterangan } from './components/BarisKeterangan';
 
-const WADAH = 'mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8';
-
-/**
- * Satu kotak jabatan pada bagan.
- *
- * Bagannya `<ul>` bersarang, bukan SVG: susunannya memang daftar bertingkat,
- * dan `<ul>` sudah dibacakan pembaca layar sebagai hierarki tanpa perlu ARIA
- * tambahan. Garis penghubungnya border CSS di `::before` — tidak ada elemen
- * mati yang cuma jadi garis.
- */
-function KotakJabatan({ posisi }: { posisi: PosisiOrganisasi }) {
-  return (
-    <div className="inline-block min-w-[11rem] rounded-xl border border-slate-200 bg-white px-5 py-3 text-center shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">
-        {posisi.jabatan}
-      </p>
-      <p className="mt-1 font-bold text-slate-900">{posisi.nama}</p>
-    </div>
-  );
-}
-
-/**
- * Satu cabang bagan, rekursif — susunannya memang bersarang: Dukuh -> Ketua RW
- * -> Ketua RT, dan cabang Karang Taruna yang berbentuk sama.
- *
- * Garis penghubung ke atas dicetak simpul anak, bukan induknya: dengan begitu
- * simpul akar tidak butuh cabang kode sendiri untuk menghilangkannya.
- */
-function CabangOrganisasi({
-  posisi,
-  akar = false,
-}: {
-  posisi: PosisiOrganisasi;
-  akar?: boolean;
-}) {
-  return (
-    <li className="flex list-none flex-col items-center">
-      {!akar && <span aria-hidden className="h-6 w-px bg-slate-300" />}
-      <KotakJabatan posisi={posisi} />
-
-      {posisi.bawahan && posisi.bawahan.length > 0 && (
-        <>
-          <span aria-hidden className="h-6 w-px bg-slate-300" />
-          <ul className="flex flex-col items-center gap-2 sm:flex-row sm:items-start sm:gap-8">
-            {posisi.bawahan.map((anak) => (
-              <CabangOrganisasi
-                key={`${anak.jabatan}-${anak.nama}`}
-                posisi={anak}
-              />
-            ))}
-          </ul>
-        </>
-      )}
-    </li>
-  );
-}
-
-function BarisKeterangan({ label, nilai }: { label: string; nilai: string }) {
-  return (
-    <div className="flex items-baseline justify-between gap-4 border-b border-slate-100 py-3 last:border-b-0">
-      <dt className="text-sm text-slate-500">{label}</dt>
-      <dd className="text-right font-semibold text-slate-900">{nilai}</dd>
-    </div>
-  );
-}
-
-/**
- * Profil padukuhan: sejarah, bagan pengurus, peta, batas & luas wilayah.
- *
- * Nama pengurus di bagan datang dari konstanta `lib/padukuhan.ts`, BUKAN dari
- * tabel `pengurus` — daftar akun itu ada di balik login ADMIN dan halaman ini
- * terbuka untuk siapa saja.
- */
+/** Profil padukuhan: sejarah, bagan pengurus, peta, batas & luas wilayah. */
 export default function ProfilPage() {
   const statistik = useStatistikPublik();
 
@@ -170,13 +95,8 @@ export default function ProfilPage() {
           <p className="mt-2 text-sm text-slate-600">
             Dukuh, pengurus RW dan RT, serta Karang Taruna.
           </p>
-
-          {/* Bagan lebih lebar dari layar ponsel; digulung mendatar di dalam
-              kotaknya sendiri supaya badan halaman tidak ikut bergeser. */}
-          <div className="mt-8 overflow-x-auto pb-4">
-            <ul className="flex min-w-max flex-col items-center px-4">
-              <CabangOrganisasi posisi={STRUKTUR_ORGANISASI} akar />
-            </ul>
+          <div className="mt-8">
+            <BaganOrganisasi />
           </div>
         </div>
       </section>

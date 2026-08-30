@@ -2,8 +2,7 @@ import { QueryBoundary } from '@/components/ui/QueryBoundary';
 import { BeritaCard } from '@/features/berita/components/BeritaCard';
 import { useBeritaList } from '@/features/berita/hooks/use-berita';
 import { PADUKUHAN } from '@/lib/padukuhan';
-
-const WADAH = 'mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8';
+import { WADAH } from '@/components/layout/wadah';
 
 /** Daftar berita publik: grid kartu, terbaru dulu. */
 export default function BeritaListPage() {

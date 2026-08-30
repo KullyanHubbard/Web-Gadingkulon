@@ -19,10 +19,12 @@ class SuaraOut(BaseModel):
 
 class PengajuanOut(BaseModel):
     id: str
-    kursi: str
+    #: Kunci jabatan, mis. `RT:019/001`.
+    jabatanKode: str
     role: Role
     rw: Optional[str] = None
     rt: Optional[str] = None
+    #: Label yang dibaca orang, mis. "Ketua RT 001".
     jabatan: str
     kandidatId: str
     kandidatNama: str
@@ -37,7 +39,7 @@ class PengajuanOut(BaseModel):
 
 
 class PengajuanBaru(BaseModel):
-    kursi: str
+    jabatanKode: str
     kandidatId: str
 
 

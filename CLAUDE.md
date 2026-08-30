@@ -20,10 +20,14 @@ kode agar hasil tetap rapi dan konsisten.
   dari env. **Yang masih di memori:** audit log saja.
 - **NIK & No. KK tidak disimpan sama sekali** (keputusan desa, 26 Agustus
   2026). Warga tidak punya akun. `id` penduduk = kolom **Kode Warga** di Excel.
-- **Empat peran** (`ADMIN`/`DUKUH`/`RW`/`RT`) dan akun berbentuk **kursi**.
-  Mengisi kursi kosong bebas; **mengganti penghuni kursi terisi wajib lewat
+- **Empat peran** (`ADMIN`/`DUKUH`/`RW`/`RT`) dan akun melekat pada **jabatan**.
+  Mengisi jabatan kosong bebas; **mengganti pemegang jabatan terisi wajib lewat
   pengajuan yang disetujui** perangkat desa. Admin mengajukan, tidak pernah
   menyetujui.
+- **Istilah "kursi" sudah dicabut** (31 Agustus 2026) — kode & UI memakai
+  **jabatan** di mana-mana. Yang tersisa: kolom DB lama diangkat otomatis
+  (`db._GANTI_NAMA`), dan spec bertanggal di `docs/superpowers/specs/` sengaja
+  TIDAK diedit — itu catatan sejarah, jadi masih berbunyi "kursi".
 
 ---
 
@@ -50,10 +54,10 @@ Semuanya cacah dan keterangan wilayah saja, tidak pernah data orang.
 
 Desain berlaku, tiga dokumen dan ketiganya masih hidup:
 `2026-08-26-hapus-nik-kk-auth-pengurus-design.md` (NIK/KK & warga tanpa akun)
-`2026-08-26-empat-peran-pergantian-pengurus-design.md` (peran, kursi, Kode
+`2026-08-26-empat-peran-pergantian-pengurus-design.md` (peran, jabatan, Kode
 Warga, ganti password wajib), dan
 `2026-08-26-tahap-2-pengajuan-persetujuan-design.md` (pengajuan, persetujuan,
-aturan "kursi kosong dilewati"), dan
+aturan "kursi kosong dilewati" — istilah lama untuk jabatan kosong), dan
 `2026-08-26-tahap-3-wilayah-dan-mutasi-design.md` (batas wilayah — 3a selesai,
 mutasi data warga 3b belum).
 Spec lama (`2026-08-12-auth-warga-pin-design.md`) disimpan sebagai catatan
@@ -106,7 +110,7 @@ NIA-WEB/
 │       ├── config/           # akses env tervalidasi (env.ts)
 │       ├── features/         # kode per-domain (lihat §4)
 │       │   ├── auth/             # login + sesi + ganti password
-│       │   ├── pengurus/         # kursi & akun (ADMIN)
+│       │   ├── pengurus/         # jabatan & akun (ADMIN)
 │       │   ├── pergantian/       # pengajuan + persetujuan jabatan
 │       │   ├── audit/            # riwayat perubahan
 │       │   ├── penduduk/         # daftar + filter kategori
@@ -243,18 +247,23 @@ untuk alasan lengkapnya):**
 - **Tiga dependency, jangan tertukar:** `current_user` (siapa pun yang masuk —
   dipakai hanya oleh ganti password), `current_pengurus` (`DUKUH`/`RW`/`RT`,
   menolak ADMIN), `current_admin` (ADMIN saja).
-- **Akun berbentuk kursi.** Daftar kursi diturunkan dari alamat warga
-  (`pengurus.daftar_kursi`), bukan disimpan di tabel kedua. Satu kursi hanya
-  boleh dihuni satu akun **aktif** — akun nonaktif penghuni lama tetap
-  tersimpan di kursi yang sama, jadi keunikannya diperiksa di kode, bukan lewat
-  `UNIQUE` di SQL.
+- **Akun melekat pada jabatan.** Daftar jabatan diturunkan dari alamat warga
+  (`pengurus.daftar_jabatan`), bukan disimpan di tabel kedua. Satu jabatan hanya
+  boleh dipegang satu akun **aktif** — akun nonaktif pemegang lama tetap
+  tersimpan pada jabatan yang sama, jadi keunikannya diperiksa di kode, bukan
+  lewat `UNIQUE` di SQL.
+- **Dua nama, jangan tertukar:** `kode` (`RT:019/001`, dari
+  `pengurus.kode_jabatan_dari()`) adalah kuncinya; `jabatan`/`label`
+  ("Ketua RT 001", dari `pengurus.jabatan_dari()`) yang dibaca orang. Yang
+  ketiga: `Penduduk.jabatan` (`WARGA`/`DUKUH`/`RW`/`RT`) adalah cerminan kolom
+  "Jabatan" di Excel — bukan salah satu dari dua di atas.
 - **Password awal dari Admin sekali pakai.** Kolom `harus_ganti_password`:
   selama menyala, login berhasil tapi `current_pengurus`/`current_admin`
   menolak 403. Reset oleh Admin menyalakannya lagi.
 - **`jabatan` tidak disimpan** — diturunkan dari `role` + `rw` + `rt`
   (`pengurus.jabatan_dari`). Menyimpannya berarti dua sumber kebenaran yang
-  bisa berbeda diam-diam. `kursi_dari()` memakai RW **dan** RT sekaligus: nomor
-  RT cuma unik di dalam RW-nya.
+  bisa berbeda diam-diam. `kode_jabatan_dari()` memakai RW **dan** RT
+  sekaligus: nomor RT cuma unik di dalam RW-nya.
 - **Status `aktif` diperiksa tiap request**, bersama pencarian sesinya. Dua
   query per request, dan itu yang membuat pencabutan berlaku seketika.
 - **Tidak ada OTP, SMS, WhatsApp, atau email di jalur autentikasi.** Syarat nol
@@ -380,7 +389,7 @@ backend/
 │   ├── api/routers/       # auth, penduduk, pengurus, pergantian, audit, publik, infografis
 │   ├── schemas/           # Pydantic — cerminan tipe frontend, harus sinkron manual
 │   └── data/              # db.py (SQLite) + store.py (cache penduduk, dibaca router)
-│                          # + pengurus.py (akun & kursi) + sesi.py (sesi login)
+│                          # + pengurus.py (akun & jabatan) + sesi.py (sesi login)
 │                          # + pergantian.py (usulan)
 │                          # + agregat.py
 │                          # + impor_excel.py (isi tabel dari Excel)
@@ -406,6 +415,13 @@ menghapus filenya berarti membuang seluruh akun di dalamnya. Ditandai
 `ponytail:` — daftar tempel seadanya, cukup untuk kolom nullable, dan bukan
 pengganti perkakas migrasi kalau nanti ada perubahan yang lebih berat.
 
+**Kolom yang BERGANTI NAMA lewat `db._GANTI_NAMA`** (+ `_INDEKS_USANG` untuk
+indeks yang ditinggalkannya). Jalan **sebelum** `SKEMA` dieksekusi — skema baru
+memasang indeks di atas nama kolom yang baru, dan itu gagal selama kolomnya
+masih bernama lama. Diuji beneran di `db._check_migrasi_jabatan()`: tabel
+`pengajuan` riwayat permanen, jadi migrasi yang salah menghapus catatan yang
+tidak bisa dibuat ulang.
+
 **Akses SQL cuma di `app/data/db.py`** — `sqlite3` stdlib, empat tabel:
 `penduduk` (dengan `Alamat` diratakan jadi kolom `alamat_*`), `pengurus`, serta
 `pengajuan` + `persetujuan` (riwayat perpindahan jabatan, tidak pernah
@@ -421,7 +437,7 @@ skema Pydantic di `app/schemas/` sudah merangkap model.
 dipanggil SETIAP endpoint baca. Router tidak pernah menyaring sendiri — satu
 endpoint yang lupa jadi lubang yang tidak kelihatan. Aturannya dipinjam dari
 `pengurus.cocok_wilayah`, predikat yang sama yang menentukan siapa boleh
-menduduki sebuah kursi. `GET /penduduk/{id}` menjawab **404, bukan 403**, untuk
+memegang sebuah jabatan. `GET /penduduk/{id}` menjawab **404, bukan 403**, untuk
 warga di luar wilayah: 403 memberi tahu bahwa orangnya ada.
 
 `app/data/store.py` **tidak lagi menyimpan cache**. Konstanta `DAFTAR_PENDUDUK`
@@ -444,12 +460,12 @@ memindahkan.
 **Tidak ada penghapusan warga lewat API.** Pindah/meninggal ditandai lewat
 `statusKependudukan`; `deletedAt` hanya bisa disetel lewat SQL langsung.
 
-**Kolom "Jabatan" di Excel (`WARGA`/`DUKUH`/`RW`/`RT`) dibaca HANYA untuk kursi
-yang masih kosong** (`pengurus.daftar_kursi` mengisi `Kursi.calon`). Begitu
-sebuah kursi ada penghuninya, kolom itu diabaikan — kalau tidak, satu impor
+**Kolom "Jabatan" di Excel (`WARGA`/`DUKUH`/`RW`/`RT`) dibaca HANYA untuk
+jabatan yang masih kosong** (`pengurus.daftar_jabatan` mengisi `Jabatan.calon`).
+Begitu sebuah jabatan ada pemegangnya, kolom itu diabaikan — kalau tidak, satu impor
 Excel yang belum diperbarui bisa membatalkan pergantian yang sudah disetujui
 Dukuh dan para Ketua RW. Kolom ini **bukan** penentu kewenangan; yang
-menentukan tetap akun di tabel `pengurus`. Dua orang ditandai memegang kursi
+menentukan tetap akun di tabel `pengurus`. Dua orang ditandai memegang jabatan
 yang sama menghentikan impor.
 
 **`id` penduduk = kolom "Kode Warga" di Excel**, bukan UUID. Kunci yang dijaga
@@ -473,12 +489,12 @@ Kontrak endpoint yang **sudah diimplementasikan** (bentuknya sinkron dengan
 | PATCH  | `/penduduk/{id}`                 | ubah data warga; RT/RW hanya Dukuh — PENGURUS           |
 | GET    | `/infografis`                    | agregat lengkap — semua pengurus                        |
 | GET    | `/publik/statistik`              | cacah per RW + cacah kepala keluarga + 10 pekerjaan terbanyak — **tanpa auth** |
-| GET    | `/pengurus`                      | daftar **kursi** (terisi & kosong) — ADMIN              |
+| GET    | `/pengurus`                      | daftar **jabatan** (terisi & kosong) — ADMIN            |
 | GET    | `/pengurus/warga`                | cari warga buat dropdown (nama + RT/RW saja) — ADMIN    |
-| POST   | `/pengurus`                      | isi satu kursi **kosong** — ADMIN                       |
+| POST   | `/pengurus`                      | isi satu jabatan **kosong** — ADMIN                     |
 | POST   | `/pengurus/{id}/reset-password`  | ganti password akun — ADMIN                             |
 | GET    | `/pergantian`                    | riwayat pengajuan — ADMIN                               |
-| POST   | `/pergantian`                    | ajukan pergantian kursi **terisi** — ADMIN              |
+| POST   | `/pergantian`                    | ajukan pergantian jabatan **terisi** — ADMIN            |
 | GET    | `/pergantian/menunggu`           | pengajuan yang menunggu jawaban saya — PENGURUS         |
 | POST   | `/pergantian/{id}/jawab`         | satu suara, tidak bisa diubah — PENGURUS                |
 | GET    | `/audit`                         | riwayat: data warga se-wilayah (PENGURUS) / kelola akun (ADMIN) |
@@ -489,21 +505,21 @@ Filter `GET /penduduk` (semua opsional, digabung AND, disaring di memori oleh
 `kelompokUmur`.
 
 **Satu orang satu jabatan**, diperiksa lewat kolom `pengurus.warga_id` (Kode
-Warga penghuni kursi) — bukan lewat nama, karena dua orang yang benar-benar
+Warga pemegang jabatan) — bukan lewat nama, karena dua orang yang benar-benar
 senama akan saling menghalangi. `NULL` untuk akun ADMIN, yang memang bukan
 warga.
 
-**Kandidat wajib warga wilayah kursinya** — Ketua RT dari RT itu, Ketua RW dari
+**Kandidat wajib warga wilayah jabatannya** — Ketua RT dari RT itu, Ketua RW dari
 RW itu, Dukuh dari mana pun (`pengurus.cocok_wilayah`). Ditegakkan di dua jalur
-sekaligus: mengisi kursi kosong dan mengajukan pergantian. `POST /pengurus`
+sekaligus: mengisi jabatan kosong dan mengajukan pergantian. `POST /pengurus`
 menerima `wargaId`, **bukan** `nama` — nama dari klien tidak bisa diperiksa,
 Kode Warga bisa.
 
 **Admin memilih warga lewat `GET /pengurus/warga`, bukan mengetik namanya.** Ia
 buta terhadap data kependudukan, jadi tidak punya cara tahu nama siapa yang
 benar. Endpoint itu satu-satunya celahnya — nama + RT/RW saja, minimal 2 huruf,
-maksimal 20 hasil, dan bisa dipersempit ke satu kursi lewat `?kursi=` — dipakai
-dua tempat: mengisi kursi kosong dan memilih
+maksimal 20 hasil, dan bisa dipersempit ke satu jabatan lewat `?jabatanKode=`
+— dipakai dua tempat: mengisi jabatan kosong dan memilih
 kandidat pergantian. Klien bersamanya di `lib/warga-api.ts` +
 `hooks/use-cari-warga.ts` + `components/ui/PilihWarga.tsx`, bukan di dalam
 salah satu fitur (§4).
@@ -530,8 +546,8 @@ harus di atas `/penduduk/{id}`, kalau tidak ia terbaca sebagai sebuah id.
   sekadar disembunyikan menunya.
 - ✅ Akun yang belum mengganti password awal ditolak 403 di mana pun kecuali
   `/auth/ganti-password`; password baru wajib berbeda dari yang lama.
-- ✅ **Tidak ada cara mengosongkan kursi lewat API.** `PATCH /pengurus`
-  dicabut: kalau Admin bisa mengosongkan kursi sendiri, ia bisa mengisinya
+- ✅ **Tidak ada cara mengosongkan jabatan lewat API.** `PATCH /pengurus`
+  dicabut: kalau Admin bisa mengosongkannya sendiri, ia bisa mengisinya
   langsung dan seluruh mekanisme persetujuan bisa dilewati dalam dua klik.
 - ✅ Admin ditolak `current_pengurus` di `/pergantian/menunggu` dan
   `/pergantian/{id}/jawab` — ia mengajukan dan melihat, tidak pernah

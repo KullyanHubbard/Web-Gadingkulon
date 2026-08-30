@@ -6,7 +6,7 @@ import type {
   Penduduk,
   PendudukBaru,
   PendudukUbah,
-} from '@/types/penduduk';
+} from '../types';
 
 /** Kontrak API data kependudukan. Semua endpoint butuh sesi pengurus. */
 export interface PendudukApi {
@@ -42,7 +42,10 @@ export const pendudukApi: PendudukApi = {
     return data;
   },
   async ubah(id, payload) {
-    const { data } = await apiClient.patch<Penduduk>(`/penduduk/${id}`, payload);
+    const { data } = await apiClient.patch<Penduduk>(
+      `/penduduk/${id}`,
+      payload,
+    );
     return data;
   },
 };

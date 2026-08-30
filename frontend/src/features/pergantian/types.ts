@@ -13,7 +13,7 @@ export interface Suara {
 }
 
 /**
- * Usulan pergantian penghuni satu kursi.
+ * Usulan pergantian pemegang satu jabatan.
  *
  * Identitas kandidat ikut disalin (`kandidatNama`, `kandidatRt`, `kandidatRw`)
  * di samping `kandidatId`: impor Excel berikutnya bisa mengubah nama atau
@@ -22,10 +22,12 @@ export interface Suara {
  */
 export interface Pengajuan {
   id: string;
-  kursi: string;
+  /** Kunci jabatan, mis. `RT:019/001`. Bukan untuk ditampilkan. */
+  jabatanKode: string;
   role: Role;
   rw?: string | null;
   rt?: string | null;
+  /** Label yang dibaca orang, mis. "Ketua RT 001". */
   jabatan: string;
   kandidatId: string;
   kandidatNama: string;

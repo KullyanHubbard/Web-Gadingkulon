@@ -1,22 +1,22 @@
 import { apiClient } from '@/lib/api-client';
-import type { Kursi, Pengurus, PengurusBaru } from '../types';
+import type { Jabatan, Pengurus, PengurusBaru } from '../types';
 
 /**
  * Kontrak kelola akun pengurus. Seluruh endpoint hanya untuk ADMIN.
  *
- * Tidak ada cara mengubah atau menonaktifkan akun dari sini: kursi hanya
+ * Tidak ada cara mengubah atau menonaktifkan akun dari sini: jabatan hanya
  * berpindah tangan lewat pergantian yang disetujui (`features/pergantian`).
  */
 export interface PengurusApi {
-  /** Seluruh kursi padukuhan, terisi maupun kosong. */
-  daftarKursi(): Promise<Kursi[]>;
+  /** Seluruh jabatan padukuhan, terisi maupun kosong. */
+  daftarJabatan(): Promise<Jabatan[]>;
   tambah(payload: PengurusBaru): Promise<Pengurus>;
   resetPassword(id: string, password: string): Promise<void>;
 }
 
 export const pengurusApi: PengurusApi = {
-  async daftarKursi() {
-    const { data } = await apiClient.get<Kursi[]>('/pengurus');
+  async daftarJabatan() {
+    const { data } = await apiClient.get<Jabatan[]>('/pengurus');
     return data;
   },
   async tambah(payload) {

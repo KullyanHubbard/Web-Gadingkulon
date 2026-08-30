@@ -19,26 +19,28 @@ class PengurusOut(AuthUser):
 
 
 class CalonOut(BaseModel):
-    """Warga yang ditandai memegang kursi ini di kolom "Jabatan" file Excel."""
+    """Warga yang ditandai memegang jabatan ini di kolom "Jabatan" file Excel."""
 
     id: str
     nama: str
 
 
-class KursiOut(BaseModel):
+class JabatanOut(BaseModel):
     """Satu jabatan di padukuhan, terisi maupun kosong.
 
     Daftarnya diturunkan dari alamat warga, bukan disimpan — lihat
-    `app/data/pengurus.py:daftar_kursi`.
+    `app/data/pengurus.py:daftar_jabatan`.
     """
 
-    kursi: str
+    #: Kunci, mis. `RT:019/001` — lihat `pengurus.kode_jabatan_dari()`.
+    kode: str
     role: Role
     rw: Optional[str] = None
     rt: Optional[str] = None
-    jabatan: str
-    penghuni: Optional[PengurusOut] = None
-    # Hanya untuk kursi kosong; diabaikan begitu ada penghuninya.
+    #: Label yang dibaca orang, mis. "Ketua RT 001".
+    label: str
+    pemegang: Optional[PengurusOut] = None
+    # Hanya untuk jabatan kosong; diabaikan begitu ada pemegangnya.
     calon: Optional[CalonOut] = None
 
 
@@ -52,7 +54,7 @@ class WargaPilihan(BaseModel):
 
 
 class PengurusBaru(BaseModel):
-    """Mengisi satu kursi kosong. `role`/`rw`/`rt` menunjuk kursi mana.
+    """Mengisi satu jabatan kosong. `role`/`rw`/`rt` menunjuk jabatan mana.
 
     Orangnya ditunjuk lewat `wargaId`, bukan nama yang diketik: nama dari
     klien tidak bisa diperiksa, sedangkan Kode Warga bisa dicocokkan ke data

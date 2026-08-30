@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS penduduk (
     statusHubunganKeluarga TEXT NOT NULL,
     kewarganegaraan        TEXT NOT NULL,
     -- Jabatan dari file Excel. Bukan penentu kewenangan; dibaca hanya untuk
-    -- mencalonkan penghuni kursi yang masih kosong.
+    -- mencalonkan pemegang jabatan yang masih kosong.
     jabatan                TEXT NOT NULL DEFAULT 'WARGA',
     alamat_jalan           TEXT NOT NULL,
     alamat_rt              TEXT NOT NULL,
@@ -81,8 +81,8 @@ CREATE TABLE IF NOT EXISTS pengurus (
     rw            TEXT,
     rt            TEXT,
     aktif         INTEGER NOT NULL DEFAULT 1,
-    -- Kode Warga penghuni kursi ini. Dipakai memeriksa "orang ini sedang
-    -- menjabat di kursi lain" — nama tidak bisa dipakai untuk itu, karena dua
+    -- Kode Warga pemegang jabatan ini. Dipakai memeriksa "orang ini sedang
+    -- menjabat di tempat lain" — nama tidak bisa dipakai untuk itu, karena dua
     -- orang senama akan saling menghalangi. NULL untuk akun ADMIN, yang memang
     -- bukan warga.
     warga_id      TEXT,
@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS pengurus (
     harus_ganti_password INTEGER NOT NULL DEFAULT 1
 );
 
--- Usulan pergantian penghuni satu kursi. TIDAK PERNAH DIHAPUS: riwayat inilah
+-- Usulan pergantian pemegang satu jabatan. TIDAK PERNAH DIHAPUS: riwayat inilah
 -- catatan permanen perpindahan jabatan, sekaligus alasan tabel audit_log
 -- terpisah belum diperlukan.
 -- Identitas kandidat ikut DISALIN (nama/rt/rw) di samping `kandidat_id`: impor
@@ -99,7 +99,8 @@ CREATE TABLE IF NOT EXISTS pengurus (
 -- harus tetap terbaca sebagaimana keadaannya saat itu.
 CREATE TABLE IF NOT EXISTS pengajuan (
     id             TEXT PRIMARY KEY,
-    kursi          TEXT NOT NULL,
+    -- Kunci jabatan, mis. `RT:019/001` — lihat `pengurus.kode_jabatan_dari()`.
+    jabatan_kode   TEXT NOT NULL,
     role           TEXT NOT NULL,
     rw             TEXT,
     rt             TEXT,
@@ -116,7 +117,7 @@ CREATE TABLE IF NOT EXISTS pengajuan (
     sebab          TEXT
 );
 
-CREATE INDEX IF NOT EXISTS idx_pengajuan_kursi ON pengajuan(kursi, status);
+CREATE INDEX IF NOT EXISTS idx_pengajuan_jabatan ON pengajuan(jabatan_kode, status);
 
 -- Satu penyetuju satu suara per pengajuan, dan suaranya tidak bisa diubah.
 CREATE TABLE IF NOT EXISTS persetujuan (
@@ -169,6 +170,10 @@ def buka(path: Path) -> sqlite3.Connection:
     # tapi menyalakannya di satu tempat lebih murah daripada mencari tahu kenapa
     # constraint tidak jalan nanti.
     conn.execute("PRAGMA foreign_keys = ON")
+    # Penggantian nama kolom WAJIB sebelum `SKEMA`: skema baru memasang indeks
+    # di atas nama kolom yang baru, dan itu gagal selama kolomnya masih bernama
+    # lama di instalasi yang sudah jalan.
+    _ganti_nama_kolom(conn)
     conn.executescript(SKEMA)
     _tambal_kolom(conn)
     return conn
@@ -195,6 +200,38 @@ def _tambal_kolom(conn: sqlite3.Connection) -> None:
         if kolom not in ada:
             conn.execute(f"ALTER TABLE {tabel} ADD COLUMN {kolom} {tipe}")
             conn.commit()
+
+
+# Kolom yang BERGANTI NAMA setelah ada instalasi berjalan. Menghapus file `.db`
+# bukan pilihan: tabel `pengajuan` itu riwayat permanen perpindahan jabatan.
+#
+# ponytail: sama seperti `_TAMBALAN` — daftar tempel seadanya. `ALTER TABLE
+# RENAME COLUMN` butuh SQLite 3.25+ (2018); Python 3.11 membawa yang jauh lebih
+# baru, jadi tidak dijaga versinya di sini.
+_GANTI_NAMA: list[tuple[str, str, str]] = [
+    # Istilah "kursi" diganti "jabatan" — dua kata untuk satu hal, dan yang
+    # dipakai perangkat desa adalah "jabatan".
+    ("pengajuan", "kursi", "jabatan_kode"),
+]
+
+# Indeks yang ditinggalkan penggantian nama di atas. SQLite ikut memperbarui
+# DEFINISI indeks saat kolomnya di-rename, tapi NAMA indeksnya tetap yang lama —
+# tanpa baris ini satu tabel berakhir punya dua indeks beridentik isi.
+_INDEKS_USANG = ["idx_pengajuan_kursi"]
+
+
+def _ganti_nama_kolom(conn: sqlite3.Connection) -> None:
+    for tabel, lama, baru in _GANTI_NAMA:
+        kolom = {r["name"] for r in conn.execute(f"PRAGMA table_info({tabel})")}
+        # Tabel belum ada (DB baru) atau sudah pernah diganti — dua-duanya
+        # bukan galat, cuma tidak ada yang perlu dikerjakan.
+        if lama not in kolom or baru in kolom:
+            continue
+        conn.execute(f"ALTER TABLE {tabel} RENAME COLUMN {lama} TO {baru}")
+        conn.commit()
+    for indeks in _INDEKS_USANG:
+        conn.execute(f"DROP INDEX IF EXISTS {indeks}")
+    conn.commit()
 
 
 @contextmanager
@@ -336,8 +373,80 @@ def _contoh_penduduk() -> list[Penduduk]:
     ]
 
 
+def _check_migrasi_jabatan() -> None:
+    """DB lama (kolom `pengajuan.kursi`) harus terangkat sendiri saat dibuka.
+
+    Diuji beneran, bukan dibaca sekilas: tabel `pengajuan` adalah riwayat
+    permanen perpindahan jabatan, jadi migrasi yang salah menghapus catatan yang
+    tidak bisa dibuat ulang dari mana pun.
+    """
+    import tempfile
+
+    # Bentuk tabel PERSIS seperti sebelum penggantian nama — ditulis tangan,
+    # bukan diambil dari `SKEMA`, karena `SKEMA` sudah memakai nama yang baru.
+    skema_lama = """
+    CREATE TABLE pengajuan (
+        id            TEXT PRIMARY KEY,
+        kursi         TEXT NOT NULL,
+        role          TEXT NOT NULL,
+        rw            TEXT,
+        rt            TEXT,
+        kandidat_id   TEXT NOT NULL,
+        kandidat_nama TEXT NOT NULL,
+        kandidat_rt   TEXT NOT NULL,
+        kandidat_rw   TEXT NOT NULL,
+        status        TEXT NOT NULL DEFAULT 'MENUNGGU',
+        diajukan_oleh TEXT NOT NULL,
+        diajukan_pada TEXT NOT NULL,
+        selesai_pada  TEXT,
+        sebab         TEXT
+    );
+    CREATE INDEX idx_pengajuan_kursi ON pengajuan(kursi, status);
+    """
+
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "lama.db"
+        tua = sqlite3.connect(path)
+        tua.executescript(skema_lama)
+        tua.execute(
+            "INSERT INTO pengajuan (id, kursi, role, rw, rt, kandidat_id,"
+            " kandidat_nama, kandidat_rt, kandidat_rw, diajukan_oleh,"
+            " diajukan_pada) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            ("p1", "RT:019/001", "RT", "019", "001", "W1", "Budi", "001",
+             "019", "admin", "2026-08-01T00:00:00"),
+        )
+        tua.commit()
+        tua.close()
+
+        conn = buka(path)
+        kolom = {r["name"] for r in conn.execute("PRAGMA table_info(pengajuan)")}
+        assert "jabatan_kode" in kolom, "kolom belum berganti nama"
+        assert "kursi" not in kolom, "kolom lama masih ada"
+
+        baris = conn.execute("SELECT * FROM pengajuan").fetchone()
+        assert baris["jabatan_kode"] == "RT:019/001", "isi baris hilang saat migrasi"
+        assert baris["kandidat_nama"] == "Budi", "kolom lain ikut rusak"
+
+        indeks = {
+            r["name"]
+            for r in conn.execute("PRAGMA index_list(pengajuan)")
+        }
+        assert "idx_pengajuan_kursi" not in indeks, "indeks usang tidak dibuang"
+        assert "idx_pengajuan_jabatan" in indeks, "indeks baru tidak terpasang"
+        conn.close()
+
+        # Buka lagi: migrasi harus diam kalau tidak ada yang perlu dikerjakan.
+        conn = buka(path)
+        assert conn.execute("SELECT COUNT(*) c FROM pengajuan").fetchone()["c"] == 1
+        conn.close()
+
+    print("OK: DB lama (kolom `kursi`) terangkat ke `jabatan_kode`")
+
+
 def _self_check() -> None:
     import tempfile
+
+    _check_migrasi_jabatan()
 
     asli = _contoh_penduduk()
     with tempfile.TemporaryDirectory() as tmp:

@@ -1,16 +1,17 @@
 """Kelola akun perangkat desa. ADMIN saja.
 
-Yang dikelola adalah **kursi** (Dukuh, Ketua RW 019, Ketua RT 001, …), bukan
-sekadar daftar akun: satu kursi dihuni satu orang, dan orangnya berganti
-sewaktu-waktu. Daftar kursinya diturunkan dari alamat warga di data penduduk.
+Yang dikelola adalah **jabatan** (Dukuh, Ketua RW 019, Ketua RT 001, …), bukan
+sekadar daftar akun: satu jabatan dipegang satu orang, dan orangnya berganti
+sewaktu-waktu. Daftar jabatannya diturunkan dari alamat warga di data
+penduduk.
 
 Tidak ada DELETE: akun yang pernah dipakai tidak dihapus, cukup dinonaktifkan
 (`aktif = 0`). Menghapusnya membuat jejak audit menunjuk ke akun yang tidak
 ada lagi.
 
-**Tidak ada cara mengosongkan kursi dari sini.** Kursi hanya menjadi kosong
-lewat pergantian yang disetujui (`app/api/routers/pergantian.py`). Kalau Admin
-masih bisa mencabut akses sendiri, ia bisa mengosongkan kursi lalu mengisinya
+**Tidak ada cara mengosongkan jabatan dari sini.** Jabatan hanya menjadi
+kosong lewat pergantian yang disetujui (`app/api/routers/pergantian.py`). Kalau
+Admin masih bisa mencabut akses sendiri, ia bisa mengosongkannya lalu mengisi
 langsung — dan seluruh mekanisme persetujuan jadi hiasan yang bisa dilewati
 dalam dua klik.
 """
@@ -25,7 +26,7 @@ from app.data.store import semua_penduduk
 from app.schemas.auth import AuthUser
 from app.schemas.pengurus import (
     CalonOut,
-    KursiOut,
+    JabatanOut,
     WargaPilihan,
     PasswordBaru,
     PengurusBaru,
@@ -43,24 +44,24 @@ def _keluaran(p: data.Pengurus) -> PengurusOut:
     return PengurusOut(**ke_auth_user(p).model_dump(), aktif=p.aktif)
 
 
-@router.get("", response_model=list[KursiOut])
-def daftar_kursi() -> list[KursiOut]:
-    """Seluruh kursi padukuhan, terisi maupun kosong.
+@router.get("", response_model=list[JabatanOut])
+def daftar_jabatan() -> list[JabatanOut]:
+    """Seluruh jabatan padukuhan, terisi maupun kosong.
 
-    Yang dikembalikan kursi, bukan akun: halaman Admin memang menampilkan
-    jabatan yang ada di padukuhan, termasuk yang belum ada penghuninya.
+    Yang dikembalikan jabatan, bukan akun: halaman Admin memang menampilkan
+    jabatan yang ada di padukuhan, termasuk yang belum ada pemegangnya.
     """
     return [
-        KursiOut(
-            kursi=k.kursi,
-            role=k.role,  # type: ignore[arg-type]
-            rw=k.rw,
-            rt=k.rt,
-            jabatan=k.jabatan,
-            penghuni=_keluaran(k.penghuni) if k.penghuni else None,
-            calon=CalonOut(id=k.calon.id, nama=k.calon.nama) if k.calon else None,
+        JabatanOut(
+            kode=j.kode,
+            role=j.role,  # type: ignore[arg-type]
+            rw=j.rw,
+            rt=j.rt,
+            label=j.label,
+            pemegang=_keluaran(j.pemegang) if j.pemegang else None,
+            calon=CalonOut(id=j.calon.id, nama=j.calon.nama) if j.calon else None,
         )
-        for k in data.daftar_kursi()
+        for j in data.daftar_jabatan()
     ]
 
 
@@ -71,9 +72,9 @@ MIN_CARI = 2
 MAKS_HASIL = 20
 
 
-def _warga_untuk_kursi(warga_id: str, role: str, rw: str | None, rt: str | None):
-    """Warga yang sah menduduki kursi ini, atau `HTTPException` yang menjelaskan
-    kenapa tidak."""
+def _warga_untuk_jabatan(warga_id: str, role: str, rw: str | None, rt: str | None):
+    """Warga yang sah memegang jabatan ini, atau `HTTPException` yang
+    menjelaskan kenapa tidak."""
     warga = next((w for w in semua_penduduk() if w.id == warga_id), None)
     if warga is None or warga.statusKependudukan != "AKTIF":
         raise HTTPException(404, "Warga tidak ditemukan atau sudah tidak aktif.")
@@ -81,7 +82,7 @@ def _warga_untuk_kursi(warga_id: str, role: str, rw: str | None, rt: str | None)
         raise HTTPException(
             409,
             f"{warga.nama} warga RT {warga.alamat.rt}/RW {warga.alamat.rw}, "
-            f"tidak bisa menduduki kursi {data.jabatan_dari(role, rw, rt)}.",
+            f"tidak bisa memegang jabatan {data.jabatan_dari(role, rw, rt)}.",
         )
     return warga
 
@@ -89,14 +90,15 @@ def _warga_untuk_kursi(warga_id: str, role: str, rw: str | None, rt: str | None)
 @router.get("/warga", response_model=list[WargaPilihan])
 def cari_warga(
     q: str = Query(""),
-    kursi: str = Query(""),
+    jabatanKode: str = Query(""),
     _admin: AuthUser = Depends(current_admin),
 ) -> list[WargaPilihan]:
-    """Cari warga untuk dipilih Admin — mengisi kursi kosong maupun mengajukan
-    pergantian. Nama + RT/RW saja.
+    """Cari warga untuk dipilih Admin — mengisi jabatan kosong maupun
+    mengajukan pergantian. Nama + RT/RW saja.
 
-    `kursi` opsional: kalau diisi, hasilnya cuma warga yang boleh menduduki
-    kursi itu (Ketua RT dari RT-nya, Ketua RW dari RW-nya, Dukuh dari mana pun).
+    `jabatanKode` opsional: kalau diisi, hasilnya cuma warga yang boleh memegang
+    jabatan itu (Ketua RT dari RT-nya, Ketua RW dari RW-nya, Dukuh dari mana
+    pun).
 
     Ini satu-satunya celah Admin ke data warga, dan tidak terhindarkan: ia harus
     bisa menunjuk orang. Yang bisa dilakukan adalah membuatnya sesempit
@@ -108,10 +110,12 @@ def cari_warga(
     kata = q.strip().lower()
     if len(kata) < MIN_CARI:
         return []
-    # `kursi` mempersempit hasil ke warga yang memang boleh mendudukinya. Bukan
-    # sekadar kenyamanan: makin sempit, makin sedikit data warga yang terbuka
-    # untuk Admin.
-    target = next((k for k in data.daftar_kursi() if k.kursi == kursi), None)
+    # `jabatanKode` mempersempit hasil ke warga yang memang boleh memegangnya.
+    # Bukan sekadar kenyamanan: makin sempit, makin sedikit data warga yang
+    # terbuka untuk Admin.
+    target = next(
+        (j for j in data.daftar_jabatan() if j.kode == jabatanKode), None
+    )
     cocok = [
         w
         for w in semua_penduduk()
@@ -134,7 +138,7 @@ def cari_warga(
 def tambah_pengurus(
     payload: PengurusBaru, admin: AuthUser = Depends(current_admin)
 ) -> PengurusOut:
-    warga = _warga_untuk_kursi(
+    warga = _warga_untuk_jabatan(
         payload.wargaId, payload.role, payload.rw, payload.rt
     )
     try:

@@ -23,8 +23,7 @@ export function KreditKkn({ className }: KreditKknProps) {
         className,
       )}
     >
-      Dikembangkan oleh{' '}
-      <span className="font-bold">Tim KKNM-29228 UNY</span> ·{' '}
+      Dikembangkan oleh <span className="font-bold">Tim KKNM-29228 UNY</span> ·{' '}
       {new Date().getFullYear()}
     </footer>
   );

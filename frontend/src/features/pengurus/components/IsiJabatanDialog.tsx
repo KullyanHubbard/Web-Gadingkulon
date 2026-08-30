@@ -12,52 +12,52 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { pesanError } from '@/lib/utils';
 import type { WargaPilihan } from '@/lib/warga-api';
 import { useTambahPengurus } from '../hooks/use-pengurus';
-import { isiKursiSchema, type IsiKursiFormValues } from '../schemas';
-import type { Kursi } from '../types';
+import { isiJabatanSchema, type IsiJabatanFormValues } from '../schemas';
+import type { Jabatan } from '../types';
 
-interface IsiKursiDialogProps {
-  /** Kursi yang sedang diisi; `null` = dialog tertutup. */
-  kursi: Kursi | null;
+interface IsiJabatanDialogProps {
+  /** Jabatan yang sedang diisi; `null` = dialog tertutup. */
+  jabatan: Jabatan | null;
   onClose: () => void;
 }
 
 /**
- * Buatkan akun untuk satu kursi kosong.
+ * Buatkan akun untuk satu jabatan kosong.
  *
- * Kursinya sudah ditentukan barisnya, jadi form ini tidak menanyakan jabatan,
- * RW, maupun RT — tiganya ikut apa adanya dari kursi yang diklik.
+ * Jabatannya sudah ditentukan barisnya, jadi form ini tidak menanyakan jabatan,
+ * RW, maupun RT — tiganya ikut apa adanya dari baris yang diklik.
  *
  * Orangnya **dipilih dari data warga, bukan diketik**: Admin buta terhadap isi
  * data kependudukan, jadi ia tidak punya cara tahu nama siapa yang benar. Kotak
  * pencarian ini sama persis dengan yang dipakai saat mengajukan pergantian.
  */
-export function IsiKursiDialog({ kursi, onClose }: IsiKursiDialogProps) {
+export function IsiJabatanDialog({ jabatan, onClose }: IsiJabatanDialogProps) {
   const tambah = useTambahPengurus();
   const [cari, setCari] = useState('');
   const [warga, setWarga] = useState<WargaPilihan | null>(null);
   const debounced = useDebounce(cari);
-  const { data: hasil, isFetching } = useCariWarga(debounced, kursi?.kursi);
+  const { data: hasil, isFetching } = useCariWarga(debounced, jabatan?.kode);
 
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<IsiKursiFormValues>({
-    resolver: zodResolver(isiKursiSchema),
+  } = useForm<IsiJabatanFormValues>({
+    resolver: zodResolver(isiJabatanSchema),
     defaultValues: { username: '', password: '' },
   });
 
   // Kalau kolom Jabatan di Excel sudah menandai orangnya, ia langsung terpilih.
   useEffect(() => {
-    if (!kursi) return;
+    if (!jabatan) return;
     setWarga(
-      kursi.calon
-        ? { id: kursi.calon.id, nama: kursi.calon.nama, rt: '', rw: '' }
+      jabatan.calon
+        ? { id: jabatan.calon.id, nama: jabatan.calon.nama, rt: '', rw: '' }
         : null,
     );
     setCari('');
-  }, [kursi]);
+  }, [jabatan]);
 
   function tutup() {
     reset();
@@ -68,14 +68,14 @@ export function IsiKursiDialog({ kursi, onClose }: IsiKursiDialogProps) {
   }
 
   const onSubmit = handleSubmit((values) => {
-    if (!kursi || !warga) return;
+    if (!jabatan || !warga) return;
     tambah.mutate(
       {
         ...values,
         wargaId: warga.id,
-        role: kursi.role,
-        rw: kursi.rw ?? undefined,
-        rt: kursi.rt ?? undefined,
+        role: jabatan.role,
+        rw: jabatan.rw ?? undefined,
+        rt: jabatan.rt ?? undefined,
       },
       { onSuccess: tutup },
     );
@@ -83,17 +83,17 @@ export function IsiKursiDialog({ kursi, onClose }: IsiKursiDialogProps) {
 
   return (
     <Modal
-      open={Boolean(kursi)}
+      open={Boolean(jabatan)}
       onClose={tutup}
-      title={`Buatkan Akun — ${kursi?.jabatan ?? ''}`}
+      title={`Buatkan Akun — ${jabatan?.label ?? ''}`}
     >
       <form onSubmit={onSubmit} className="space-y-4">
         <PilihWarga
-          label="Siapa yang menduduki kursi ini"
+          label="Siapa yang memegang jabatan ini"
           hint={
-            kursi?.calon
+            jabatan?.calon
               ? 'Sudah terpilih dari kolom Jabatan di file Excel. Cari nama lain kalau orangnya berbeda.'
-              : 'Hanya warga wilayah kursi ini yang muncul.'
+              : 'Hanya warga wilayah jabatan ini yang muncul.'
           }
           cari={cari}
           onCariChange={setCari}

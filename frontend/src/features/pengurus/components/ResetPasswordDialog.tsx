@@ -6,15 +6,12 @@ import { Modal } from '@/components/ui/Modal';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { pesanError } from '@/lib/utils';
 import { useResetPassword } from '../hooks/use-pengurus';
-import {
-  passwordBaruSchema,
-  type PasswordBaruFormValues,
-} from '../schemas';
-import type { Kursi } from '../types';
+import { passwordBaruSchema, type PasswordBaruFormValues } from '../schemas';
+import type { Jabatan } from '../types';
 
 interface ResetPasswordDialogProps {
-  /** Kursi yang penghuninya sedang direset; `null` = dialog tertutup. */
-  kursi: Kursi | null;
+  /** Jabatan yang pemegangnya sedang direset; `null` = dialog tertutup. */
+  jabatan: Jabatan | null;
   onClose: () => void;
 }
 
@@ -27,10 +24,10 @@ interface ResetPasswordDialogProps {
  * menggantinya saat masuk.
  */
 export function ResetPasswordDialog({
-  kursi,
+  jabatan,
   onClose,
 }: ResetPasswordDialogProps) {
-  const akun = kursi?.penghuni ?? null;
+  const akun = jabatan?.pemegang ?? null;
   const reset = useResetPassword();
 
   const {

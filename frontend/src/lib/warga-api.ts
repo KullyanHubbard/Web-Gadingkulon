@@ -3,9 +3,9 @@ import { apiClient } from '@/lib/api-client';
 /**
  * Sepotong data warga sekadar untuk dropdown pemilihan: nama + RT/RW.
  *
- * Di `lib`, bukan di dalam salah satu fitur: dipakai `pengurus` (mengisi kursi
- * kosong) dan `pergantian` (memilih kandidat), dan fitur tidak boleh saling
- * impor (CLAUDE.md §4).
+ * Di `lib`, bukan di dalam salah satu fitur: dipakai `pengurus` (mengisi
+ * jabatan kosong) dan `pergantian` (memilih kandidat), dan fitur tidak boleh
+ * saling impor (CLAUDE.md §4).
  */
 export interface WargaPilihan {
   id: string;
@@ -17,17 +17,17 @@ export interface WargaPilihan {
 /**
  * Cari warga untuk dipilih Admin. Backend mengembalikan kosong di bawah 2 huruf.
  *
- * `kursi` mempersempit hasil ke warga yang boleh mendudukinya — Ketua RT dari
- * RT-nya, Ketua RW dari RW-nya, Dukuh dari mana pun. Backend menegakkan aturan
- * yang sama saat menyimpan; penyempitan di sini supaya Admin tidak sempat
- * memilih orang yang pasti ditolak.
+ * `jabatanKode` mempersempit hasil ke warga yang boleh memegangnya — Ketua RT
+ * dari RT-nya, Ketua RW dari RW-nya, Dukuh dari mana pun. Backend menegakkan
+ * aturan yang sama saat menyimpan; penyempitan di sini supaya Admin tidak
+ * sempat memilih orang yang pasti ditolak.
  */
 export async function cariWarga(
   q: string,
-  kursi?: string,
+  jabatanKode?: string,
 ): Promise<WargaPilihan[]> {
   const { data } = await apiClient.get<WargaPilihan[]>('/pengurus/warga', {
-    params: { q, kursi },
+    params: { q, jabatanKode },
   });
   return data;
 }

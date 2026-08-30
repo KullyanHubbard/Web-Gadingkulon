@@ -10,8 +10,7 @@ import {
 import { useBerita, useBeritaList } from '@/features/berita/hooks/use-berita';
 import { formatTanggal, keParagraf } from '@/features/berita/utils';
 import { paths } from '@/routes/paths';
-
-const WADAH = 'mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8';
+import { WADAH } from '@/components/layout/wadah';
 
 /** Banyaknya berita lain di sidebar. Lebih dari ini kolomnya jadi lebih panjang dari artikelnya. */
 const JUMLAH_TERKINI = 5;

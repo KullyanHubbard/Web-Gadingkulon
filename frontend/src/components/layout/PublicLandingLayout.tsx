@@ -40,7 +40,11 @@ export function PublicLandingLayout({
 
   return (
     <div className="flex min-h-screen flex-col lg:grid lg:h-dvh lg:min-h-0 lg:grid-cols-[20rem_1fr] lg:overflow-hidden">
-      <PublicSidebar nav={nav} open={navOpen} onClose={() => setNavOpen(false)} />
+      <PublicSidebar
+        nav={nav}
+        open={navOpen}
+        onClose={() => setNavOpen(false)}
+      />
       <PublicTopbar onOpenNav={() => setNavOpen(true)} />
 
       {/* Bar & main dibungkus satu sel grid: keduanya menumpuk di kolom kanan,

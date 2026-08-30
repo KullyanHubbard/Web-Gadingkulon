@@ -11,37 +11,37 @@ export interface Pengurus extends AuthUser {
   aktif: boolean;
 }
 
-/**
- * Satu jabatan di padukuhan, terisi maupun kosong.
- *
- * Daftarnya diturunkan backend dari alamat warga, bukan disimpan — jadi kursi
- * RT baru muncul sendiri begitu ada warga ber-RT itu di data.
- */
-/** Warga yang ditandai memegang kursi ini di kolom "Jabatan" file Excel. */
+/** Warga yang ditandai memegang jabatan ini di kolom "Jabatan" file Excel. */
 export interface Calon {
   id: string;
   nama: string;
 }
 
-export interface Kursi {
-  /** Penanda kursi, mis. `DUKUH`, `RW:019`, `RT:019/001`. */
-  kursi: string;
+/**
+ * Satu jabatan di padukuhan, terisi maupun kosong.
+ *
+ * Daftarnya diturunkan backend dari alamat warga, bukan disimpan — jadi jabatan
+ * RT baru muncul sendiri begitu ada warga ber-RT itu di data.
+ */
+export interface Jabatan {
+  /** Kunci, mis. `DUKUH`, `RW:019`, `RT:019/001`. Bukan untuk ditampilkan. */
+  kode: string;
   role: Role;
   rw?: string | null;
   rt?: string | null;
-  /** Mis. "Ketua RT 001". */
-  jabatan: string;
-  penghuni: Pengurus | null;
+  /** Label yang dibaca orang, mis. "Ketua RT 001". */
+  label: string;
+  pemegang: Pengurus | null;
   /**
-   * Hanya terisi untuk kursi kosong. Begitu kursinya punya penghuni, kolom
-   * Jabatan di Excel diabaikan — kalau tidak, satu impor yang belum diperbarui
-   * bisa membatalkan pergantian yang sudah disetujui.
+   * Hanya terisi untuk jabatan kosong. Begitu ada pemegangnya, kolom Jabatan
+   * di Excel diabaikan — kalau tidak, satu impor yang belum diperbarui bisa
+   * membatalkan pergantian yang sudah disetujui.
    */
   calon: Calon | null;
 }
 
 /**
- * Mengisi satu kursi kosong. `role`/`rw`/`rt` menunjuk kursi mana.
+ * Mengisi satu jabatan kosong. `role`/`rw`/`rt` menunjuk jabatan mana.
  *
  * Orangnya ditunjuk lewat `wargaId`, bukan nama yang diketik: nama dari klien
  * tidak bisa diperiksa backend, sedangkan Kode Warga bisa dicocokkan ke data

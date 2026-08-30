@@ -10,26 +10,32 @@ import type { WargaPilihan } from '@/lib/warga-api';
 import { useAjukanPergantian } from '../hooks/use-pergantian';
 
 interface AjukanPergantianDialogProps {
-  /** Kursi yang diganti penghuninya; `null` = dialog tertutup. */
-  kursi: { kursi: string; jabatan: string; namaPenghuni: string } | null;
+  /** Jabatan yang diganti pemegangnya; `null` = dialog tertutup. */
+  jabatan: {
+    /** Kunci jabatan, mis. `RT:019/001`. */
+    kode: string;
+    /** Label yang dibaca orang, mis. "Ketua RT 001". */
+    label: string;
+    namaPemegang: string;
+  } | null;
   onClose: () => void;
 }
 
 /**
- * Usulkan pengganti untuk satu kursi terisi.
+ * Usulkan pengganti untuk satu jabatan terisi.
  *
  * Tiap pilihan menampilkan "Nama — RT/RW": di satu padukuhan nama kembar itu
  * biasa, dan salah pilih di sini berarti mengusulkan orang yang salah untuk
  * sebuah jabatan.
  */
 export function AjukanPergantianDialog({
-  kursi,
+  jabatan,
   onClose,
 }: AjukanPergantianDialogProps) {
   const [cari, setCari] = useState('');
   const [terpilih, setTerpilih] = useState<WargaPilihan | null>(null);
   const debounced = useDebounce(cari);
-  const { data: hasil, isFetching } = useCariWarga(debounced, kursi?.kursi);
+  const { data: hasil, isFetching } = useCariWarga(debounced, jabatan?.kode);
   const ajukan = useAjukanPergantian();
 
   function tutup() {
@@ -40,24 +46,24 @@ export function AjukanPergantianDialog({
   }
 
   function kirim() {
-    if (!kursi || !terpilih) return;
+    if (!jabatan || !terpilih) return;
     ajukan.mutate(
-      { kursi: kursi.kursi, kandidatId: terpilih.id },
+      { jabatanKode: jabatan.kode, kandidatId: terpilih.id },
       { onSuccess: tutup },
     );
   }
 
   return (
     <Modal
-      open={Boolean(kursi)}
+      open={Boolean(jabatan)}
       onClose={tutup}
-      title={`Ajukan Pergantian — ${kursi?.jabatan ?? ''}`}
+      title={`Ajukan Pergantian — ${jabatan?.label ?? ''}`}
     >
       <div className="space-y-4">
         <p className="text-sm text-slate-600">
-          Penghuni sekarang: <strong>{kursi?.namaPenghuni}</strong>. Pergantian
-          baru berlaku setelah disetujui perangkat desa yang berwenang — Anda
-          mengajukan, mereka yang memutuskan.
+          Pemegang sekarang: <strong>{jabatan?.namaPemegang}</strong>.
+          Pergantian baru berlaku setelah disetujui perangkat desa yang
+          berwenang — Anda mengajukan, mereka yang memutuskan.
         </p>
 
         <PilihWarga

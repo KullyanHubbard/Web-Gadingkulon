@@ -11,8 +11,7 @@ import { PADUKUHAN } from '@/lib/padukuhan';
 import { cn, formatAngka } from '@/lib/utils';
 import { PANEL_BANSOS, TOTAL_PENERIMA_BANSOS } from './bansos';
 import { toPanelDemografi } from './view-model';
-
-const WADAH = 'mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8';
+import { WADAH } from '@/components/layout/wadah';
 
 const TAB = [
   { id: 'demografi', label: 'Demografi Penduduk' },

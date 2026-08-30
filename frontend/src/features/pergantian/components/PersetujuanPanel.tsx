@@ -3,10 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { pesanError } from '@/lib/utils';
 import { useAuth } from '@/features/auth/hooks/use-auth';
-import {
-  useJawabPengajuan,
-  useMenungguJawaban,
-} from '../hooks/use-pergantian';
+import { useJawabPengajuan, useMenungguJawaban } from '../hooks/use-pergantian';
 
 /**
  * Kotak "Menunggu persetujuan Anda".
@@ -42,7 +39,8 @@ export function PersetujuanPanel() {
                 Pergantian {p.jabatan}
               </p>
               <p className="text-slate-600">
-                Diusulkan: {p.kandidatNama} · RT {p.kandidatRt}/RW {p.kandidatRw}
+                Diusulkan: {p.kandidatNama} · RT {p.kandidatRt}/RW{' '}
+                {p.kandidatRw}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -61,7 +59,11 @@ export function PersetujuanPanel() {
                 size="sm"
                 disabled={jawab.isPending}
                 onClick={() => {
-                  if (!window.confirm(`Setujui ${p.kandidatNama} sebagai ${p.jabatan}?`))
+                  if (
+                    !window.confirm(
+                      `Setujui ${p.kandidatNama} sebagai ${p.jabatan}?`,
+                    )
+                  )
                     return;
                   jawab.mutate({ id: p.id, setuju: true });
                 }}

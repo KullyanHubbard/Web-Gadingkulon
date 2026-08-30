@@ -1,5 +1,5 @@
 import { formatTanggal, hitungUmur } from '@/lib/tanggal';
-import type { Penduduk } from '@/types/penduduk';
+import type { Penduduk } from './types';
 import {
   agamaLabel,
   golonganDarahLabel,

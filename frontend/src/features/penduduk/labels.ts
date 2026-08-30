@@ -7,7 +7,7 @@ import type {
   Pendidikan,
   StatusHubunganKeluarga,
   StatusPerkawinan,
-} from '@/types/penduduk';
+} from './types';
 import type { Distribusi } from '@/types/statistik';
 
 /** Peta enum -> label yang enak dibaca untuk ditampilkan di UI. */

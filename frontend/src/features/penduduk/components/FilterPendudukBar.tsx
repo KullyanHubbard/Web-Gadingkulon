@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
-import type { FilterOpsi, FilterPenduduk } from '@/types/penduduk';
+import type { FilterOpsi, FilterPenduduk } from '../types';
 import {
   agamaLabel,
   golonganDarahLabel,

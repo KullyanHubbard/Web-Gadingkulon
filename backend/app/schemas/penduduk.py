@@ -36,8 +36,8 @@ StatusKependudukan = Literal["AKTIF", "PINDAH", "MENINGGAL"]
 # Jabatan warga di padukuhan, diisi pengurus di kolom "Jabatan" file Excel.
 #
 # Ini BUKAN penentu kewenangan — yang menentukan siapa boleh apa tetap akun
-# pengurus (tabel `pengurus`). Kolom ini hanya dibaca untuk **mengisi kursi
-# yang masih kosong**: begitu sebuah kursi ada penghuninya, isi kolom ini
+# pengurus (tabel `pengurus`). Kolom ini hanya dibaca untuk **mengisi jabatan
+# yang masih kosong**: begitu sebuah jabatan ada pemegangnya, isi kolom ini
 # diabaikan. Tanpa batas itu, satu impor Excel yang belum diperbarui bisa
 # membatalkan pergantian yang sudah disetujui Dukuh dan para Ketua RW.
 JabatanWarga = Literal["WARGA", "DUKUH", "RW", "RT"]

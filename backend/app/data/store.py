@@ -61,7 +61,7 @@ def penduduk_untuk(user: AuthUser) -> list[Penduduk]:
 
     Dukuh seluruh padukuhan, Ketua RW se-RW-nya, Ketua RT se-RT-nya. Aturannya
     dipinjam dari `pengurus.cocok_wilayah` — predikat yang sama yang menentukan
-    siapa boleh menduduki sebuah kursi, karena memang pertanyaannya sama:
+    siapa boleh memegang sebuah jabatan, karena memang pertanyaannya sama:
     wilayah mana yang jadi tanggung jawab orang ini.
 
     Dipanggil SETIAP endpoint baca. Router tidak pernah menyaring sendiri —

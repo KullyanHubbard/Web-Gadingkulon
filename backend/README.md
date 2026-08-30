@@ -19,15 +19,16 @@ di `docs/superpowers/specs/`.
 | `RW`    | sama, tapi **warga RW-nya saja** |
 | `RT`    | sama, tapi **warga RT-nya saja** |
 
-Akun berbentuk **kursi**: daftar jabatannya diturunkan dari alamat warga di
-data penduduk, bukan disimpan di tabel kedua, jadi kursi RT baru muncul sendiri
-begitu ada warga ber-RT itu. Satu kursi hanya boleh dihuni satu akun aktif.
+Akun melekat pada **jabatan**: daftarnya diturunkan dari alamat warga di data
+penduduk, bukan disimpan di tabel kedua, jadi jabatan RT baru muncul sendiri
+begitu ada warga ber-RT itu. Satu jabatan hanya boleh dipegang satu akun aktif.
 
-**Mengisi kursi kosong bebas; mengganti penghuni kursi terisi wajib lewat
+**Mengisi jabatan kosong bebas; mengganti pemegang jabatan terisi wajib lewat
 pengajuan yang disetujui.** Admin mengajukan, perangkat desa memutuskan:
 ganti Ketua RT butuh Ketua RW-nya + Dukuh, ganti Ketua RW butuh Dukuh, ganti
-Dukuh butuh seluruh Ketua RW. Kursi penyetuju yang sedang kosong **dilewati**,
-bukan ditunggu — tanpa itu satu kursi kosong mengunci pergantian selamanya.
+Dukuh butuh seluruh Ketua RW. Jabatan penyetuju yang sedang kosong
+**dilewati**, bukan ditunggu — tanpa itu satu jabatan kosong mengunci
+pergantian selamanya.
 
 **Password awal dari Admin sekali pakai.** Akun baru bisa login tapi ditolak di
 semua endpoint lain sampai menggantinya lewat `POST /auth/ganti-password`.
@@ -108,10 +109,10 @@ Kolom **Kode Warga** wajib diisi, unik, dan tidak boleh berubah: nilainya jadi
 `id` penduduk. Impor berhenti dengan menyebutkan nomor barisnya kalau ada yang
 kosong atau ganda.
 
-Kolom **Jabatan** (`WARGA`/`DUKUH`/`RW`/`RT`) menandai siapa memegang kursi apa.
-Dibaca **hanya untuk kursi yang masih kosong** — begitu kursinya terisi, kolom
+Kolom **Jabatan** (`WARGA`/`DUKUH`/`RW`/`RT`) menandai siapa memegang apa.
+Dibaca **hanya untuk jabatan yang masih kosong** — begitu terisi, kolom
 itu diabaikan, sehingga impor tidak pernah membatalkan pergantian yang sudah
-disetujui. Dua orang ditandai memegang kursi yang sama menghentikan impor.
+disetujui. Dua orang ditandai memegang jabatan yang sama menghentikan impor.
 
 Restart backend setelah impor: `store.py` membaca tabel sekali saat start.
 
@@ -148,12 +149,12 @@ VITE_API_BASE_URL=http://localhost:8000
 | PATCH  | `/penduduk/{id}`                 | ubah data warga; RT/RW hanya Dukuh — PENGURUS           |
 | GET    | `/infografis`                    | agregat lengkap — semua pengurus                        |
 | GET    | `/publik/statistik`              | cacah per RW — **tanpa auth**                           |
-| GET    | `/pengurus`                      | daftar **kursi**, terisi & kosong — ADMIN                |
-| GET    | `/pengurus/warga?q=&kursi=`      | cari warga buat dropdown (nama + RT/RW) — ADMIN         |
-| POST   | `/pengurus`                      | isi satu kursi kosong — ADMIN                           |
+| GET    | `/pengurus`                      | daftar **jabatan**, terisi & kosong — ADMIN              |
+| GET    | `/pengurus/warga?q=&jabatanKode=` | cari warga buat dropdown (nama + RT/RW) — ADMIN        |
+| POST   | `/pengurus`                      | isi satu jabatan kosong — ADMIN                         |
 | POST   | `/pengurus/{id}/reset-password`  | ganti password akun — ADMIN                             |
 | GET    | `/pergantian`                    | riwayat pengajuan — ADMIN                               |
-| POST   | `/pergantian`                    | ajukan pergantian kursi terisi — ADMIN                  |
+| POST   | `/pergantian`                    | ajukan pergantian jabatan terisi — ADMIN                |
 | GET    | `/pergantian/menunggu`           | pengajuan yang menunggu jawaban saya — PENGURUS         |
 | POST   | `/pergantian/{id}/jawab`         | satu suara, tidak bisa diubah — PENGURUS                |
 | GET    | `/audit`                         | riwayat: data warga se-wilayah (PENGURUS) / akun (ADMIN) |
@@ -166,7 +167,7 @@ Token sesi dikirim lewat header `Authorization: Bearer <token>`. Sesi, status
 `aktif`, dan `harus_ganti_password` diperiksa tiap request — pencabutan berlaku
 seketika, tidak ada yang tetap sah sampai umurnya habis.
 
-**Tidak ada `PATCH` maupun `DELETE /pengurus`.** Kursi hanya menjadi kosong
+**Tidak ada `PATCH` maupun `DELETE /pengurus`.** Jabatan hanya menjadi kosong
 lewat pergantian yang disetujui — kalau Admin bisa mengosongkannya sendiri, ia
 bisa mengisinya langsung dan persetujuan jadi hiasan yang bisa dilewati dalam
 dua klik.
@@ -174,14 +175,14 @@ dua klik.
 **Satu orang satu jabatan**, diperiksa lewat Kode Warga (`pengurus.warga_id`),
 bukan nama — dua orang yang benar-benar senama tidak boleh saling menghalangi.
 
-**Kandidat wajib warga wilayah kursinya**: Ketua RT dari RT itu, Ketua RW dari
+**Kandidat wajib warga wilayah jabatannya**: Ketua RT dari RT itu, Ketua RW dari
 RW itu, Dukuh dari mana pun (`pengurus.cocok_wilayah`). Ditegakkan saat mengisi
-kursi kosong maupun mengajukan pergantian. Karena itu `POST /pengurus` menerima
+jabatan kosong maupun mengajukan pergantian. Karena itu `POST /pengurus` menerima
 `wargaId`, bukan `nama` — nama dari klien tidak bisa diperiksa, Kode Warga bisa.
 
 `/pengurus/warga` adalah **satu-satunya celah Admin ke data warga**: nama +
-RT/RW saja, minimal 2 huruf pencarian, maksimal 20 hasil. `?kursi=`
-mempersempitnya ke warga yang boleh menduduki kursi itu — makin sempit, makin
+RT/RW saja, minimal 2 huruf pencarian, maksimal 20 hasil. `?jabatanKode=`
+mempersempitnya ke warga yang boleh memegang jabatan itu — makin sempit, makin
 sedikit data warga yang terbuka untuk Admin. Celah ini tidak
 terhindarkan — Admin harus bisa menunjuk orang — jadi yang bisa dilakukan
 adalah membuatnya sesempit mungkin.

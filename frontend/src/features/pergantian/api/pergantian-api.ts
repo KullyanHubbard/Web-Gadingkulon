@@ -6,8 +6,8 @@ import type { Pengajuan } from '../types';
 export interface PergantianApi {
   /** ADMIN — seluruh pengajuan beserta riwayatnya. */
   daftar(): Promise<Pengajuan[]>;
-  /** ADMIN — usulkan pergantian penghuni sebuah kursi. */
-  ajukan(kursi: string, kandidatId: string): Promise<Pengajuan>;
+  /** ADMIN — usulkan pergantian pemegang sebuah jabatan. */
+  ajukan(jabatanKode: string, kandidatId: string): Promise<Pengajuan>;
   /** PENGURUS — pengajuan yang menunggu jawaban saya. */
   menunggu(): Promise<Pengajuan[]>;
   /** PENGURUS — satu suara, tidak bisa diubah. */
@@ -19,9 +19,9 @@ export const pergantianApi: PergantianApi = {
     const { data } = await apiClient.get<Pengajuan[]>('/pergantian');
     return data;
   },
-  async ajukan(kursi, kandidatId) {
+  async ajukan(jabatanKode, kandidatId) {
     const { data } = await apiClient.post<Pengajuan>('/pergantian', {
-      kursi,
+      jabatanKode,
       kandidatId,
     });
     return data;

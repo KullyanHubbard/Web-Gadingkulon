@@ -52,7 +52,10 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           </button>
         </div>
 
-        <nav aria-label="Menu" className="min-h-0 flex-1 space-y-1 overflow-y-auto p-3 overscroll-contain [webkit-overflow-scrolling:touch]">
+        <nav
+          aria-label="Menu"
+          className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain p-3 [webkit-overflow-scrolling:touch]"
+        >
           {items.map((item) => (
             <NavLink
               key={item.to}

@@ -59,7 +59,7 @@ export function PublicSidebar({ nav, open, onClose }: PublicSidebarProps) {
         {/* `onClick` di pembungkus hanya memanggil `onClose` saat elemen tombol/tautan
             diklik, sehingga melepaskan sentuhan/scroll di area kosong tidak menutup drawer. */}
         <div
-          className="min-h-0 flex-1 overflow-y-auto p-3 overscroll-contain [webkit-overflow-scrolling:touch]"
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 [webkit-overflow-scrolling:touch]"
           onClick={(e) => {
             if ((e.target as HTMLElement).closest('button, a')) {
               onClose();

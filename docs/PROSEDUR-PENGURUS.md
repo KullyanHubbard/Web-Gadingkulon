@@ -39,7 +39,7 @@ menjalankannya.
 
 | Tingkat      | Siapa                | Bisa apa                                                     |
 | ------------ | -------------------- | ------------------------------------------------------------ |
-| **Admin**    | pemegang akun layanan | Membuatkan akun untuk kursi kosong, reset password, **mengajukan** pergantian. **Tidak bisa melihat data warga, dan tidak bisa menyetujui pergantian apa pun.** |
+| **Admin**    | pemegang akun layanan | Membuatkan akun untuk jabatan kosong, reset password, **mengajukan** pergantian. **Tidak bisa melihat data warga, dan tidak bisa menyetujui pergantian apa pun.** |
 | **Dukuh**    | Pak Dukuh            | Melihat seluruh data warga & infografis                       |
 | **Ketua RW** | satu per RW (sekarang RW 019, 020, 021) | sama                       |
 | **Ketua RT** | satu per RT (sekarang RT 001–006)       | sama                       |
@@ -60,17 +60,17 @@ depan** — angka statistik padukuhan, tanpa satu pun nama atau alamat.
 
 ---
 
-## Akun berbentuk kursi, bukan milik orang
+## Akun melekat pada jabatan, bukan pada orang
 
-Yang terdaftar di aplikasi bukan "Pak Slamet", melainkan **kursi** "Ketua RT
-001". Kursi itu dihuni satu orang, dan orangnya berganti sewaktu-waktu.
+Yang terdaftar di aplikasi bukan "Pak Slamet", melainkan **jabatan** "Ketua RT
+001". Jabatan itu dipegang satu orang, dan orangnya berganti sewaktu-waktu.
 
-Daftar kursinya **mengikuti data warga**: begitu ada warga ber-RT 007 di file
-Excel, kursi "Ketua RT 007" muncul sendiri di halaman Admin. Tidak ada daftar
+Daftar jabatannya **mengikuti data warga**: begitu ada warga ber-RT 007 di file
+Excel, jabatan "Ketua RT 007" muncul sendiri di halaman Admin. Tidak ada daftar
 RW/RT yang perlu diurus terpisah — dan RT yang belum punya warga memang belum
 perlu akun.
 
-Satu kursi hanya boleh dihuni **satu akun aktif**. Akun penghuni lama tetap
+Satu jabatan hanya boleh dipegang **satu akun aktif**. Akun pemegang lama tetap
 tersimpan dalam keadaan nonaktif supaya jejaknya tidak hilang.
 
 ---
@@ -183,11 +183,11 @@ menyimpannya, dan desa tidak mengizinkannya.
 
 ---
 
-## Membuatkan akun untuk kursi kosong
+## Membuatkan akun untuk jabatan kosong
 
 Dilakukan **Admin**, lewat menu **Akun Pengurus**:
 
-1. Cari baris kursinya (mis. "Ketua RT 003"), yang statusnya **Kosong**.
+1. Cari baris jabatannya (mis. "Ketua RT 003"), yang statusnya **Kosong**.
 2. Klik **Buatkan Akun**, lalu **cari nama orangnya** di kotak pencarian —
    ketik minimal 2 huruf, pilih dari daftar yang muncul. Tiap baris tertulis
    "Nama — RT/RW" supaya tidak salah pilih kalau ada nama kembar.
@@ -196,11 +196,11 @@ Dilakukan **Admin**, lewat menu **Akun Pengurus**:
 3. Isi **username** dan **password awal** (minimal 8 karakter).
 4. **Serahkan password awal secara tatap muka.**
 
-Jabatan tidak perlu dipilih — sudah ditentukan oleh baris kursi yang diklik.
+Jabatan tidak perlu dipilih — sudah ditentukan oleh baris yang diklik.
 Namanya juga tidak diketik: Admin tidak boleh melihat data warga, jadi ia
 memilih dari daftar, bukan mengarang dari ingatan.
 
-**Yang muncul di daftar hanya warga wilayah kursi itu.** Ketua RT 003 hanya
+**Yang muncul di daftar hanya warga wilayah jabatan itu.** Ketua RT 003 hanya
 bisa diisi warga RT 003, Ketua RW 019 hanya warga RW 019. Pak Dukuh boleh dari
 wilayah mana pun di padukuhan. Aturan yang sama berlaku saat mengajukan
 pergantian.
@@ -290,7 +290,7 @@ dibuat. Urutannya sengaja dibalik untuk kasus ini.
 ### Langkah konkret
 
 1. **Admin mengajukan penggantinya:** menu **Akun Pengurus** → cari baris
-   kursinya → **Ajukan Pergantian** → ketik nama warga penggantinya, pilih dari
+   jabatannya → **Ajukan Pergantian** → ketik nama warga penggantinya, pilih dari
    daftar yang muncul. Tiap pilihan tertulis "Nama — RT/RW" supaya tidak salah
    pilih kalau ada dua orang senama.
    *Sampai di sini belum ada yang berubah.*
@@ -311,34 +311,34 @@ dibuat. Urutannya sengaja dibalik untuk kasus ini.
    dari awal. Ini disengaja, supaya tidak ada tawar-menawar setelah suara masuk.
 
 4. **Begitu semuanya setuju, jabatan berpindah saat itu juga.** Akun pengurus
-   lama langsung mati, dan kursinya tercatat kosong.
+   lama langsung mati, dan jabatannya tercatat kosong.
 
-5. **Admin membuatkan akun untuk penghuni barunya**, sama seperti mengisi kursi
+5. **Admin membuatkan akun untuk pemegang barunya**, sama seperti mengisi jabatan
    kosong biasa — lihat
-   [Membuatkan akun untuk kursi kosong](#membuatkan-akun-untuk-kursi-kosong).
+   [Membuatkan akun untuk jabatan kosong](#membuatkan-akun-untuk-jabatan-kosong).
 
 6. **Catat pergantiannya** di buku administrasi padukuhan.
 
 ### Hal-hal yang perlu diketahui
 
 **Admin tidak bisa mencabut akses siapa pun sendirian.** Tombol itu memang
-tidak ada. Satu-satunya cara sebuah kursi menjadi kosong adalah lewat
-pergantian yang disetujui. Kalau Admin bisa mengosongkan kursi sendiri, ia bisa
+tidak ada. Satu-satunya cara sebuah jabatan menjadi kosong adalah lewat
+pergantian yang disetujui. Kalau Admin bisa mengosongkannya sendiri, ia bisa
 langsung mengisinya lagi — dan seluruh persetujuan ini jadi hiasan yang bisa
 dilewati dalam dua klik.
 
-**Kursi penyetuju yang sedang kosong dilewati, bukan ditunggu.** Kalau kursi
+**Jabatan penyetuju yang sedang kosong dilewati, bukan ditunggu.** Kalau jabatan
 Ketua RW 019 sedang kosong, pergantian Ketua RT di bawahnya cukup disetujui Pak
-Dukuh. Tanpa aturan ini satu kursi kosong akan mengunci pergantian selamanya.
+Dukuh. Tanpa aturan ini satu jabatan kosong akan mengunci pergantian selamanya.
 
 **Kalau tidak ada satu pun yang bisa menyetujui**, pengajuan ditolak dan
-aplikasi menyebutkan kursi mana yang harus diisi lebih dulu. Admin tidak pernah
+aplikasi menyebutkan jabatan mana yang harus diisi lebih dulu. Admin tidak pernah
 bisa memutuskan sendirian.
 
-**Warga yang diusulkan tidak boleh sedang menjabat di kursi lain.** Satu orang
+**Warga yang diusulkan tidak boleh sedang menjabat di tempat lain.** Satu orang
 satu jabatan.
 
-**Warga yang diusulkan harus warga wilayah kursi itu.** Ketua RW 019 harus
+**Warga yang diusulkan harus warga wilayah jabatan itu.** Ketua RW 019 harus
 warga RW 019; Ketua RT 003 harus warga RT 003. Pak Dukuh boleh dari mana pun.
 
 **Pengajuan yang tidak dijawab siapa pun gugur setelah 30 hari**, begitu juga
@@ -359,23 +359,23 @@ menu **Akun Pengurus**.
 **Setiap 3 bulan**, dan **wajib** setiap kali ada pergantian pengurus di tingkat
 mana pun. Ini satu-satunya cara mengetahui ada akun yang tertinggal aktif.
 
-Dilakukan **berdua**: hanya Admin yang bisa membuka daftar kursi, dan hanya
+Dilakukan **berdua**: hanya Admin yang bisa membuka daftar jabatan, dan hanya
 Dukuh yang tahu siapa yang sebenarnya sedang menjabat. Tidak ada satu orang pun
 yang bisa memeriksa ini sendirian — itu memang bentuk yang diinginkan.
 
 1. Minta Admin membuka menu **Akun Pengurus**, lalu cetak atau foto daftar
-   kursinya beserta nama penghuni tiap kursi.
+   jabatannya beserta nama pemegang tiap jabatan.
 2. Bandingkan baris per baris dengan **daftar pengurus yang benar-benar sedang
    menjabat**, sesuai buku administrasi padukuhan.
 3. Untuk setiap baris, jawab dua pertanyaan:
    - Apakah orang ini masih menjabat? Kalau tidak → **nonaktifkan hari itu juga.**
-   - Apakah ia masih ada di kursi yang benar? Kalau tidak → ajukan
+   - Apakah ia masih ada di jabatan yang benar? Kalau tidak → ajukan
      pergantiannya lewat langkah di atas.
-4. Periksa juga arah sebaliknya: adakah kursi yang statusnya **Kosong** padahal
+4. Periksa juga arah sebaliknya: adakah jabatan yang statusnya **Kosong** padahal
    orangnya sedang menjabat? Kalau ada, itu tandanya ada pergantian yang tidak
    pernah dilaporkan — telusuri kapan terjadinya.
-5. Perhatikan kursi yang lama bertanda **"Belum ganti password"**: berarti
-   penghuninya belum pernah masuk sejak akunnya dibuat.
+5. Perhatikan jabatan yang lama bertanda **"Belum ganti password"**: berarti
+   pemegangnya belum pernah masuk sejak akunnya dibuat.
 5. **Tulis hasil pemeriksaan di buku administrasi**, walaupun hasilnya "semua
    sesuai". Catatan bahwa pemeriksaan pernah dilakukan sama pentingnya dengan
    hasilnya — tanpa itu, tidak ada yang tahu pemeriksaan terakhir kapan.
@@ -420,10 +420,10 @@ berarti bergantung pada orang luar — persis keadaan yang ingin dihindari.
   Kartu Keluarga, dan angka "jumlah KK" hilang dari halaman depan.
 - **Warga tidak punya akun.** Yang bisa masuk hanya perangkat desa.
 - **Pergantian pengurus lewat pengajuan + persetujuan.** Admin mengajukan,
-  perangkat desa memutuskan; kursi penyetuju yang kosong dilewati.
+  perangkat desa memutuskan; jabatan penyetuju yang kosong dilewati.
 - **Kewenangan kelola akun ada pada Admin**, yang justru buta terhadap data
   warga. Dukuh, RW, dan RT membaca data tapi tidak bisa menyentuh akun.
-- **Akun berbentuk kursi**, dan daftar kursinya mengikuti RW/RT di data warga.
+- **Akun melekat pada jabatan**, dan daftarnya mengikuti RW/RT di data warga.
 - **Password awal dari Admin sekali pakai** — wajib diganti pemiliknya sebelum
   bisa membuka apa pun.
 - **File Excel adalah sumber data satu-satunya**, dan impor menimpa seluruh
@@ -496,7 +496,7 @@ melakukan apa — justru pada peran yang paling perlu bisa dibedakan.
 2. Penggantinya masuk, **mengganti password awalnya** (dituntut aplikasi), dan
    memastikan ia bisa membuka menu **Akun Pengurus**.
 3. **Setelah langkah 2 terbukti berhasil**, akun Admin lama berhenti dipakai.
-   (Kursi Admin tidak ikut mekanisme persetujuan — ia bukan jabatan padukuhan.)
+   (Akun Admin tidak ikut mekanisme persetujuan — ia bukan jabatan padukuhan.)
 4. Perbarui bagian [Akun layanan](#akun-layanan-untuk-yang-mengurus-teknis) di
    atas, termasuk kontaknya.
 

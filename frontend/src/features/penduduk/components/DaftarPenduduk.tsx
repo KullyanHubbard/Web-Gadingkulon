@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useDebounce } from '@/hooks/use-debounce';
-import type { FilterPenduduk } from '@/types/penduduk';
+import type { FilterPenduduk } from '../types';
 import { useFilterOpsi, usePendudukList } from '../hooks/use-penduduk';
-import type { Penduduk } from '@/types/penduduk';
+import type { Penduduk } from '../types';
 import { toPendudukDetail, toPendudukRow } from '../view-model';
 import { WargaFormDialog } from './WargaFormDialog';
 import { DaftarPendudukView, type PaginasiView } from './DaftarPendudukView';
@@ -74,23 +74,23 @@ export function DaftarPenduduk() {
   return (
     <>
       <DaftarPendudukView
-      search={search}
-      onSearchChange={onSearchChange}
-      filter={filter}
-      filterOpsi={filterOpsi}
-      onFilterChange={onFilterChange}
-      isLoading={isLoading}
-      isError={isError}
-      rows={rows}
-      paginasi={paginasi}
-      onPrev={() => setPage((p) => Math.max(1, p - 1))}
-      onNext={() => setPage((p) => p + 1)}
-      onPilih={(row) => setSelectedId(row.id)}
-      detail={detail}
-      onTutupDetail={() => setSelectedId(null)}
-      onTambah={() => setFormTarget('baru')}
-      onUbah={onUbah}
-    />
+        search={search}
+        onSearchChange={onSearchChange}
+        filter={filter}
+        filterOpsi={filterOpsi}
+        onFilterChange={onFilterChange}
+        isLoading={isLoading}
+        isError={isError}
+        rows={rows}
+        paginasi={paginasi}
+        onPrev={() => setPage((p) => Math.max(1, p - 1))}
+        onNext={() => setPage((p) => p + 1)}
+        onPilih={(row) => setSelectedId(row.id)}
+        detail={detail}
+        onTutupDetail={() => setSelectedId(null)}
+        onTambah={() => setFormTarget('baru')}
+        onUbah={onUbah}
+      />
       <WargaFormDialog
         target={formTarget}
         onClose={() => setFormTarget(null)}

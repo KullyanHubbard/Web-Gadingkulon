@@ -163,7 +163,7 @@ def baca_xlsx(path: str) -> list[Penduduk]:
 def _periksa_jabatan(
     daftar: list[Penduduk], nomor_baris: dict[str, list[int]]
 ) -> None:
-    """Satu kursi satu orang, sudah di file Excel-nya.
+    """Satu jabatan satu orang, sudah di file Excel-nya.
 
     Dua orang bertanda `RT` di RT yang sama berarti file itu sendiri tidak tahu
     siapa ketuanya — dan aplikasi tidak boleh menebak. Diperiksa sebelum satu
@@ -174,17 +174,17 @@ def _periksa_jabatan(
         if p.jabatan == "WARGA":
             continue
         if p.jabatan == "DUKUH":
-            kursi = "Dukuh"
+            jabatan = "Dukuh"
         elif p.jabatan == "RW":
-            kursi = f"Ketua RW {p.alamat.rw}"
+            jabatan = f"Ketua RW {p.alamat.rw}"
         else:
-            kursi = f"Ketua RT {p.alamat.rt} (RW {p.alamat.rw})"
-        pemegang.setdefault(kursi, []).append(p.nama)
+            jabatan = f"Ketua RT {p.alamat.rt} (RW {p.alamat.rw})"
+        pemegang.setdefault(jabatan, []).append(p.nama)
 
     bentrok = {k: v for k, v in pemegang.items() if len(v) > 1}
     if bentrok:
         sys.exit(
-            "Satu kursi ditandai untuk lebih dari satu orang:\n  "
+            "Satu jabatan ditandai untuk lebih dari satu orang:\n  "
             + "\n  ".join(f"{k}: {', '.join(v)}" for k, v in bentrok.items())
             + "\n\nSatu jabatan dipegang satu orang. Betulkan kolom Jabatan dulu."
         )

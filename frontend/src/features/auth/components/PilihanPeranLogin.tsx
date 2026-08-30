@@ -40,8 +40,6 @@ export const PERAN_LOGIN = [
   },
 ] as const;
 
-export type PeranLogin = (typeof PERAN_LOGIN)[number];
-
 interface Props {
   dipilih: Role;
   onPilih: (role: Role) => void;
@@ -83,7 +81,8 @@ export function PilihanPeranLogin({ dipilih, onPilih }: Props) {
         aria-hidden
         className={cn(
           'absolute inset-y-1 rounded-lg bg-white shadow-sm',
-          ready && 'transition-all duration-250 ease-[cubic-bezier(0.4,0,0.2,1)]',
+          ready &&
+            'duration-250 transition-all ease-[cubic-bezier(0.4,0,0.2,1)]',
         )}
         style={{ left: indicator.left, width: indicator.width }}
       />

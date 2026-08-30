@@ -2,35 +2,35 @@ import { useState } from 'react';
 import { AjukanPergantianDialog } from '@/features/pergantian/components/AjukanPergantianDialog';
 import { DaftarPengajuanView } from '@/features/pergantian/components/DaftarPengajuanView';
 import { usePengajuanList } from '@/features/pergantian/hooks/use-pergantian';
-import { DaftarKursiView } from '@/features/pengurus/components/DaftarKursiView';
-import { IsiKursiDialog } from '@/features/pengurus/components/IsiKursiDialog';
+import { DaftarJabatanView } from '@/features/pengurus/components/DaftarJabatanView';
+import { IsiJabatanDialog } from '@/features/pengurus/components/IsiJabatanDialog';
 import { ResetPasswordDialog } from '@/features/pengurus/components/ResetPasswordDialog';
-import { useDaftarKursi } from '@/features/pengurus/hooks/use-pengurus';
-import type { Kursi } from '@/features/pengurus/types';
+import { useDaftarJabatan } from '@/features/pengurus/hooks/use-pengurus';
+import type { Jabatan } from '@/features/pengurus/types';
 
 /**
- * Kelola kursi perangkat desa. Admin saja — dan ia buta terhadap data warga,
+ * Kelola jabatan perangkat desa. Admin saja — dan ia buta terhadap data warga,
  * ditegakkan backend, bukan sekadar disembunyikan menunya.
  *
- * Dua fitur bertemu di halaman ini: daftar kursi milik `pengurus`, dan
+ * Dua fitur bertemu di halaman ini: daftar jabatan milik `pengurus`, dan
  * pengajuan pergantian milik `pergantian`. Keduanya dirakit di sini, bukan
  * saling mengimpor (CLAUDE.md §4).
  */
 export default function PengurusPage() {
-  const kursi = useDaftarKursi();
+  const jabatan = useDaftarJabatan();
   const pengajuan = usePengajuanList();
-  const [isiTarget, setIsiTarget] = useState<Kursi | null>(null);
-  const [resetTarget, setResetTarget] = useState<Kursi | null>(null);
-  const [gantiTarget, setGantiTarget] = useState<Kursi | null>(null);
+  const [isiTarget, setIsiTarget] = useState<Jabatan | null>(null);
+  const [resetTarget, setResetTarget] = useState<Jabatan | null>(null);
+  const [gantiTarget, setGantiTarget] = useState<Jabatan | null>(null);
 
   return (
     <div className="space-y-6">
-      <DaftarKursiView
-        isLoading={kursi.isLoading}
-        isError={kursi.isError}
-        kursi={kursi.data}
+      <DaftarJabatanView
+        isLoading={jabatan.isLoading}
+        isError={jabatan.isError}
+        jabatan={jabatan.data}
         sedangMengubah={false}
-        onIsiKursi={setIsiTarget}
+        onIsiJabatan={setIsiTarget}
         onResetPassword={setResetTarget}
         onAjukanPergantian={setGantiTarget}
       />
@@ -41,18 +41,21 @@ export default function PengurusPage() {
         pengajuan={pengajuan.data}
       />
 
-      <IsiKursiDialog kursi={isiTarget} onClose={() => setIsiTarget(null)} />
+      <IsiJabatanDialog
+        jabatan={isiTarget}
+        onClose={() => setIsiTarget(null)}
+      />
       <ResetPasswordDialog
-        kursi={resetTarget}
+        jabatan={resetTarget}
         onClose={() => setResetTarget(null)}
       />
       <AjukanPergantianDialog
-        kursi={
-          gantiTarget?.penghuni
+        jabatan={
+          gantiTarget?.pemegang
             ? {
-                kursi: gantiTarget.kursi,
-                jabatan: gantiTarget.jabatan,
-                namaPenghuni: gantiTarget.penghuni.nama,
+                kode: gantiTarget.kode,
+                label: gantiTarget.label,
+                namaPemegang: gantiTarget.pemegang.nama,
               }
             : null
         }

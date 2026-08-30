@@ -67,9 +67,7 @@ export function LoginPetugasFormView({
         >
           Masuk
         </Button>
-
       </form>
-
     </AuthLayout>
   );
 }
