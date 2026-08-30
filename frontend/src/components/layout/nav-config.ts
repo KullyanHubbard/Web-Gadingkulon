@@ -19,13 +19,10 @@ export interface NavItem {
   end?: boolean;
 }
 
-/**
- * Statistik desa (landing publik). `end: true` wajib — tanpa itu `/` cocok
- * sebagai prefix setiap route dan menunya menyala terus.
- */
+/** Statistik desa — halaman publik, terbuka juga tanpa sesi. */
 const statistikDesa: NavItem = {
   label: 'Statistik Warga',
-  to: paths.landing,
+  to: paths.statistik,
   aksen: CHART_KATEGORI_COLORS[3],
   end: true,
 };
@@ -76,5 +73,16 @@ export function navItemsForRole(role: Role | undefined): NavItem[] {
     },
     riwayat,
     statistikDesa,
+    // Isi portal publik: Dukuh saja. Ketua RW/RT membaca data warga, tapi tidak
+    // menerbitkan apa pun atas nama padukuhan.
+    ...(role === 'DUKUH'
+      ? [
+          {
+            label: 'Kelola Berita',
+            to: paths.admin.berita,
+            aksen: CHART_KATEGORI_COLORS[6],
+          },
+        ]
+      : []),
   ];
 }

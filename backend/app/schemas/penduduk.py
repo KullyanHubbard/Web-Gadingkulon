@@ -183,4 +183,11 @@ class StatistikPublik(BaseModel):
     totalPenduduk: int
     totalLakiLaki: int
     totalPerempuan: int
+    # Cacah kepala keluarga — dipakai halaman depan sebagai "Jumlah KK".
+    # Nomor KK sendiri tidak disimpan (spec 2026-08-26), jadi ini turunan dari
+    # `statusHubunganKeluarga`, bukan hitungan kartu keluarga yang sebenarnya.
+    totalKepalaKeluarga: int
+    # Sepuluh pekerjaan terbanyak se-padukuhan. Dibatasi karena isinya teks
+    # bebas: tanpa batas, satu ketikan unik per orang jadi satu baris chart.
+    perPekerjaan: list[Distribusi]
     perRw: list[RincianRw]

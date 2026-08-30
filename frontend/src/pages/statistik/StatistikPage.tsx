@@ -17,7 +17,7 @@ import { RincianRwPanel } from './RincianRwPanel';
  * bentuk yang dikirim `/publik/statistik`. Tautan lama mati kalau
  * `format_rw`/`format_rt` di backend berubah.
  */
-export default function LandingPage() {
+export default function StatistikPage() {
   const [params, setParams] = useSearchParams();
   const rwAktif = params.get('rw');
   const rtAktif = rwAktif === null ? null : params.get('rt');

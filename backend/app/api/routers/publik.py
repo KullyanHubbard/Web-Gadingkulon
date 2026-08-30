@@ -58,6 +58,10 @@ def statistik_publik() -> StatistikPublik:
         totalPerempuan=sum(
             1 for p in semua if p.jenisKelamin == "PEREMPUAN"
         ),
+        totalKepalaKeluarga=sum(
+            1 for p in semua if p.statusHubunganKeluarga == "KEPALA_KELUARGA"
+        ),
+        perPekerjaan=distribusi_by(semua, lambda p: p.pekerjaan)[:10],
         perRw=[
             _rincian(
                 format_rw(rw),

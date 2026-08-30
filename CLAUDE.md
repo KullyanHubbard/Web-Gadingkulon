@@ -44,7 +44,9 @@ tombol pemberian akses tidak membaca isi datanya, dan yang membaca data tidak
 bisa menyentuh akun siapa pun termasuk akunnya sendiri. Baca **dibatasi
 wilayah** sejak Tahap 3a — Ketua RT 004 hanya melihat warga RT 004.
 
-Halaman depan (`/publik/statistik`) terbuka tanpa login, isinya cacah saja.
+Portal publik terbuka tanpa login: `/` (beranda), `/profil`, `/infografis`,
+`/berita` + `/berita/:slug`, dan `/statistik` (rincian per RW/RT — dulu di `/`).
+Semuanya cacah dan keterangan wilayah saja, tidak pernah data orang.
 
 Desain berlaku, tiga dokumen dan ketiganya masih hidup:
 `2026-08-26-hapus-nik-kk-auth-pengurus-design.md` (NIK/KK & warga tanpa akun)
@@ -470,7 +472,7 @@ Kontrak endpoint yang **sudah diimplementasikan** (bentuknya sinkron dengan
 | POST   | `/penduduk`                      | tambah warga di wilayah sendiri — PENGURUS              |
 | PATCH  | `/penduduk/{id}`                 | ubah data warga; RT/RW hanya Dukuh — PENGURUS           |
 | GET    | `/infografis`                    | agregat lengkap — semua pengurus                        |
-| GET    | `/publik/statistik`              | cacah per RW — **tanpa auth**                           |
+| GET    | `/publik/statistik`              | cacah per RW + cacah kepala keluarga + 10 pekerjaan terbanyak — **tanpa auth** |
 | GET    | `/pengurus`                      | daftar **kursi** (terisi & kosong) — ADMIN              |
 | GET    | `/pengurus/warga`                | cari warga buat dropdown (nama + RT/RW saja) — ADMIN    |
 | POST   | `/pengurus`                      | isi satu kursi **kosong** — ADMIN                       |
@@ -513,7 +515,9 @@ harus di atas `/penduduk/{id}`, kalau tidak ia terbaca sebagai sebuah id.
 
 - ✅ `/publik/statistik` hanya mengembalikan cacah. Tidak ada nama maupun
   alamat — endpoint ini terbuka untuk siapa saja, jadi apa pun yang
-  ditambahkan ke sana otomatis menjadi konsumsi publik.
+  ditambahkan ke sana otomatis menjadi konsumsi publik. `totalKepalaKeluarga`
+  turunan `statusHubunganKeluarga` (nomor KK sendiri tidak didata), dan
+  `perPekerjaan` dipotong 10 teratas karena isinya teks bebas.
 - ✅ Seluruh endpoint penduduk & infografis butuh sesi pengurus.
 - ✅ Password disimpan sebagai hash (`bcrypt`, `app/core/security.py`), tidak
   pernah polos.
@@ -544,6 +548,23 @@ harus di atas `/penduduk/{id}`, kalau tidak ia terbaca sebagai sebuah id.
   `PINDAH`/`MENINGGAL` dikeluarkan dari **hitungan** oleh `store.hanya_aktif`,
   dipanggil di jalur statistik saja — daftar penduduk tetap menampilkannya,
   kalau tidak penandaan yang keliru tidak bisa dibatalkan.
+
+**Berita padukuhan belum punya backend.** `features/berita` menulis ke
+`localStorage` di balik kontrak `BeritaApi`, jadi tulisan Dukuh TIDAK terlihat
+pengunjung lain dan kuotanya ±5 MB (foto ikut dihitung sebagai data URL, dibatasi
+600 KB per berkas). CMS-nya `/admin/berita`, **DUKUH saja** — ADMIN mengelola
+akun dan sengaja tidak punya kewenangan atas isi situs. Untuk memindahkannya:
+tabel `berita` + endpoint unggah, lalu ganti isi `beritaApi` saja.
+
+**Angka bantuan sosial di `/infografis` adalah CONTOH**
+(`pages/publik/infografis/bansos.ts`) — status penerima bantuan tidak ada di
+tabel `penduduk`, jadi tidak ada yang bisa diagregasi. Halamannya memasang
+peringatan "Data contoh" secara menyolok; jangan dicabut sebelum datanya nyata.
+
+**Isi statis portal publik** (sejarah, batas wilayah, luas, nama pengurus di
+bagan struktur organisasi) tinggal di `lib/padukuhan.ts` sebagai konstanta.
+Nama di bagan itu SENGAJA tidak diambil dari tabel `pengurus`: daftar akun ada
+di balik login ADMIN, sedangkan halaman profil terbuka untuk siapa saja.
 
 **Utang yang masih terbuka** — tercatat di spec 2026-08-26, jangan dianggap
 kondisi final:

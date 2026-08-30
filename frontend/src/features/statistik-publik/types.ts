@@ -33,6 +33,14 @@ export interface StatistikPublik {
   totalPenduduk: number;
   totalLakiLaki: number;
   totalPerempuan: number;
+  /**
+   * Cacah kepala keluarga — dipakai beranda sebagai "Jumlah KK". Nomor KK
+   * sendiri tidak didata lagi, jadi ini turunan `statusHubunganKeluarga`,
+   * bukan hitungan kartu keluarga yang sebenarnya.
+   */
+  totalKepalaKeluarga: number;
+  /** Sepuluh pekerjaan terbanyak se-padukuhan; isinya teks bebas. */
+  perPekerjaan: Distribusi[];
   /** Rincian per RW, urut menaik menurut nomor RW. */
   perRw: RincianRw[];
 }
