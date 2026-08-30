@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { KreditKkn } from '@/components/ui/KreditKkn';
 import { PublicSidebar } from './PublicSidebar';
 import { PublicTopbar } from './PublicTopbar';
@@ -36,10 +36,12 @@ export function PublicLandingLayout({
   breadcrumb,
   children,
 }: PublicLandingLayoutProps) {
+  const [navOpen, setNavOpen] = useState(false);
+
   return (
     <div className="flex min-h-screen flex-col lg:grid lg:h-dvh lg:min-h-0 lg:grid-cols-[20rem_1fr] lg:overflow-hidden">
-      <PublicSidebar nav={nav} />
-      <PublicTopbar />
+      <PublicSidebar nav={nav} open={navOpen} onClose={() => setNavOpen(false)} />
+      <PublicTopbar onOpenNav={() => setNavOpen(true)} />
 
       {/* Bar & main dibungkus satu sel grid: keduanya menumpuk di kolom kanan,
           bukan dua baris grid yang bisa bergeser dari sidebar. */}

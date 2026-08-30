@@ -29,7 +29,7 @@ if not exist .env (
     exit /b 1
 )
 
-if not exist .venv python -m venv .venv
+if not exist .venv\Scripts\python.exe python -m venv .venv
 .venv\Scripts\pip install -q -r requirements.txt
 .venv\Scripts\uvicorn app.main:app --reload --port 8000
 pause

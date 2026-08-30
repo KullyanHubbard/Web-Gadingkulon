@@ -29,7 +29,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex w-80 flex-col border-r border-slate-200 bg-white transition-transform lg:static lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-40 flex h-full max-h-dvh min-h-0 w-80 flex-col border-r border-slate-200 bg-white transition-transform lg:static lg:h-full lg:max-h-full lg:translate-x-0',
           open ? 'translate-x-0' : '-translate-x-full',
         )}
       >
@@ -52,7 +52,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           </button>
         </div>
 
-        <nav aria-label="Menu" className="min-h-0 flex-1 space-y-1 overflow-y-auto p-3">
+        <nav aria-label="Menu" className="min-h-0 flex-1 space-y-1 overflow-y-auto p-3 overscroll-contain [webkit-overflow-scrolling:touch]">
           {items.map((item) => (
             <NavLink
               key={item.to}
