@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Accessibility } from 'lucide-react';
 import { useDismissOnOutside } from '@/hooks/use-dismiss-on-outside';
-import { SOROT_BRAND } from '@/lib/colors';
 import { cn } from '@/lib/utils';
 
 const KUNCI = 'siduk.skalaTeks';
@@ -78,10 +77,10 @@ export function AksesibilitasWidget() {
                 onClick={() => pilih(s.persen)}
                 aria-pressed={persen === s.persen}
                 className={cn(
-                  'flex-1 rounded-lg border py-2 font-bold text-slate-700 transition-colors',
+                  'flex-1 rounded-lg border py-2 font-bold transition-colors',
                   persen === s.persen
-                    ? cn('border-brand-600', SOROT_BRAND)
-                    : 'border-slate-200 hover:bg-slate-50',
+                    ? 'border-brand-600 text-brand-600 dark:text-brand-300'
+                    : 'border-slate-200 text-slate-700 hover:bg-slate-50 dark:hover:bg-white/10',
                 )}
                 style={{ fontSize: `${0.8 + (s.persen - 100) / 200}rem` }}
               >

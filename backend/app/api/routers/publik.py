@@ -45,6 +45,9 @@ def _rincian(
     return RincianRw(
         label=label,
         totalPenduduk=len(warga),
+        totalKepalaKeluarga=sum(
+            1 for p in warga if p.statusHubunganKeluarga == "KEPALA_KELUARGA"
+        ),
         totalLakiLaki=sum(1 for p in warga if p.jenisKelamin == "LAKI_LAKI"),
         totalPerempuan=sum(1 for p in warga if p.jenisKelamin == "PEREMPUAN"),
         perKelompokUmur=distribusi_kelompok_umur(warga),

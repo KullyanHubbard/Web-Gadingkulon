@@ -35,10 +35,13 @@ export function NavbarView({
   onTutupMenu,
   onLogout,
 }: NavbarViewProps) {
+  const samaPeran = nama.trim().toLowerCase() === peran.trim().toLowerCase();
+  const samaBadge = nama.trim().toLowerCase() === peranBadge.trim().toLowerCase();
+
   return (
     <header className="sticky top-0 z-20 flex h-20 items-center justify-between border-b border-slate-200 bg-surface/80 px-4 backdrop-blur lg:px-6">
       <button
-        className="rounded-md p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
+        className="rounded-md p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/10 lg:hidden"
         onClick={onOpenSidebar}
         aria-label="Buka menu"
       >
@@ -55,7 +58,7 @@ export function NavbarView({
       <div className="ml-auto flex items-center gap-3">
         <div className="hidden text-right sm:block">
           <p className="text-sm font-medium text-slate-800">{nama}</p>
-          <p className="text-xs text-slate-500">{peran}</p>
+          {!samaPeran && <p className="text-xs text-slate-500">{peran}</p>}
         </div>
 
         <div className="relative" ref={menuRef}>
@@ -80,9 +83,11 @@ export function NavbarView({
             <div className="absolute right-0 mt-2 w-56 rounded-lg border border-slate-200 bg-surface p-1.5 shadow-lg">
               <div className="px-3 py-2">
                 <p className="text-sm font-medium text-slate-800">{nama}</p>
-                <Badge tone={peranBadgeTone} className="mt-1">
-                  {peranBadge}
-                </Badge>
+                {!samaBadge && (
+                  <Badge tone={peranBadgeTone} className="mt-1">
+                    {peranBadge}
+                  </Badge>
+                )}
               </div>
               {/* Satu-satunya jalan ke halaman ganti password bagi orang yang
                   tidak sedang dipaksa menggantinya. Tanpa ini, akun yang
@@ -91,7 +96,7 @@ export function NavbarView({
               <Link
                 to={paths.gantiPassword}
                 onClick={onTutupMenu}
-                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:hover:bg-white/10 dark:hover:text-white"
               >
                 <span
                   aria-hidden

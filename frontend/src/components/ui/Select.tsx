@@ -42,7 +42,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         >
           {pilihan
             ? Object.entries(pilihan).map(([nilai, teks]) => (
-                <option key={nilai} value={nilai}>
+                <option key={nilai} value={nilai} className="bg-surface text-slate-900">
                   {teks}
                 </option>
               ))

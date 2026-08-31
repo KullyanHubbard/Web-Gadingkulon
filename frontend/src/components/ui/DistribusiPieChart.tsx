@@ -1,15 +1,8 @@
-import type { ReactNode } from 'react';
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
-import type { PieLabelRenderProps } from 'recharts';
+import { useEffect, useState, type ReactNode } from 'react';
 import { CHART_KATEGORI_COLORS, CHART_SLICE_LABEL_COLOR } from '@/lib/colors';
+import { irisanDonut, jalurIrisan, titik } from './donut-geometri';
 import { LegendaDonut } from './LegendaDonut';
 import type { Distribusi } from '@/types/statistik';
-
-/**
- * Sepadan `text-xs` pada skala tipe aplikasi yang sengaja dinaikkan. Ditulis
- * sebagai angka karena Recharts tidak menerima class Tailwind.
- */
-const UKURAN_TEKS_CHART = 13;
 
 interface DistribusiPieChartProps {
   data: Distribusi[];
@@ -36,28 +29,37 @@ interface DistribusiPieChartProps {
   warna?: readonly string[];
 }
 
-/** Ambil nilai numerik dari properti Recharts yang bertipe longgar. */
-function angka(nilai: unknown): number {
-  return typeof nilai === 'number' ? nilai : 0;
-}
+/**
+ * Celah antar-irisan (derajat). Disetel agar jatuh ~2px pada radius donut besar
+ * (±270px). Jangan naikkan ke 2° — itu menghasilkan celah ±10px yang terbaca
+ * sebagai potongan, bukan spasi.
+ */
+const CELAH_DERAJAT = 0.6;
 
-const DERAJAT = Math.PI / 180;
+/**
+ * Radius cincin sebagai pecahan setengah sisi kotak. Angkanya warisan dari
+ * Recharts supaya donut ini setebal yang sebelumnya.
+ *
+ * Cincin dilebarkan saat berlabel: cincin tipis tidak muat dua baris teks, dan
+ * label yang keluar ke latar jadi putih di atas putih.
+ */
+const RADIUS_LUAR = 0.88;
+const RADIUS_DALAM_BERLABEL = 0.52;
+const RADIUS_DALAM = 0.58;
 
 /** Cetak label di tengah tebal cincin, mengikuti sudut tengah irisannya. */
-function labelDiIrisan(
-  props: PieLabelRenderProps,
-  baris: (index: number) => string[],
-) {
-  const index = angka(props.index);
-  const teks = baris(index);
-  if (teks.length === 0) return null;
-
-  const cx = angka(props.cx);
-  const cy = angka(props.cy);
-  const jariJari = (angka(props.innerRadius) + angka(props.outerRadius)) / 2;
-  const sudut = -angka(props.midAngle) * DERAJAT;
-  const x = cx + jariJari * Math.cos(sudut);
-  const y = cy + jariJari * Math.sin(sudut);
+function LabelIrisan({
+  pusat,
+  radius,
+  sudut,
+  teks,
+}: {
+  pusat: number;
+  radius: number;
+  sudut: number;
+  teks: string[];
+}) {
+  const [x, y] = titik(pusat, pusat, radius, sudut);
 
   return (
     <text
@@ -75,7 +77,6 @@ function labelDiIrisan(
           dy={i === 0 ? -5 : 20}
           fontSize={i === 0 ? 15 : 14}
           fontWeight={i === 0 ? 700 : 600}
-          opacity={1}
         >
           {isi}
         </tspan>
@@ -85,13 +86,16 @@ function labelDiIrisan(
 }
 
 /**
- * Celah antar-irisan (derajat). Disetel agar jatuh ~2px pada radius donut besar
- * (±270px). Jangan naikkan ke 2° — itu menghasilkan celah ±10px yang terbaca
- * sebagai potongan, bukan spasi.
+ * Pie/donut chart untuk komposisi kategori.
+ *
+ * SVG buatan sendiri, BUKAN Recharts — jangan dikembalikan ke library. Donut
+ * ini satu-satunya pemakai Recharts di seluruh aplikasi, dan pustakanya
+ * berbobot 372 KB (103 KB terkompresi) yang harus tuntas diunduh & diurai
+ * sebelum /statistik tampil; di `npm run dev` versi belum diminifikasinya ~2,2
+ * MB. Bar chart di sebelahnya sudah lama HTML+CSS dengan alasan yang sama —
+ * lihat `DistribusiBarChart`. Geometrinya di `donut-geometri.ts`, lengkap
+ * dengan self-check.
  */
-const CELAH_DERAJAT = 0.6;
-
-/** Pie/donut chart untuk komposisi kategori. */
 export function DistribusiPieChart({
   data,
   height = 260,
@@ -100,63 +104,111 @@ export function DistribusiPieChart({
   labelIrisan,
   warna = CHART_KATEGORI_COLORS,
 }: DistribusiPieChartProps) {
+  // `matchMedia`, BUKAN listener `resize`: di ponsel `resize` menembak tiap
+  // kali bar URL muncul/hilang saat halaman digulir, dan tiap panel di layar
+  // punya listener sendiri — satu gulir jadi puluhan render ulang.
+  // Query media hanya menembak saat batasnya benar-benar dilewati.
+  const [sempit, setSempit] = useState(
+    () => window.matchMedia('(max-width: 639px)').matches,
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 639px)');
+    const ikuti = (e: MediaQueryListEvent) => setSempit(e.matches);
+    setSempit(mq.matches);
+    mq.addEventListener('change', ikuti);
+    return () => mq.removeEventListener('change', ikuti);
+  }, []);
+
+  const sisi = sempit ? Math.min(height, 320) : height;
+  const pusat = sisi / 2;
+  const rLuar = pusat * RADIUS_LUAR;
+  const rDalam =
+    pusat * (labelIrisan ? RADIUS_DALAM_BERLABEL : RADIUS_DALAM);
+  const rLabel = (rDalam + rLuar) / 2;
+
+  const irisan = irisanDonut(data.map((d) => d.value));
+  // Satu kategori = lingkaran penuh, dan busur yang mulai persis di titik
+  // akhirnya sendiri tidak menggambar apa pun. Digambar sebagai cincin.
+  const penuh = irisan.length === 1;
+
   return (
     <>
       {/* `relative` dibatasi ke area donut saja: kalau legenda ikut di dalam
           kotak yang sama, titik tengah `center` bergeser turun. */}
       <div className="relative">
-        <ResponsiveContainer width="100%" height={height}>
-          <PieChart>
-            <Pie
-              data={data}
-              dataKey="value"
-              nameKey="label"
-              // Bawaan Recharts 0, menjadikan donut tab stop kosong — chart ini
-              // tidak punya aksi keyboard apa pun.
-              rootTabIndex={-1}
-              // Cincin dilebarkan saat berlabel: cincin tipis tidak muat dua baris
-              // teks, dan label yang keluar ke latar jadi putih di atas putih.
-              innerRadius={labelIrisan ? '52%' : '58%'}
-              outerRadius={labelIrisan ? '88%' : '88%'}
-              paddingAngle={CELAH_DERAJAT}
-              // Bawaan Recharts `stroke: '#fff'`. Di kartu putih tidak kelihatan,
-              // di mode gelap jadi cincin terang yang membungkus tiap irisan.
-              // Celah antar-irisan sudah dibawa `paddingAngle`, jadi tidak perlu
-              // garis sama sekali.
-              stroke="none"
-              labelLine={false}
-              label={
-                labelIrisan
-                  ? (props: PieLabelRenderProps) =>
-                      labelDiIrisan(props, labelIrisan)
-                  : undefined
-              }
-            >
-              {data.map((_, i) => (
-                <Cell key={i} fill={warna[i % warna.length]} />
-              ))}
-            </Pie>
-            {/* Hanya untuk chart tanpa label langsung — kalau irisannya sudah
-              mencantumkan nama & jumlah, tooltip cuma mengulanginya. */}
-            {!labelIrisan && (
-              <Tooltip
-                // Warna dibaca dari CSS variable yang dibalik `:root.dark`
-                // (CLAUDE.md). Tanpa `background`, Recharts memakai bawaannya
-                // yang putih — menyilaukan di atas kartu gelap.
-                contentStyle={{
-                  borderRadius: 8,
-                  fontSize: UKURAN_TEKS_CHART,
-                  background: 'rgb(var(--surface))',
-                  border: '1px solid rgb(var(--slate-300))',
-                  boxShadow: '0 4px 12px rgb(2 6 23 / 0.24)',
-                }}
-                // Bawaannya warna irisan itu sendiri; hue kategorik yang gelap
-                // (mis. bata `#9f4d48`) nyaris hilang di atas latar gelap.
-                itemStyle={{ color: 'rgb(var(--slate-700))' }}
-              />
-            )}
-          </PieChart>
-        </ResponsiveContainer>
+        {/* Sisi viewBox = tinggi dalam piksel, jadi 1 satuan = 1 piksel selama
+            kotaknya lebih lebar daripada tinggi — ukuran teks label boleh
+            ditulis apa adanya. Di kotak yang lebih sempit semuanya mengecil
+            sebanding, sama seperti sebelumnya.
+
+            `aria-hidden`: tiap angkanya sudah tersedia sebagai teks di legenda
+            atau daftar di sebelahnya, jadi pembaca layar tidak perlu menyusuri
+            path satu per satu. */}
+        <svg
+          viewBox={`0 0 ${sisi} ${sisi}`}
+          width="100%"
+          height={sisi}
+          preserveAspectRatio="xMidYMid meet"
+          aria-hidden
+        >
+          {penuh ? (
+            <circle
+              cx={pusat}
+              cy={pusat}
+              r={rLabel}
+              fill="none"
+              stroke={warna[irisan[0].index % warna.length]}
+              strokeWidth={rLuar - rDalam}
+            />
+          ) : (
+            irisan.map((s) => {
+              // Celah dipangkas dari kedua ujung. Dibatasi seperempat lebar
+              // irisan supaya irisan tipis tidak habis dimakan celahnya.
+              const celah = Math.min(
+                CELAH_DERAJAT / 2,
+                (s.akhir - s.mulai) / 4,
+              );
+              return (
+                <path
+                  key={s.index}
+                  d={jalurIrisan(
+                    pusat,
+                    pusat,
+                    rDalam,
+                    rLuar,
+                    s.mulai + celah,
+                    s.akhir - celah,
+                  )}
+                  fill={warna[s.index % warna.length]}
+                >
+                  {/* Hanya untuk chart tanpa label langsung — kalau irisannya
+                      sudah mencantumkan nama & jumlah, ini cuma mengulanginya.
+                      `<title>` bawaan browser, bukan tooltip bergaya: seluruh
+                      angkanya toh sudah tercetak di legenda di bawah. */}
+                  {!labelIrisan && (
+                    <title>{`${data[s.index].label}: ${data[s.index].value}`}</title>
+                  )}
+                </path>
+              );
+            })
+          )}
+
+          {labelIrisan &&
+            irisan.map((s) => {
+              const teks = labelIrisan(s.index);
+              if (teks.length === 0) return null;
+              return (
+                <LabelIrisan
+                  key={s.index}
+                  pusat={pusat}
+                  radius={rLabel}
+                  sudut={s.tengah}
+                  teks={teks}
+                />
+              );
+            })}
+        </svg>
 
         {center && (
           <div

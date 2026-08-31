@@ -29,19 +29,49 @@ export default function HomePage() {
             ke={paths.profil}
             judul="Profil Padukuhan"
             deskripsi="Struktur kelembagaan dan informasi wilayah."
-            ikon={<img src={ikonProfil} alt="" className="h-12 w-12 object-contain" />}
+            ikon={
+              <img
+                src={ikonProfil}
+                alt=""
+                width={144}
+                height={144}
+                loading="lazy"
+                decoding="async"
+                className="h-12 w-12 object-contain"
+              />
+            }
           />
           <KartuJelajah
             ke={paths.infografis}
             judul="Statistik Kependudukan"
             deskripsi="Visualisasi data demografi dan sebaran warga."
-            ikon={<img src={ikonStatistik} alt="" className="h-12 w-12 object-contain" />}
+            ikon={
+              <img
+                src={ikonStatistik}
+                alt=""
+                width={144}
+                height={144}
+                loading="lazy"
+                decoding="async"
+                className="h-12 w-12 object-contain"
+              />
+            }
           />
           <KartuJelajah
             ke={paths.berita}
             judul="Kabar & Agenda Warga"
             deskripsi="Informasi kegiatan terkini dan agenda masyarakat."
-            ikon={<img src={ikonKabar} alt="" className="h-12 w-12 object-contain" />}
+            ikon={
+              <img
+                src={ikonKabar}
+                alt=""
+                width={144}
+                height={144}
+                loading="lazy"
+                decoding="async"
+                className="h-12 w-12 object-contain"
+              />
+            }
           />
         </div>
       </section>
@@ -49,10 +79,7 @@ export default function HomePage() {
       <RingkasanPenduduk />
 
       <section className={`${WADAH} py-16`}>
-        <JudulBagian
-          judul="PETA PADUKUHAN"
-          className="uppercase"
-        />
+        <JudulBagian judul="PETA PADUKUHAN" className="uppercase" />
         <PetaPadukuhan className="h-[26rem]" />
       </section>
 

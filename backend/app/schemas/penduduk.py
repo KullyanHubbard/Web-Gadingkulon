@@ -169,6 +169,9 @@ class RincianRw(BaseModel):
 
     label: str
     totalPenduduk: int
+    # Turunan `statusHubunganKeluarga`, sama seperti di `StatistikPublik` —
+    # bukan hitungan kartu keluarga sungguhan (nomor KK tidak didata).
+    totalKepalaKeluarga: int
     totalLakiLaki: int
     totalPerempuan: int
     perKelompokUmur: list[Distribusi]

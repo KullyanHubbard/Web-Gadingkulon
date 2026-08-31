@@ -13,6 +13,8 @@ export interface RincianRw {
   /** Mis. `'RW 19'` atau `'RT 1'` — sudah berbentuk tampilan. */
   label: string;
   totalPenduduk: number;
+  /** Turunan `statusHubunganKeluarga`, sama seperti di `StatistikPublik`. */
+  totalKepalaKeluarga: number;
   totalLakiLaki: number;
   totalPerempuan: number;
   perKelompokUmur: Distribusi[];

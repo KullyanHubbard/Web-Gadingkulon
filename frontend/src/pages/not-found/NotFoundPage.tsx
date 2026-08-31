@@ -5,8 +5,8 @@ import { paths } from '@/routes/paths';
 
 export default function NotFoundPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50 px-4 text-center">
-      <div className="my-auto flex flex-col items-center gap-4">
+    <div className="flex min-h-screen flex-col bg-slate-50 text-center">
+      <div className="my-auto flex flex-col items-center gap-4 px-4">
         <p className="text-6xl font-bold text-brand-600">404</p>
         <h1 className="text-xl font-semibold text-slate-900">
           Halaman tidak ditemukan
@@ -19,7 +19,7 @@ export default function NotFoundPage() {
         </Link>
       </div>
 
-      <KreditKkn className="py-4" />
+      <KreditKkn className="px-4 py-4" />
     </div>
   );
 }

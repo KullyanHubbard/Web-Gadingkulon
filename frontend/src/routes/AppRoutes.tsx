@@ -12,8 +12,8 @@ import {
 } from './guards';
 import { paths } from './paths';
 
-// Code-splitting per halaman: chart (recharts) & halaman admin hanya
-// dimuat saat dibutuhkan, memperkecil bundle awal.
+// Code-splitting per halaman: halaman admin & portal publik hanya dimuat saat
+// dibutuhkan, memperkecil bundle awal.
 const HomePage = lazy(() => import('@/pages/publik/home/HomePage'));
 const ProfilPage = lazy(() => import('@/pages/publik/profil/ProfilPage'));
 const InfografisPublikPage = lazy(

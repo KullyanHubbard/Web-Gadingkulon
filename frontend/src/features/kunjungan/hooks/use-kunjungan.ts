@@ -5,7 +5,12 @@ import { kunjunganApi } from '../api/kunjungan-api';
 const KUNCI = 'siduk.kunjunganTerhitung';
 
 function hariIni(): string {
-  return new Date().toISOString().slice(0, 10);
+  // Tanggal LOKAL, bukan `toISOString()` yang UTC: backend memakai
+  // `date.today()` (jam server, WIB), jadi pukul 00:00-07:00 WIB kunci ini
+  // masih menunjuk tanggal kemarin — kunjungan pertama pagi hari tidak
+  // pernah terhitung. `sv-SE` kebetulan satu-satunya locale yang memformat
+  // YYYY-MM-DD apa adanya.
+  return new Date().toLocaleDateString('sv-SE');
 }
 
 function sudahDihitungHariIni(): boolean {

@@ -1,12 +1,8 @@
 import { useState, type ReactNode } from 'react';
-import { KreditKkn } from '@/components/ui/KreditKkn';
 import { AccountButton } from './AccountButton';
-import { AksesibilitasWidget } from './AksesibilitasWidget';
-import { BadgeKunjungan } from './BadgeKunjungan';
+import { BarKredit } from './BarKredit';
 import { PublicSidebar } from './PublicSidebar';
 import { PublicTopbar } from './PublicTopbar';
-import { TombolPengaduan } from './TombolPengaduan';
-import { TombolTema } from './TombolTema';
 
 interface PublicLandingLayoutProps {
   /** Rail kiri: daftar bagian statistik. Disembunyikan di layar kecil. */
@@ -56,31 +52,20 @@ export function PublicLandingLayout({
       {/* Bar & main dibungkus satu sel grid: keduanya menumpuk di kolom kanan,
           bukan dua baris grid yang bisa bergeser dari sidebar. */}
       <div className="flex flex-1 flex-col lg:col-start-2 lg:row-start-1 lg:min-h-0">
-        <div className="flex h-20 shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-surface px-6 lg:px-12">
+        <div className="flex h-16 sm:h-20 shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-surface px-4 sm:px-6 lg:px-12">
           {breadcrumb}
-          {/* Pintu masuk di sudut kanan bar atas — dulu di kaki rail kiri,
-              tempat yang tidak dilihat orang sampai menggulung seluruh nav. */}
-          <AccountButton className="shrink-0" />
+          {/* Pintu masuk di sudut kanan bar atas — disembunyikan di bawah lg karena PublicTopbar sudah membawanya */}
+          <AccountButton className="shrink-0 hidden lg:flex" />
         </div>
 
         {/* Penengah vertikalnya `my-auto` di anak, bukan `justify-center` di
             `main`: begitu isinya lebih tinggi dari kotak gulung, `justify-center`
             memotong ujung atas dan bagian itu tidak bisa digulung sama sekali. */}
-        <main className="flex flex-1 flex-col px-6 py-10 lg:overflow-y-auto lg:px-12">
+        <main className="flex flex-1 flex-col px-4 py-6 sm:px-6 sm:py-10 lg:overflow-y-auto lg:px-12">
           <div className="my-auto w-full">{children}</div>
         </main>
 
-        <KreditKkn
-          className="h-16 shrink-0 px-6 lg:px-12"
-          kiri={<BadgeKunjungan />}
-          kanan={
-            <div className="flex items-center gap-3">
-              <TombolPengaduan />
-              <AksesibilitasWidget />
-              <TombolTema />
-            </div>
-          }
-        />
+        <BarKredit className="min-h-20 shrink-0 px-6 py-2 lg:px-12" />
       </div>
     </div>
   );

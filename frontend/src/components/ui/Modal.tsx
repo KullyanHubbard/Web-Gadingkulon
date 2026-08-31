@@ -35,8 +35,8 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
           <h2 className="text-base font-semibold text-slate-900">{title}</h2>
           <button
             onClick={onClose}
-            className="rounded-md p-1 text-slate-400 hover:bg-slate-100"
-            aria-label="Tutup"
+            className="rounded-md p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 dark:hover:text-white"
+            aria-label="Tutup modal"
           >
             <X className="h-5 w-5" />
           </button>

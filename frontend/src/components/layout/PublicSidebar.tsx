@@ -66,7 +66,7 @@ export function PublicSidebar({ nav, open, onClose }: PublicSidebarProps) {
         <Link
           to={paths.landing}
           onClick={onClose}
-          className="group mx-3 mt-3 flex items-center gap-2.5 rounded-lg border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-600 transition-all hover:border-brand-200 hover:bg-brand-600/5 hover:text-brand-700 dark:border-slate-700 dark:text-slate-400 dark:hover:border-brand-800 dark:hover:bg-brand-500/10 dark:hover:text-brand-300"
+          className="focus-ring mx-3 mt-3 flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-white/10 dark:hover:text-white"
         >
           <span
             aria-hidden
@@ -95,7 +95,7 @@ export function PublicSidebar({ nav, open, onClose }: PublicSidebarProps) {
         {/* `h-16` harus sama persis dengan bar kredit di kolom kanan
             (`PublicLandingLayout`) — garis atas keduanya bersambung jadi satu
             baris melintang, seperti pasangan `h-20` di kepala. */}
-        <p className="flex h-16 shrink-0 items-center border-t border-slate-100 px-4 text-sm text-slate-400">
+        <p className="flex min-h-20 shrink-0 items-center border-t border-slate-100 px-4 text-sm text-slate-400">
           Portal Data Kependudukan Padukuhan
         </p>
       </aside>

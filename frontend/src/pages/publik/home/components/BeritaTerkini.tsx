@@ -26,7 +26,7 @@ export function BeritaTerkini() {
           aksi={
             <Link
               to={paths.berita}
-              className={buttonClass({ variant: 'outline' })}
+              className={buttonClass({ variant: 'primary' })}
             >
               Lihat Semua Berita
             </Link>

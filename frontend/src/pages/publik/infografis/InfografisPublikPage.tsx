@@ -92,7 +92,7 @@ export default function InfografisPublikPage() {
                     icon={ikonPenduduk}
                   />
                   <StatCard
-                    label="Jumlah KK"
+                    label="Jumlah Kartu Keluarga"
                     value={formatAngka(statistik.totalKepalaKeluarga)}
                     icon={ikonKeluarga}
                   />

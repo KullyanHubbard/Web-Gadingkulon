@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { Logo } from '@/components/ui/Logo';
-import { SOROT_BRAND } from '@/lib/colors';
 import { cn } from '@/lib/utils';
 import { paths } from '@/routes/paths';
 import { AccountButton } from './AccountButton';
@@ -20,14 +19,13 @@ const TAUTAN = [
   { label: 'Statistik', to: paths.statistik, end: true },
 ];
 
-function tautanClass({ isActive }: { isActive: boolean }): string {
-  return cn(
-    'rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+const tautanClass = ({ isActive }: { isActive: boolean }) =>
+  cn(
+    'rounded-lg px-3.5 py-2 text-sm transition-colors',
     isActive
-      ? SOROT_BRAND
-      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
+      ? 'font-bold text-brand-600 dark:text-brand-300'
+      : 'font-medium text-slate-600 hover:bg-slate-100 dark:hover:bg-white/10 dark:hover:text-white hover:text-slate-900',
   );
-}
 
 /**
  * Bilah navigasi halaman publik: beranda, profil, infografis, berita,
@@ -60,7 +58,7 @@ export function PublicNavbar() {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="ml-auto rounded-md p-2 text-slate-600 hover:bg-slate-100 lg:hidden"
+          className="ml-auto rounded-md p-2 text-slate-600 hover:bg-slate-100 dark:hover:bg-white/10 lg:hidden"
           aria-label={open ? 'Tutup menu' : 'Buka menu'}
           aria-expanded={open}
         >

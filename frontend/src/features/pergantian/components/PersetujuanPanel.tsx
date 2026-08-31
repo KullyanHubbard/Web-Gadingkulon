@@ -30,9 +30,14 @@ export function PersetujuanPanel() {
       />
       <CardContent className="space-y-4">
         {data.map((p) => (
+          // `bg-amber-500/[9%]`, bukan `bg-amber-50`: ramp amber tidak dibalik di
+          // mode gelap, jadi amber-50 tetap kuning muda sementara teks slate di
+          // atasnya ikut terang — tulisannya hilang. Tint transparan menumpang
+          // latar kartu, jadi satu kelas benar di dua mode; pola yang sama
+          // dengan `SOROT_BRAND` di `lib/colors.ts`.
           <div
             key={p.id}
-            className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-amber-50 px-4 py-3"
+            className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-amber-500/[9%] px-4 py-3"
           >
             <div className="text-sm">
               <p className="font-medium text-slate-900">

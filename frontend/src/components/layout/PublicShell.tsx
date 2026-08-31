@@ -1,13 +1,9 @@
 import { Mail, Phone } from 'lucide-react';
 import { Link, Outlet } from 'react-router-dom';
-import { KreditKkn } from '@/components/ui/KreditKkn';
 import { PADUKUHAN } from '@/lib/padukuhan';
 import { paths } from '@/routes/paths';
-import { AksesibilitasWidget } from './AksesibilitasWidget';
-import { BadgeKunjungan } from './BadgeKunjungan';
+import { BarKredit } from './BarKredit';
 import { PublicNavbar } from './PublicNavbar';
-import { TombolPengaduan } from './TombolPengaduan';
-import { TombolTema } from './TombolTema';
 
 const JELAJAHI = [
   { label: 'Beranda', to: paths.landing },
@@ -97,17 +93,7 @@ export function PublicShell() {
           dan footer itu baru muncul di dasar dokumen.
           Widget mengambang ikut masuk ke bar ini — dulu `fixed` sendiri di atas
           isi halaman, sekarang satu baris dengan kredit. */}
-      <KreditKkn
-        className="h-16 px-4 sm:px-6 lg:px-8"
-        kiri={<BadgeKunjungan />}
-        kanan={
-          <div className="flex items-center gap-3">
-            <TombolPengaduan />
-            <AksesibilitasWidget />
-            <TombolTema />
-          </div>
-        }
-      />
+      <BarKredit className="min-h-20 px-4 py-2 sm:px-6 lg:px-8" />
     </div>
   );
 }

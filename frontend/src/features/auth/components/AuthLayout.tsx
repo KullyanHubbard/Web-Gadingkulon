@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import ikonKembali from '@/assets/back-navigasi.svg';
-import { KreditKkn } from '@/components/ui/KreditKkn';
+import { BarKredit } from '@/components/layout/BarKredit';
 import { Logo } from '@/components/ui/Logo';
 import { paths } from '@/routes/paths';
 
@@ -67,9 +67,12 @@ export function AuthLayout({ title, description, children }: AuthLayoutProps) {
             {children}
           </div>
         </div>
-
-        <KreditKkn className="shrink-0 py-4" />
       </div>
+
+      {/* Di luar pembungkus ber-`px`/`py` di atas: dibungkus, barnya jadi lebih
+          sempit dari layar dan `sticky bottom-0`-nya berhenti sejauh padding
+          bawah induknya — persis dua gejala yang terlihat di halaman masuk. */}
+      <BarKredit className="min-h-20 shrink-0 px-4 py-2 sm:px-6" />
     </div>
   );
 }

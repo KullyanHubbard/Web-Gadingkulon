@@ -69,23 +69,6 @@
   }
 }
 
-/* Recharts memasang `tabindex="-1"` di tiap grup irisan. Elemen ber-tabindex
-   jadi fokus begitu diklik, dan Chrome menggambar outline bawaannya
-   mengelilingi *bounding box* grup itu — kotak hitam kaku di atas donut,
-   bukan mengikuti bentuk irisannya.
-
-   Aman dimatikan karena irisan chart bukan kontrol: tidak ada aksi keyboard
-   yang bisa dijalankan di situ, jadi tidak ada fokus yang perlu ditandai.
-   Elemen yang benar-benar interaktif memakai `.focus-ring` dan tak tersentuh
-   rule ini.
-
-   WAJIB di luar @layer: kelas `recharts-*` dibuat library saat runtime dan tak
-   pernah muncul di source, jadi di dalam @layer Tailwind membuangnya saat purge
-   dan rule ini hilang diam-diam dari bundle. */
-.recharts-wrapper :focus {
-  outline: none;
-}
-
 /* Peralihan tema. Kelas ini ditempel sebentar di <html> oleh `TombolTema`
    supaya perpindahan terang↔gelap meluncur, bukan berkedip.
 
@@ -94,9 +77,9 @@
    situs ikut tertahan 300ms — mode gelap jadi terasa halus dengan ongkos
    seluruh aplikasi terasa lamban.
 
-   WAJIB di luar @layer, alasan yang sama dengan aturan `recharts` di atas:
-   Tailwind membuang isi @layer yang dianggap tak terpakai, dan kelas ini cuma
-   muncul saat runtime.
+   WAJIB di luar @layer: Tailwind membuang isi @layer yang dianggap tak
+   terpakai, dan kelas ini cuma muncul saat runtime — di dalam @layer ia hilang
+   diam-diam dari bundle.
 
    Angka 300ms kembar dengan `DURASI_MS` di `TombolTema.tsx` — ubah keduanya
    kalau salah satu diubah, kalau tidak kelasnya lepas sebelum animasinya

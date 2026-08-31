@@ -26,4 +26,4 @@ export const CHART_SLICE_LABEL_COLOR = '#ffffff';
  * sana. Tint transparan menumpang latar apa pun yang ada di bawahnya, jadi satu
  * kelas cukup untuk dua mode; cuma warna teksnya yang perlu `dark:`.
  */
-export const SOROT_BRAND = 'bg-brand-600/10 text-brand-700 dark:text-brand-300';
+export const SOROT_BRAND = 'font-bold text-brand-600 dark:text-brand-300';

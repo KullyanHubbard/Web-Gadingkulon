@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { PersetujuanPanel } from '@/features/pergantian/components/PersetujuanPanel';
-import { KreditKkn } from '@/components/ui/KreditKkn';
+import { BarKredit } from './BarKredit';
 import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
 
@@ -49,7 +49,12 @@ export function DashboardLayout() {
           </div>
         </main>
 
-        <KreditKkn className="shrink-0 px-4 py-4 lg:px-8" />
+        {/* `min-h-20` sama dengan kaki sidebar di sebelahnya, dan sengaja
+            lebih longgar dari isi bar (tombol 3rem + `py-2` = 4rem): `border-t`
+            di proyek ini 4px, jadi `min-h-16` cuma menyisakan 60px untuk isi —
+            barnya melar ke 68px sementara kaki sidebar yang isinya cuma teks
+            tetap 64px, dan garis atas keduanya meleset 4px. */}
+        <BarKredit className="min-h-20 shrink-0 px-4 py-2 lg:px-8" />
       </div>
     </div>
   );

@@ -1,7 +1,6 @@
 import { CalendarDays } from 'lucide-react';
 import ikonDashboard from '@/assets/icons/dashboard.png';
 import ikonRw from '@/assets/icons/rw-icon.png';
-import { SOROT_BRAND } from '@/lib/colors';
 import { cn } from '@/lib/utils';
 import { daftarPeriode, labelPeriode } from '@/lib/tanggal';
 import { useStatistikPublik } from '../hooks/use-statistik-publik';
@@ -19,8 +18,10 @@ interface StatistikNavProps {
 
 function itemClass(aktif: boolean) {
   return cn(
-    'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium transition-colors',
-    aktif ? SOROT_BRAND : 'text-slate-900 hover:bg-slate-100',
+    'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-base transition-colors',
+    aktif
+      ? 'font-bold text-brand-600 dark:text-brand-300'
+      : 'font-medium text-slate-900 hover:bg-slate-100 dark:hover:bg-white/10 dark:hover:text-white',
   );
 }
 
@@ -69,11 +70,11 @@ export function StatistikNav({
             value={periode}
             onChange={(e) => onPilihPeriode(e.target.value)}
             aria-label="Periode data"
-            className="focus-ring w-full rounded-lg border border-slate-200 bg-surface px-3 py-2 text-base font-medium text-slate-900"
+            className="w-full cursor-pointer rounded-lg border border-slate-200 bg-surface px-3 py-2 text-base font-medium text-slate-900 outline-none transition-colors hover:border-brand-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
           >
             {daftarPeriode(data?.periodeTerawal ?? periode, periode).map(
               (p) => (
-                <option key={p} value={p}>
+                <option key={p} value={p} className="bg-surface text-slate-900">
                   {labelPeriode(p)}
                 </option>
               ),

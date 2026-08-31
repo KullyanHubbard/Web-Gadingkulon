@@ -1,46 +1,51 @@
 import { Link } from 'react-router-dom';
 import { WADAH } from '@/components/layout/wadah';
 import { buttonClass } from '@/components/ui/button-class';
-import { Maskot } from '@/components/ui/Maskot';
 import { PADUKUHAN } from '@/lib/padukuhan';
 import { paths } from '@/routes/paths';
-import { LatarMerapi } from './LatarMerapi';
+import latarHero from '@/assets/hero-beranda.webp';
 
-/** Bagian paling atas beranda: sambutan, dua tombol, dan maskot. */
+/** Bagian paling atas beranda: foto Merapi, sambutan, dan dua tombol. */
 export function HeroBeranda() {
   return (
     <section className="relative isolate overflow-hidden">
-      <LatarMerapi />
-      {/* Gradasi gelap terpisah dari latarnya: kalau nanti latar diganti foto,
-          kontras teksnya tidak ikut hilang. */}
+      {/* `object-cover`: fotonya 1170x781, jauh lebih jangkung dari kotak hero,
+          jadi yang kepotong atas-bawah — bukan diregangkan. */}
+      <img
+        src={latarHero}
+        alt=""
+        className="absolute inset-0 h-full w-full object-cover"
+        aria-hidden
+      />
+      {/* Gradasi gelap terpisah dari fotonya supaya kontras teks tidak ikut
+          berubah kalau fotonya diganti lagi. */}
       <div
         className="absolute inset-0 bg-gradient-to-r from-[#3b1368]/90 via-[#3b1368]/70 to-transparent"
         aria-hidden
       />
 
-      <div
-        className={`${WADAH} relative flex flex-col-reverse items-center gap-8 py-16 lg:flex-row lg:py-24`}
-      >
-        <div className="flex-1 text-center lg:text-left">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-200">
+      {/* Satu kolom sejak maskotnya dicabut. Teksnya dijaga selebar setengah
+          layar supaya tetap duduk di sisi foto yang digelapkan gradasi. */}
+      <div className={`${WADAH} relative py-14 sm:py-20 lg:py-28`}>
+        <div className="max-w-2xl text-center lg:text-left">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-200 sm:text-sm">
             {PADUKUHAN.desa} · {PADUKUHAN.kapanewon}
           </p>
-          <h1 className="mt-4 text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
+          <h1 className="mt-3 text-2xl font-bold leading-tight text-white sm:mt-4 sm:text-4xl lg:text-5xl">
             Selamat Datang di Website Resmi{' '}
             <span className="text-amber-300">{PADUKUHAN.namaLengkap}</span>
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-base text-brand-100 lg:mx-0">
-            Portal data kependudukan, profil wilayah, dan kabar kegiatan warga —
-            terbuka untuk siapa saja, di kaki Gunung Merapi,{' '}
-            {PADUKUHAN.provinsi}.
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-brand-100 sm:mt-5 sm:text-base lg:mx-0">
+            Pusat informasi resmi layanan kependudukan, statistik wilayah, dan
+            kabar kegiatan masyarakat {PADUKUHAN.namaLengkap}, {PADUKUHAN.desa}.
           </p>
 
-          <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
             <Link
               to={paths.profil}
               className={buttonClass({
                 size: 'lg',
-                className: 'bg-white text-brand-800 hover:bg-brand-50',
+                className: 'w-full bg-white text-brand-800 hover:bg-brand-50 sm:w-auto',
               })}
             >
               Jelajahi Padukuhan
@@ -51,23 +56,11 @@ export function HeroBeranda() {
                 size: 'lg',
                 variant: 'outline',
                 className:
-                  'border-white/70 bg-transparent text-white hover:bg-white/10',
+                  'w-full border-white/70 bg-transparent text-white hover:bg-white/10 sm:w-auto',
               })}
             >
               Statistik
             </Link>
-          </div>
-        </div>
-
-        <div className="flex flex-1 justify-center">
-          <div className="relative">
-            {/* Lingkaran lembut di belakang maskot: memisahkannya dari siluet
-                gunung yang warnanya berdekatan. */}
-            <div
-              className="absolute inset-0 -m-6 rounded-full bg-white/15 blur-xl"
-              aria-hidden
-            />
-            <Maskot className="relative h-56 drop-shadow-2xl sm:h-64 lg:h-72" />
           </div>
         </div>
       </div>

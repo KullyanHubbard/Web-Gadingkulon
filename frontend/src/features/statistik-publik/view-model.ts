@@ -21,9 +21,10 @@ export interface RingkasanStatistik {
    */
   total: number;
   /**
-   * Tiga kartu, bukan empat: total penduduk sudah jadi angka besar di lubang
+   * Dua kartu, bukan empat: total penduduk sudah jadi angka besar di lubang
    * donut, dan mengulangnya sebagai kartu berarti angka yang sama dua kali
-   * dalam satu pandangan mata.
+   * dalam satu pandangan mata. Jumlah KK dipindah ke rincian per RW/RT —
+   * se-padukuhan angkanya sudah ada di beranda.
    */
   stat: StatWarga[];
   /** Data mentah untuk chart; urutannya sama dengan `baris`. */
@@ -72,7 +73,9 @@ export function toRingkasanStatistik(
       value: d.totalPenduduk,
     })),
     total,
-    stat: toStatWarga(data).filter((s) => s.id !== 'penduduk'),
+    stat: toStatWarga(data).filter(
+      (s) => s.id !== 'penduduk' && s.id !== 'keluarga',
+    ),
     baris: data.perRw.map((d) => ({
       label: d.label,
       jumlahTeks: `${formatAngka(d.totalPenduduk)} jiwa`,
