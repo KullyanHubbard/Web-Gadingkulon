@@ -13,6 +13,9 @@ interface DaftarJabatanViewProps {
   onIsiJabatan: (jabatan: Jabatan) => void;
   onResetPassword: (jabatan: Jabatan) => void;
   onAjukanPergantian: (jabatan: Jabatan) => void;
+  /** `undefined` selagi struktur organisasi belum selesai dimuat. */
+  lpmNama: string | null | undefined;
+  onUbahLpm: () => void;
 }
 
 /** Tabel jabatan padukuhan beserta aksinya. Tampilan saja. */
@@ -24,6 +27,8 @@ export function DaftarJabatanView({
   onIsiJabatan,
   onResetPassword,
   onAjukanPergantian,
+  lpmNama,
+  onUbahLpm,
 }: DaftarJabatanViewProps) {
   return (
     <Card className="overflow-hidden border-slate-200 shadow-sm">
@@ -135,6 +140,26 @@ export function DaftarJabatanView({
                     </Td>
                   </tr>
                 ))}
+                {/* Bukan bagian dari `daftar.map`: LPM tidak punya baris di
+                    tabel `pengurus`, jadi bukan `Jabatan` — datanya lewat
+                    prop terpisah (`lpmNama`/`onUbahLpm`), bukan array ini. */}
+                <tr className="border-t-2 border-slate-200 bg-slate-50/40 transition-colors hover:bg-slate-50/80">
+                  <Td className="font-semibold text-slate-900">Ketua LPM</Td>
+                  <Td className="font-medium text-slate-800">
+                    {lpmNama ? (
+                      lpmNama
+                    ) : (
+                      <span className="font-normal text-slate-400">—</span>
+                    )}
+                  </Td>
+                  <Td className="text-sm text-slate-400">—</Td>
+                  <Td className="text-sm text-slate-400">—</Td>
+                  <Td>
+                    <Button size="sm" variant="secondary" onClick={onUbahLpm}>
+                      Ubah Nama
+                    </Button>
+                  </Td>
+                </tr>
               </tbody>
             </Table>
           )}

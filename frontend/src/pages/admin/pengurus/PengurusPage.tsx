@@ -5,8 +5,10 @@ import { usePengajuanList } from '@/features/pergantian/hooks/use-pergantian';
 import { DaftarJabatanView } from '@/features/pengurus/components/DaftarJabatanView';
 import { IsiJabatanDialog } from '@/features/pengurus/components/IsiJabatanDialog';
 import { ResetPasswordDialog } from '@/features/pengurus/components/ResetPasswordDialog';
+import { UbahLpmDialog } from '@/features/pengurus/components/UbahLpmDialog';
 import { useDaftarJabatan } from '@/features/pengurus/hooks/use-pengurus';
 import type { Jabatan } from '@/features/pengurus/types';
+import { useStrukturOrganisasi } from '@/features/struktur-organisasi/hooks/use-struktur-organisasi';
 
 /**
  * Kelola jabatan perangkat desa. Admin saja — dan ia buta terhadap data warga,
@@ -19,9 +21,11 @@ import type { Jabatan } from '@/features/pengurus/types';
 export default function PengurusPage() {
   const jabatan = useDaftarJabatan();
   const pengajuan = usePengajuanList();
+  const struktur = useStrukturOrganisasi();
   const [isiTarget, setIsiTarget] = useState<Jabatan | null>(null);
   const [resetTarget, setResetTarget] = useState<Jabatan | null>(null);
   const [gantiTarget, setGantiTarget] = useState<Jabatan | null>(null);
+  const [lpmDialogOpen, setLpmDialogOpen] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -33,6 +37,8 @@ export default function PengurusPage() {
         onIsiJabatan={setIsiTarget}
         onResetPassword={setResetTarget}
         onAjukanPergantian={setGantiTarget}
+        lpmNama={struktur.data?.lpm}
+        onUbahLpm={() => setLpmDialogOpen(true)}
       />
 
       <DaftarPengajuanView
@@ -48,6 +54,11 @@ export default function PengurusPage() {
       <ResetPasswordDialog
         jabatan={resetTarget}
         onClose={() => setResetTarget(null)}
+      />
+      <UbahLpmDialog
+        open={lpmDialogOpen}
+        namaSaatIni={struktur.data?.lpm ?? null}
+        onClose={() => setLpmDialogOpen(false)}
       />
       <AjukanPergantianDialog
         jabatan={
