@@ -167,6 +167,15 @@ CREATE TABLE IF NOT EXISTS kunjungan (
     tanggal TEXT PRIMARY KEY,
     jumlah  INTEGER NOT NULL DEFAULT 0
 );
+
+-- Nama Ketua LPM untuk bagan struktur organisasi publik — satu baris
+-- tunggal (id selalu 1). LPM bukan salah satu dari empat peran akun, jadi
+-- tidak punya baris di `pengurus` dan tidak ikut sistem ganti-jabatan yang
+-- disetujui. Lihat `app/data/lpm.py`.
+CREATE TABLE IF NOT EXISTS lpm (
+    id   INTEGER PRIMARY KEY CHECK (id = 1),
+    nama TEXT NOT NULL DEFAULT ''
+);
 """
 
 
