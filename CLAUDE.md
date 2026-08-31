@@ -442,10 +442,11 @@ masih bernama lama. Diuji beneran di `db._check_migrasi_jabatan()`: tabel
 `pengajuan` riwayat permanen, jadi migrasi yang salah menghapus catatan yang
 tidak bisa dibuat ulang.
 
-**Akses SQL cuma di `app/data/db.py`** — `sqlite3` stdlib, empat tabel:
+**Akses SQL cuma di `app/data/db.py`** — `sqlite3` stdlib, lima tabel:
 `penduduk` (dengan `Alamat` diratakan jadi kolom `alamat_*`), `pengurus`, serta
 `pengajuan` + `persetujuan` (riwayat perpindahan jabatan, tidak pernah
-dihapus).
+dihapus), serta `mutasi` (buku perubahan `statusKependudukan`, juga tidak
+pernah dihapus).
 Tabel `pengurus` dibaca lewat koneksi sekali pakai per operasi (`db.koneksi`,
 dibungkus `app/data/pengurus.py`), **bukan** lewat cache `store.py` — tabelnya
 ditulis saat runtime, jadi cache impor-sekali itu akan basi. Tanpa ORM: query
@@ -488,6 +489,20 @@ Dukuh dan para Ketua RW. Kolom ini **bukan** penentu kewenangan; yang
 menentukan tetap akun di tabel `pengurus`. Dua orang ditandai memegang jabatan
 yang sama menghentikan impor.
 
+**Statistik bulan lampau dihitung dengan MEMUTAR MUNDUR, bukan disimpan.**
+Tabel `penduduk` cuma tahu keadaan sekarang; tabel `mutasi` mencatat tiap
+perubahan `statusKependudukan` (plus satu baris saat warga baru masuk,
+`dari IS NULL`). `store.penduduk_pada(periode)` mengambil keadaan hari ini lalu
+membatalkan tiap mutasi yang terjadi sesudah bulan itu. Yang menulis cuma
+`store.ubah_warga` & `store.tambah_warga` — impor Excel TIDAK menulis mutasi,
+ia mengisi keadaan awal. Batas bulannya dihitung di **WIB**
+(`store.WIB`), yang tersimpan tetap UTC: pukul 00:00–07:00 tanggal 1 masih
+tanggal 30/31 di UTC, dan tanpa itu pemakai pagi hari melihat bulan lalu
+ditawarkan sebagai "bulan ini". Riwayatnya mulai kosong dan tidak bisa diisi
+mundur — file Excel pendataan tidak punya kolom status kependudukan sama
+sekali. `periodeTerawal` di respons statistik yang membatasi pilihan bulan di
+frontend. Spec: `docs/superpowers/specs/2026-09-01-periode-riwayat-mutasi-design.md`.
+
 **`id` penduduk = kolom "Kode Warga" di Excel**, bukan UUID. Kunci yang dijaga
 manusia adalah satu-satunya yang bertahan melewati impor yang menimpa, dan
 Tahap 2 mengharuskan jabatan pengurus menunjuk warga tertentu. Kode ganda atau
@@ -508,7 +523,7 @@ Kontrak endpoint yang **sudah diimplementasikan** (bentuknya sinkron dengan
 | POST   | `/penduduk`                      | tambah warga di wilayah sendiri — PENGURUS              |
 | PATCH  | `/penduduk/{id}`                 | ubah data warga; RT/RW hanya Dukuh — PENGURUS           |
 | GET    | `/infografis`                    | agregat lengkap — semua pengurus                        |
-| GET    | `/publik/statistik`              | cacah per RW + cacah kepala keluarga + 10 pekerjaan terbanyak — **tanpa auth** |
+| GET    | `/publik/statistik`              | cacah per RW + cacah kepala keluarga + 10 pekerjaan terbanyak; `?periode=YYYY-MM` memutar mundur ke bulan itu — **tanpa auth** |
 | POST   | `/publik/kunjungan`              | tambah 1 ke hitungan kunjungan hari ini, kembalikan totalnya — **tanpa auth** |
 | GET    | `/publik/kunjungan`              | hitungan kunjungan hari ini tanpa menambah — **tanpa auth** |
 | GET    | `/publik/struktur-organisasi`    | bagan Dukuh/RW/RT + nama pemegang jabatan aktif — **tanpa auth** |

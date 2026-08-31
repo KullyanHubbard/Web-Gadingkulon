@@ -180,6 +180,10 @@ class RincianRw(BaseModel):
 
 
 class StatistikPublik(BaseModel):
+    # Bulan paling lampau yang datanya bisa dipertanggungjawabkan, `YYYY-MM`.
+    # Frontend memakainya sebagai batas daftar pilihan periode — lihat
+    # `store.periode_terawal` untuk kenapa jawabannya konservatif.
+    periodeTerawal: str
     totalPenduduk: int
     totalLakiLaki: int
     totalPerempuan: int

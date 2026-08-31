@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/ui/Logo';
+import { paths } from '@/routes/paths';
+import ikonBack from '@/assets/back-navigasi.svg';
 import ikonClose from '@/assets/icons/nav/x-close.svg';
-import { AccountButton } from './AccountButton';
 
 interface PublicSidebarProps {
   /** Daftar bagian statistik. */
@@ -38,23 +40,44 @@ export function PublicSidebar({ nav, open, onClose }: PublicSidebarProps) {
         {/* `h-20` harus sama persis dengan bar breadcrumb di `PublicLandingLayout`
             — garis bawah keduanya bersambung jadi satu baris melintang. Ubah
             satu, ubah dua-duanya. */}
-        <div className="relative flex h-20 shrink-0 items-center justify-center border-b border-slate-100 px-5">
-          <Logo className="h-8" />
-          <button
-            className="absolute right-3 rounded-md p-1 text-slate-400 hover:bg-slate-100 lg:hidden"
-            onClick={onClose}
-            aria-label="Tutup menu"
-          >
-            <span
-              aria-hidden
-              className="block h-5 w-5 bg-current"
-              style={{
-                mask: `url("${ikonClose}") center / contain no-repeat`,
-                WebkitMask: `url("${ikonClose}") center / contain no-repeat`,
-              }}
-            />
-          </button>
+        <div className="flex h-20 shrink-0 flex-col justify-center border-b border-slate-100 px-5">
+          <div className="flex items-center justify-between">
+            <Logo className="h-8" />
+            <button
+              className="rounded-md p-1 text-slate-400 hover:bg-slate-100 lg:hidden"
+              onClick={onClose}
+              aria-label="Tutup menu"
+            >
+              <span
+                aria-hidden
+                className="block h-5 w-5 bg-current"
+                style={{
+                  mask: `url("${ikonClose}") center / contain no-repeat`,
+                  WebkitMask: `url("${ikonClose}") center / contain no-repeat`,
+                }}
+              />
+            </button>
+          </div>
         </div>
+
+        {/* Tautan kembali ke beranda — halaman statistik pakai layout sendiri
+            tanpa PublicNavbar, jadi tanpa ini tidak ada jalan langsung pulang.
+            Diletakkan di luar area gulir supaya selalu terlihat. */}
+        <Link
+          to={paths.landing}
+          onClick={onClose}
+          className="group mx-3 mt-3 flex items-center gap-2.5 rounded-lg border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-600 transition-all hover:border-brand-200 hover:bg-brand-600/5 hover:text-brand-700 dark:border-slate-700 dark:text-slate-400 dark:hover:border-brand-800 dark:hover:bg-brand-500/10 dark:hover:text-brand-300"
+        >
+          <span
+            aria-hidden
+            className="block h-4 w-4 shrink-0 bg-current"
+            style={{
+              mask: `url("${ikonBack}") center / contain no-repeat`,
+              WebkitMask: `url("${ikonBack}") center / contain no-repeat`,
+            }}
+          />
+          Kembali ke Beranda
+        </Link>
 
         {/* `onClick` di pembungkus hanya memanggil `onClose` saat elemen tombol/tautan
             diklik, sehingga melepaskan sentuhan/scroll di area kosong tidak menutup drawer. */}
@@ -67,10 +90,12 @@ export function PublicSidebar({ nav, open, onClose }: PublicSidebarProps) {
           }}
         >
           {nav}
-          <AccountButton className="mt-4 w-full justify-center" />
         </div>
 
-        <p className="shrink-0 border-t border-slate-100 p-4 text-sm text-slate-400">
+        {/* `h-16` harus sama persis dengan bar kredit di kolom kanan
+            (`PublicLandingLayout`) — garis atas keduanya bersambung jadi satu
+            baris melintang, seperti pasangan `h-20` di kepala. */}
+        <p className="flex h-16 shrink-0 items-center border-t border-slate-100 px-4 text-sm text-slate-400">
           Portal Data Kependudukan Padukuhan
         </p>
       </aside>

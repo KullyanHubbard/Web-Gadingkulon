@@ -1,12 +1,12 @@
 import { useSearchParams } from 'react-router-dom';
 import { PanelDistribusiCard } from '@/components/ui/PanelDistribusiCard';
-import { QueryBoundary } from '@/components/ui/QueryBoundary';
-import { StatCard } from '@/components/ui/StatCard';
-import { useStatistikPublik } from '@/features/statistik-publik/hooks/use-statistik-publik';
 import ikonKeluarga from '@/assets/icons/keluarga.png';
 import ikonLakiLaki from '@/assets/icons/laki-laki.png';
 import ikonPenduduk from '@/assets/icons/penduduk.png';
 import ikonPerempuan from '@/assets/icons/perempuan.png';
+import { QueryBoundary } from '@/components/ui/QueryBoundary';
+import { StatCard } from '@/components/ui/StatCard';
+import { useStatistikPublik } from '@/features/statistik-publik/hooks/use-statistik-publik';
 import { PADUKUHAN } from '@/lib/padukuhan';
 import { cn, formatAngka } from '@/lib/utils';
 import { PANEL_BANSOS, TOTAL_PENERIMA_BANSOS } from './bansos';

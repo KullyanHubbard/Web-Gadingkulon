@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { Logo } from '@/components/ui/Logo';
+import { SOROT_BRAND } from '@/lib/colors';
 import { cn } from '@/lib/utils';
 import { paths } from '@/routes/paths';
 import { AccountButton } from './AccountButton';
@@ -23,7 +24,7 @@ function tautanClass({ isActive }: { isActive: boolean }): string {
   return cn(
     'rounded-lg px-3 py-2 text-sm font-medium transition-colors',
     isActive
-      ? 'bg-brand-50 text-brand-800'
+      ? SOROT_BRAND
       : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
   );
 }

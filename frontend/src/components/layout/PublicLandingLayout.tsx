@@ -1,7 +1,12 @@
 import { useState, type ReactNode } from 'react';
 import { KreditKkn } from '@/components/ui/KreditKkn';
+import { AccountButton } from './AccountButton';
+import { AksesibilitasWidget } from './AksesibilitasWidget';
+import { BadgeKunjungan } from './BadgeKunjungan';
 import { PublicSidebar } from './PublicSidebar';
 import { PublicTopbar } from './PublicTopbar';
+import { TombolPengaduan } from './TombolPengaduan';
+import { TombolTema } from './TombolTema';
 
 interface PublicLandingLayoutProps {
   /** Rail kiri: daftar bagian statistik. Disembunyikan di layar kecil. */
@@ -21,7 +26,8 @@ interface PublicLandingLayoutProps {
  * dengan kartu di bawahnya. Tampil di semua ukuran layar: di bawah `lg` rail
  * kiri disembunyikan, jadi bar ini satu-satunya penunjuk posisi.
  *
- * Footernya cuma kredit pembuat — sengaja tidak ada copyright atau tagline di
+ * Footernya bar kredit yang sama dengan `PublicShell`, lengkap dengan
+ * penghitung kunjungan & tombol pengaduan/ukuran teks/tema — sengaja tidak ada copyright atau tagline di
  * situ, dua-duanya sudah ditulis di kaki `PublicSidebar` dan cuma jadi
  * pengulangan. Kreditnya ada di sini, bukan di sidebar, karena sidebar
  * disembunyikan di bawah `lg` dan pembacanya mayoritas di ponsel.
@@ -50,8 +56,11 @@ export function PublicLandingLayout({
       {/* Bar & main dibungkus satu sel grid: keduanya menumpuk di kolom kanan,
           bukan dua baris grid yang bisa bergeser dari sidebar. */}
       <div className="flex flex-1 flex-col lg:col-start-2 lg:row-start-1 lg:min-h-0">
-        <div className="flex h-20 shrink-0 items-center border-b border-slate-200 bg-surface px-6 lg:px-12">
+        <div className="flex h-20 shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-surface px-6 lg:px-12">
           {breadcrumb}
+          {/* Pintu masuk di sudut kanan bar atas — dulu di kaki rail kiri,
+              tempat yang tidak dilihat orang sampai menggulung seluruh nav. */}
+          <AccountButton className="shrink-0" />
         </div>
 
         {/* Penengah vertikalnya `my-auto` di anak, bukan `justify-center` di
@@ -61,7 +70,17 @@ export function PublicLandingLayout({
           <div className="my-auto w-full">{children}</div>
         </main>
 
-        <KreditKkn className="shrink-0 border-t border-slate-200 bg-surface px-6 py-4 lg:px-12" />
+        <KreditKkn
+          className="h-16 shrink-0 px-6 lg:px-12"
+          kiri={<BadgeKunjungan />}
+          kanan={
+            <div className="flex items-center gap-3">
+              <TombolPengaduan />
+              <AksesibilitasWidget />
+              <TombolTema />
+            </div>
+          }
+        />
       </div>
     </div>
   );

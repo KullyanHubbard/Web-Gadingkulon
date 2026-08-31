@@ -1,7 +1,7 @@
 from collections import defaultdict
 from typing import Callable
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 
 from app.data.agregat import (
     distribusi_by,
@@ -13,7 +13,12 @@ from app.data.agregat import (
 from app.data import kunjungan
 from app.data import lpm as data_lpm
 from app.data import pengurus as data_pengurus
-from app.data.store import hanya_aktif, semua_penduduk
+from app.data.store import (
+    hanya_aktif,
+    penduduk_pada,
+    periode_terawal,
+    semua_penduduk,
+)
 from app.schemas.penduduk import Penduduk, RincianRw, StatistikPublik
 from app.schemas.pengurus import (
     JabatanWilayahPublik,
@@ -51,14 +56,25 @@ def _rincian(
 
 
 @router.get("/publik/statistik", response_model=StatistikPublik)
-def statistik_publik() -> StatistikPublik:
+def statistik_publik(
+    periode: str | None = Query(
+        None,
+        pattern=r"^\d{4}-(0[1-9]|1[0-2])$",
+        description="Bulan yang diminta, `YYYY-MM`. Kosong = keadaan hari ini.",
+    ),
+) -> StatistikPublik:
     """Cacah saja — tanpa nama atau alamat. Endpoint ini terbuka tanpa
     autentikasi (lihat CLAUDE.md §11), jadi apa pun yang ditambahkan di sini
     otomatis jadi konsumsi publik: boleh angka agregat, tidak boleh data orang.
+
+    `periode` memutar mundur buku mutasi (`store.penduduk_pada`). Bentuk yang
+    salah ditolak 422 oleh pola di atas, bukan diabaikan diam-diam — pemanggil
+    yang salah ketik lebih baik tahu daripada dikasih angka bulan lain.
     """
     # Yang pindah & meninggal tidak ikut dihitung — lihat `store.hanya_aktif`.
-    semua = hanya_aktif(semua_penduduk())
+    semua = hanya_aktif(penduduk_pada(periode) if periode else semua_penduduk())
     return StatistikPublik(
+        periodeTerawal=periode_terawal(),
         totalPenduduk=len(semua),
         totalLakiLaki=sum(
             1 for p in semua if p.jenisKelamin == "LAKI_LAKI"

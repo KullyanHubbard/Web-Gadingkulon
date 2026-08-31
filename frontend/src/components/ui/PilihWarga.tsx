@@ -1,3 +1,4 @@
+import { SOROT_BRAND } from '@/lib/colors';
 import { cn } from '@/lib/utils';
 import type { WargaPilihan } from '@/lib/warga-api';
 import { Input } from './Input';
@@ -70,7 +71,7 @@ export function PilihWarga({
               onClick={() => onPilih(w)}
               className={cn(
                 'flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-slate-50',
-                terpilih?.id === w.id && 'bg-brand-50 font-medium',
+                terpilih?.id === w.id && cn(SOROT_BRAND, 'font-medium'),
               )}
             >
               <span>{w.nama}</span>

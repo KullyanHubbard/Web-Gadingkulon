@@ -13,10 +13,9 @@ export function StatCard({
   return (
     <Card className="flex items-center gap-4 p-4">
       {/* Tanpa kotak latar: ikonnya ilustrasi yang sudah berwarna sendiri, dan
-          `Card` sudah putih — kotak putih di atas putih cuma markup mati. */}
+          kotak terang di baliknya jadi tambalan putih di mode gelap. */}
       {/* `alt` kosong: labelnya sudah ada di sebelah, ikon cuma hiasan. */}
-      {/* 44px: ikonnya ilustrasi berdetail, di bawah itu bentuknya luruh. */}
-      <img src={icon} alt="" className="h-11 w-11" />
+      <img src={icon} alt="" className="h-12 w-12" />
       <div>
         <p className="text-sm font-bold text-slate-900">{label}</p>
         <p className="text-2xl font-bold text-slate-900">{value}</p>

@@ -119,7 +119,11 @@ export function DistribusiPieChart({
               innerRadius={labelIrisan ? '52%' : '58%'}
               outerRadius={labelIrisan ? '88%' : '88%'}
               paddingAngle={CELAH_DERAJAT}
-              strokeWidth={1}
+              // Bawaan Recharts `stroke: '#fff'`. Di kartu putih tidak kelihatan,
+              // di mode gelap jadi cincin terang yang membungkus tiap irisan.
+              // Celah antar-irisan sudah dibawa `paddingAngle`, jadi tidak perlu
+              // garis sama sekali.
+              stroke="none"
               labelLine={false}
               label={
                 labelIrisan
@@ -136,12 +140,19 @@ export function DistribusiPieChart({
               mencantumkan nama & jumlah, tooltip cuma mengulanginya. */}
             {!labelIrisan && (
               <Tooltip
+                // Warna dibaca dari CSS variable yang dibalik `:root.dark`
+                // (CLAUDE.md). Tanpa `background`, Recharts memakai bawaannya
+                // yang putih — menyilaukan di atas kartu gelap.
                 contentStyle={{
                   borderRadius: 8,
                   fontSize: UKURAN_TEKS_CHART,
-                  border: 'none',
-                  boxShadow: '0 4px 12px rgb(15 23 42 / 0.12)',
+                  background: 'rgb(var(--surface))',
+                  border: '1px solid rgb(var(--slate-300))',
+                  boxShadow: '0 4px 12px rgb(2 6 23 / 0.24)',
                 }}
+                // Bawaannya warna irisan itu sendiri; hue kategorik yang gelap
+                // (mis. bata `#9f4d48`) nyaris hilang di atas latar gelap.
+                itemStyle={{ color: 'rgb(var(--slate-700))' }}
               />
             )}
           </PieChart>

@@ -29,12 +29,12 @@ export function FotoBerita({
   return (
     <div
       className={cn(
-        'flex items-center justify-center bg-gradient-to-br from-brand-100 to-brand-50',
+        'flex items-center justify-center bg-gradient-to-br from-slate-200 to-slate-100',
         className,
       )}
       aria-hidden
     >
-      <Newspaper className="h-8 w-8 text-brand-400" />
+      <Newspaper className="h-8 w-8 text-slate-400" />
     </div>
   );
 }

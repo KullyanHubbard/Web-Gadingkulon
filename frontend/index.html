@@ -14,7 +14,22 @@
       href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <title>SIGALON/title>
+    <title>SIGALON</title>
+    <script>
+      // Tema dipasang sebelum React mount, kalau tidak halaman berkedip putih
+      // dulu tiap muat. Kuncinya sama dengan `components/layout/TombolTema.tsx`.
+      try {
+        var tema = localStorage.getItem('siduk.tema');
+        if (
+          tema === 'gelap' ||
+          (!tema && matchMedia('(prefers-color-scheme: dark)').matches)
+        ) {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) {
+        // localStorage diblokir (mode privat, dsb) — jalan terus dengan terang.
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

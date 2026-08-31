@@ -15,6 +15,8 @@ seluruh urusan "kapan cache harus disegarkan". Pindahkan penyaringannya ke
 `WHERE` di SQL kalau datanya nanti puluhan ribu baris.
 """
 
+from datetime import datetime, timedelta, timezone
+
 from app.core.audit import catat_audit
 from app.core.config import settings
 from app.data import db
@@ -74,6 +76,84 @@ def penduduk_untuk(user: AuthUser) -> list[Penduduk]:
         for w in semua_penduduk()
         if pg.cocok_wilayah(user.role, user.rw, user.rt, w.alamat.rw, w.alamat.rt)
     ]
+
+
+# --- Keadaan pada bulan lampau ----------------------------------------------
+#
+# Tabel `penduduk` cuma tahu keadaan sekarang. Keadaan bulan lalu dihitung
+# dengan MEMUTAR MUNDUR buku mutasi (`db.catat_mutasi`) — lihat spec
+# `docs/superpowers/specs/2026-09-01-periode-riwayat-mutasi-design.md`.
+
+
+# Padukuhan ini di Yogyakarta: WIB, offset tetap, tanpa DST. Batas bulan HARUS
+# dihitung di zona itu — pukul 00:00–07:00 tanggal 1 masih tanggal 30/31 di UTC,
+# jadi pemakai di pagi hari akan melihat bulan lalu yang ditawarkan sebagai
+# "bulan ini". Yang DISIMPAN tetap UTC; yang diterjemahkan cuma batasnya.
+WIB = timezone(timedelta(hours=7))
+
+
+def _batas_periode(periode: str) -> str:
+    """Awal bulan BERIKUTNYA dalam ISO — pemisah "sudah" dan "belum terjadi".
+
+    Mutasi tepat pada batas ini sudah di luar periode: ia terjadi di bulan
+    sesudahnya, jadi harus ikut dibatalkan.
+    """
+    tahun, bulan = (int(x) for x in periode.split("-"))
+    tahun_berikut, bulan_berikut = (tahun + 1, 1) if bulan == 12 else (tahun, bulan + 1)
+    # Dikembalikan sebagai UTC: `db.mutasi_sejak` membandingkannya sebagai TEKS,
+    # dan dua ISO beroffset berbeda tidak bisa dibandingkan begitu.
+    return (
+        datetime(tahun_berikut, bulan_berikut, 1, tzinfo=WIB)
+        .astimezone(timezone.utc)
+        .isoformat(timespec="seconds")
+    )
+
+
+def periode_sekarang() -> str:
+    """Bulan berjalan menurut WIB, bentuk `YYYY-MM`."""
+    return datetime.now(WIB).strftime("%Y-%m")
+
+
+def periode_terawal() -> str:
+    """Bulan paling lampau yang masih bisa dihitung.
+
+    Konservatif dengan sengaja: selama buku mutasi kosong, jawabannya bulan
+    berjalan. Bulan antara "fitur dipasang" dan "mutasi pertama" sebenarnya
+    masih bisa dihitung, tapi tidak ada yang mencatat kapan fitur dipasang —
+    dan menawarkan bulan yang tidak bisa dipertanggungjawabkan lebih buruk
+    daripada menawarkan lebih sedikit.
+    """
+    with db.koneksi(settings.DATABASE_FILE) as conn:
+        pada = db.mutasi_terawal(conn)
+    if pada is None:
+        return periode_sekarang()
+    return datetime.fromisoformat(pada).astimezone(WIB).strftime("%Y-%m")
+
+
+def penduduk_pada(periode: str) -> list[Penduduk]:
+    """Warga sebagaimana keadaannya di akhir bulan `periode` (`YYYY-MM`).
+
+    Ambil keadaan sekarang, lalu batalkan tiap mutasi yang terjadi SESUDAH
+    periode itu, dari yang paling akhir. Warga yang baru masuk sesudahnya
+    (`dari IS NULL`) dikeluarkan — waktu itu dia memang belum ada.
+
+    Periode berjalan pun lewat jalur yang sama: tidak ada mutasi sesudahnya,
+    jadi hasilnya persis `semua_penduduk()`.
+    """
+    batas = _batas_periode(periode)
+    warga = {w.id: w for w in semua_penduduk()}
+    with db.koneksi(settings.DATABASE_FILE) as conn:
+        for m in db.mutasi_sejak(conn, batas):
+            sekarang = warga.get(m["warga_id"])
+            if sekarang is None:
+                continue
+            if m["dari"] is None:
+                del warga[m["warga_id"]]
+            else:
+                warga[m["warga_id"]] = sekarang.model_copy(
+                    update={"statusKependudukan": m["dari"]}
+                )
+    return list(warga.values())
 
 
 # --- Menulis data warga ------------------------------------------------------
@@ -163,6 +243,16 @@ def ubah_warga(user: AuthUser, id: str, ubahan: dict) -> Penduduk:
     with db.koneksi(settings.DATABASE_FILE) as conn:
         if not db.perbarui(conn, baru):
             raise TidakBoleh("Warga tidak ditemukan.")
+        # Buku mutasi ditulis di sini, bukan di router: ini satu-satunya jalur
+        # yang mengubah status warga, jadi tidak ada pintu yang bisa lupa.
+        if lama.statusKependudukan != baru.statusKependudukan:
+            db.catat_mutasi(
+                conn,
+                baru.id,
+                lama.statusKependudukan,
+                baru.statusKependudukan,
+                user.username,
+            )
     catat_audit(
         aktor=user.username,
         aksi="ubah-warga",
@@ -185,6 +275,9 @@ def tambah_warga(user: AuthUser, data: dict) -> Penduduk:
     baru = Penduduk(**{**data, "id": kode_warga_baru()})
     with db.koneksi(settings.DATABASE_FILE) as conn:
         db.simpan(conn, [baru])
+        # `dari=None`: sebelum hari ini orang ini belum ada di padukuhan, jadi
+        # statistik bulan-bulan sebelumnya tidak boleh menghitungnya.
+        db.catat_mutasi(conn, baru.id, None, baru.statusKependudukan, user.username)
     catat_audit(
         aktor=user.username,
         aksi="tambah-warga",
@@ -193,3 +286,60 @@ def tambah_warga(user: AuthUser, data: dict) -> Penduduk:
         perubahan=f"RT {baru.alamat.rt}/RW {baru.alamat.rw}",
     )
     return baru
+
+
+# --- Self-check --------------------------------------------------------------
+
+
+def _check_mutasi() -> None:
+    """Mesin waktunya harus benar-benar memutar mundur.
+
+    Yang diuji: warga yang ditandai MENINGGAL hari ini tetap terhitung pada
+    periode sebelum penandaan, dan warga yang baru ditambahkan tidak muncul di
+    periode sebelum dia masuk.
+    """
+    from app.schemas.penduduk import Alamat
+
+    alamat = Alamat(
+        jalan="Jl. Uji", rt="001", rw="019", desa="Sukamaju", kecamatan="Cibiru",
+        kabupaten="Bandung", provinsi="Jawa Barat", kodePos="40615",
+    )
+    warga = Penduduk(
+        id="W9001", nama="Warga Uji", jenisKelamin="LAKI_LAKI",
+        tempatLahir="Bandung", tanggalLahir="1950-01-01", agama="ISLAM",
+        statusPerkawinan="KAWIN", pendidikan="SD", pekerjaan="Petani",
+        golonganDarah="O", statusHubunganKeluarga="KEPALA_KELUARGA",
+        kewarganegaraan="WNI", alamat=alamat,
+    )
+    with db.koneksi(settings.DATABASE_FILE) as conn:
+        conn.execute("DELETE FROM penduduk")
+        conn.execute("DELETE FROM mutasi")
+        conn.commit()
+        db.simpan(conn, [warga])
+        # Dua baris buku, ditulis tangan supaya tanggalnya bisa diatur.
+        conn.execute(
+            "INSERT INTO mutasi (warga_id, dari, ke, pada, oleh) VALUES"
+            " ('W9001', NULL, 'AKTIF', '2026-09-10T00:00:00+00:00', 'uji'),"
+            " ('W9001', 'AKTIF', 'MENINGGAL', '2026-10-05T00:00:00+00:00', 'uji')"
+        )
+        conn.execute(
+            "UPDATE penduduk SET statusKependudukan = 'MENINGGAL' WHERE id = 'W9001'"
+        )
+        conn.commit()
+
+    sekarang = hanya_aktif(penduduk_pada("2026-10"))
+    assert sekarang == [], f"Oktober: sudah meninggal, tidak boleh terhitung: {sekarang}"
+
+    september = hanya_aktif(penduduk_pada("2026-09"))
+    assert len(september) == 1, f"September: harus terhitung lagi, dapat {september}"
+    assert september[0].statusKependudukan == "AKTIF"
+
+    agustus = penduduk_pada("2026-08")
+    assert agustus == [], f"Agustus: belum masuk padukuhan, dapat {agustus}"
+
+    assert periode_terawal() == "2026-09", periode_terawal()
+    print("OK: mesin waktu memutar mundur MENINGGAL & warga masuk")
+
+
+if __name__ == "__main__":
+    _check_mutasi()

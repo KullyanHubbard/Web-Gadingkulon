@@ -27,6 +27,7 @@ penyaringan itu keputusan baca, bukan alasan membuang data.
 
 import sqlite3
 from contextlib import contextmanager
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable, Iterator
 
@@ -167,6 +168,25 @@ CREATE TABLE IF NOT EXISTS kunjungan (
     tanggal TEXT PRIMARY KEY,
     jumlah  INTEGER NOT NULL DEFAULT 0
 );
+
+-- Buku mutasi warga: satu baris tiap kali `statusKependudukan` berubah, plus
+-- satu baris saat warga baru masuk (`dari IS NULL`). TIDAK PERNAH DIHAPUS.
+--
+-- Inilah yang membuat statistik per periode mungkin: tabel `penduduk` cuma tahu
+-- keadaan sekarang, jadi keadaan bulan lalu dihitung dengan memutar mundur
+-- baris-baris di sini (lihat `store.penduduk_pada`). Tanpa buku ini setiap
+-- bulan menghasilkan angka yang sama persis.
+CREATE TABLE IF NOT EXISTS mutasi (
+    id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    warga_id TEXT NOT NULL,
+    -- NULL = warga baru masuk, belum punya status sebelumnya.
+    dari     TEXT,
+    ke       TEXT NOT NULL,
+    pada     TEXT NOT NULL,
+    oleh     TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_mutasi_pada ON mutasi(pada);
 
 -- Nama Ketua LPM untuk bagan struktur organisasi publik — satu baris
 -- tunggal (id selalu 1). LPM bukan salah satu dari empat peran akun, jadi
@@ -351,6 +371,38 @@ def muat(conn: sqlite3.Connection) -> list[Penduduk]:
         _ke_penduduk(r)
         for r in conn.execute("SELECT * FROM penduduk ORDER BY rowid")
     ]
+
+
+def catat_mutasi(
+    conn: sqlite3.Connection, warga_id: str, dari: str | None, ke: str, oleh: str
+) -> None:
+    """Tulis satu baris buku mutasi. `dari=None` untuk warga yang baru masuk."""
+    conn.execute(
+        "INSERT INTO mutasi (warga_id, dari, ke, pada, oleh) VALUES (?, ?, ?, ?, ?)",
+        (warga_id, dari, ke, datetime.now(timezone.utc).isoformat(timespec="seconds"), oleh),
+    )
+    conn.commit()
+
+
+def mutasi_sejak(conn: sqlite3.Connection, batas: str) -> list[sqlite3.Row]:
+    """Mutasi yang tercatat pada atau sesudah `batas` (ISO), TERBARU DULU.
+
+    Urutannya menentukan kebenaran: pemutar mundur di `store.penduduk_pada`
+    membatalkan perubahan satu per satu dari yang paling akhir, jadi status yang
+    tersisa adalah status pada `batas`.
+    """
+    return list(
+        conn.execute(
+            "SELECT warga_id, dari, ke FROM mutasi WHERE pada >= ? ORDER BY pada DESC, id DESC",
+            (batas,),
+        )
+    )
+
+
+def mutasi_terawal(conn: sqlite3.Connection) -> str | None:
+    """Waktu mutasi paling lama, atau None kalau bukunya masih kosong."""
+    baris = conn.execute("SELECT MIN(pada) AS pada FROM mutasi").fetchone()
+    return baris["pada"] if baris and baris["pada"] else None
 
 
 def _contoh_penduduk() -> list[Penduduk]:

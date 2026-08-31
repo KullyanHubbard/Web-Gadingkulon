@@ -49,7 +49,7 @@ export function DashboardLayout() {
           </div>
         </main>
 
-        <KreditKkn className="shrink-0 border-t border-slate-200 px-4 py-4 lg:px-8" />
+        <KreditKkn className="shrink-0 px-4 py-4 lg:px-8" />
       </div>
     </div>
   );

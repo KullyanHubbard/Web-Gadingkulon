@@ -16,13 +16,16 @@ import { toRincianRw } from './view-model';
 export function RincianRwPanel({
   rw,
   rt,
+  periode,
 }: {
   /** Label RW yang dibuka, mis. `'RW 19'`. */
   rw: string;
   /** Label RT di dalam `rw`, mis. `'RT 01'`, atau `null` untuk se-RW. */
   rt: string | null;
+  /** Bulan yang sedang dilihat, `YYYY-MM`. */
+  periode: string;
 }) {
-  const { data, isLoading, isError } = useStatistikPublik();
+  const { data, isLoading, isError } = useStatistikPublik(periode);
   const indukRw = data?.perRw.find((r) => r.label === rw);
   const rincian =
     rt === null ? indukRw : indukRw?.perRt.find((r) => r.label === rt);

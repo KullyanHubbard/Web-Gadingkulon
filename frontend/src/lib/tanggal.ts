@@ -18,6 +18,39 @@ export function formatTanggal(iso: string): string {
   return format(parseISO(iso), 'd MMMM yyyy', { locale: localeId });
 }
 
+/** Kunci periode bulanan, mis. `'2026-08'`. */
+export function periodeBulanIni(): string {
+  return format(new Date(), 'yyyy-MM');
+}
+
+/** `'2026-08'` -> `'Agustus 2026'`. */
+export function labelPeriode(periode: string): string {
+  return format(parseISO(`${periode}-01`), 'MMMM yyyy', { locale: localeId });
+}
+
+/**
+ * Bulan dari `terawal` sampai `sampai` (dua-duanya `YYYY-MM`), TERBARU DULU.
+ *
+ * Batas awalnya datang dari backend (`periodeTerawal`), bukan dikarang di sini:
+ * buku mutasi baru mulai ditulis saat fiturnya dipasang, jadi bulan sebelum itu
+ * memang tidak bisa dihitung.
+ */
+export function daftarPeriode(terawal: string, sampai: string): string[] {
+  const hasil: string[] = [];
+  let kursor = parseISO(`${sampai}-01`);
+  const batas = parseISO(`${terawal}-01`);
+  while (kursor >= batas) {
+    hasil.push(format(kursor, 'yyyy-MM'));
+    kursor = new Date(kursor.getFullYear(), kursor.getMonth() - 1, 1);
+  }
+  return hasil;
+}
+
+/** "Minggu, 31 Agustus 2026" — tanggal hari ini untuk bar konteks. */
+export function tanggalHariIni(): string {
+  return format(new Date(), 'EEEE, d MMMM yyyy', { locale: localeId });
+}
+
 /**
  * ["Januari", …, "Desember"] — dari `Intl`, bukan daftar tulis tangan.
  *

@@ -17,3 +17,13 @@ export const CHART_KATEGORI_COLORS = [
 ] as const;
 
 export const CHART_SLICE_LABEL_COLOR = '#ffffff';
+
+/**
+ * Sorotan brand untuk baris nav / pilihan aktif.
+ *
+ * `bg-brand-600/10`, bukan `bg-brand-50`: ramp brand sengaja tidak dibalik di
+ * mode gelap (lihat CLAUDE.md), jadi brand-50 jadi tambalan hampir putih di
+ * sana. Tint transparan menumpang latar apa pun yang ada di bawahnya, jadi satu
+ * kelas cukup untuk dua mode; cuma warna teksnya yang perlu `dark:`.
+ */
+export const SOROT_BRAND = 'bg-brand-600/10 text-brand-700 dark:text-brand-300';

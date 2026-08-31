@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { SOROT_BRAND } from '@/lib/colors';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/ui/Logo';
 import { env } from '@/config/env';
@@ -65,9 +66,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
               className={({ isActive }) =>
                 cn(
                   'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium transition-colors',
-                  isActive
-                    ? 'bg-brand-50 text-brand-700'
-                    : 'text-slate-900 hover:bg-slate-50',
+                  isActive ? SOROT_BRAND : 'text-slate-900 hover:bg-slate-100',
                 )
               }
             >

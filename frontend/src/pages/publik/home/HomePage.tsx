@@ -1,7 +1,9 @@
-import { BarChart3, Building2, Newspaper } from 'lucide-react';
 import { WADAH } from '@/components/layout/wadah';
 import { PetaPadukuhan } from '@/components/ui/PetaPadukuhan';
 import { paths } from '@/routes/paths';
+import ikonProfil from '@/assets/icons/Profil-padukuhan-icon.png';
+import ikonStatistik from '@/assets/icons/Stastistik-Kependudukan-icon.png';
+import ikonKabar from '@/assets/icons/kabar&agenda-icon.png';
 import { BeritaTerkini } from './components/BeritaTerkini';
 import { HeroBeranda } from './components/HeroBeranda';
 import { JudulBagian } from './components/JudulBagian';
@@ -27,19 +29,19 @@ export default function HomePage() {
             ke={paths.profil}
             judul="Profil Padukuhan"
             deskripsi="Struktur kelembagaan dan informasi wilayah."
-            ikon={<Building2 className="h-6 w-6" />}
+            ikon={<img src={ikonProfil} alt="" className="h-12 w-12 object-contain" />}
           />
           <KartuJelajah
             ke={paths.infografis}
             judul="Statistik Kependudukan"
             deskripsi="Visualisasi data demografi dan sebaran warga."
-            ikon={<BarChart3 className="h-6 w-6" />}
+            ikon={<img src={ikonStatistik} alt="" className="h-12 w-12 object-contain" />}
           />
           <KartuJelajah
             ke={paths.berita}
             judul="Kabar & Agenda Warga"
             deskripsi="Informasi kegiatan terkini dan agenda masyarakat."
-            ikon={<Newspaper className="h-6 w-6" />}
+            ikon={<img src={ikonKabar} alt="" className="h-12 w-12 object-contain" />}
           />
         </div>
       </section>

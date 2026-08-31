@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom';
 import { WADAH } from '@/components/layout/wadah';
-import { QueryBoundary } from '@/components/ui/QueryBoundary';
-import { StatCard } from '@/components/ui/StatCard';
-import { useStatistikPublik } from '@/features/statistik-publik/hooks/use-statistik-publik';
-import petaSatelit from '@/assets/BG-padding/Bg-padding.png';
 import ikonKeluarga from '@/assets/icons/keluarga.png';
 import ikonLakiLaki from '@/assets/icons/laki-laki.png';
 import ikonPenduduk from '@/assets/icons/penduduk.png';
 import ikonPerempuan from '@/assets/icons/perempuan.png';
+import { QueryBoundary } from '@/components/ui/QueryBoundary';
+import { StatCard } from '@/components/ui/StatCard';
+import { useStatistikPublik } from '@/features/statistik-publik/hooks/use-statistik-publik';
+import petaSatelit from '@/assets/BG-padding/Bg-padding.png';
 import { formatAngka } from '@/lib/utils';
 import { paths } from '@/routes/paths';
 import { JudulBagian } from './JudulBagian';

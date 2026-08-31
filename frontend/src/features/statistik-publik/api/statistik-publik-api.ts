@@ -9,12 +9,15 @@ import type { StatistikPublik } from '../types';
  * berarti endpoint admin harus bisa diakses anonim — persis yang tidak boleh.
  */
 export interface StatistikPublikApi {
-  get(): Promise<StatistikPublik>;
+  /** `periode` bentuk `YYYY-MM`; kosong = keadaan hari ini. */
+  get(periode?: string): Promise<StatistikPublik>;
 }
 
 export const statistikPublikApi: StatistikPublikApi = {
-  async get() {
-    const { data } = await apiClient.get<StatistikPublik>('/publik/statistik');
+  async get(periode) {
+    const { data } = await apiClient.get<StatistikPublik>('/publik/statistik', {
+      params: periode ? { periode } : undefined,
+    });
     return data;
   },
 };

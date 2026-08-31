@@ -1,7 +1,9 @@
+import { CalendarDays } from 'lucide-react';
 import ikonDashboard from '@/assets/icons/dashboard.png';
-import ikonRt from '@/assets/icons/rt-icon.png';
 import ikonRw from '@/assets/icons/rw-icon.png';
+import { SOROT_BRAND } from '@/lib/colors';
 import { cn } from '@/lib/utils';
+import { daftarPeriode, labelPeriode } from '@/lib/tanggal';
 import { useStatistikPublik } from '../hooks/use-statistik-publik';
 
 interface StatistikNavProps {
@@ -10,12 +12,15 @@ interface StatistikNavProps {
   /** Label RT yang sedang dibuka di dalam `rwAktif`, atau `null`. */
   rtAktif: string | null;
   onPilih: (rw: string | null, rt?: string | null) => void;
+  /** Periode aktif, mis. `'2026-08'`. */
+  periode: string;
+  onPilihPeriode: (periode: string) => void;
 }
 
 function itemClass(aktif: boolean) {
   return cn(
     'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium transition-colors',
-    aktif ? 'bg-brand-50 text-brand-700' : 'text-slate-900 hover:bg-slate-50',
+    aktif ? SOROT_BRAND : 'text-slate-900 hover:bg-slate-100',
   );
 }
 
@@ -26,8 +31,14 @@ function itemClass(aktif: boolean) {
  * Wilayahnya dari query yang sama dengan panelnya — React Query menyatukannya
  * jadi satu permintaan, jadi nav tidak perlu dioper data lewat props.
  */
-export function StatistikNav({ rwAktif, rtAktif, onPilih }: StatistikNavProps) {
-  const { data, isError } = useStatistikPublik();
+export function StatistikNav({
+  rwAktif,
+  rtAktif,
+  onPilih,
+  periode,
+  onPilihPeriode,
+}: StatistikNavProps) {
+  const { data, isError } = useStatistikPublik(periode);
 
   return (
     <nav aria-label="Bagian statistik" className="space-y-7">
@@ -41,6 +52,35 @@ export function StatistikNav({ rwAktif, rtAktif, onPilih }: StatistikNavProps) {
         <img src={ikonDashboard} alt="" className="h-5 w-5 shrink-0" />
         Dashboard
       </button>
+
+      {/* Bulan lampau dihitung dengan memutar mundur buku mutasi di backend.
+          Daftar pilihannya dibatasi `periodeTerawal` dari jawaban yang sama —
+          bulan sebelum buku mutasi ada memang tidak bisa dihitung. */}
+      <div>
+        <p className="px-3 text-sm font-semibold uppercase tracking-widest text-slate-900">
+          Periode
+        </p>
+        <div className="mt-2 flex items-center gap-3 px-3">
+          <CalendarDays
+            className="h-5 w-5 shrink-0 text-brand-600"
+            aria-hidden
+          />
+          <select
+            value={periode}
+            onChange={(e) => onPilihPeriode(e.target.value)}
+            aria-label="Periode data"
+            className="focus-ring w-full rounded-lg border border-slate-200 bg-surface px-3 py-2 text-base font-medium text-slate-900"
+          >
+            {daftarPeriode(data?.periodeTerawal ?? periode, periode).map(
+              (p) => (
+                <option key={p} value={p}>
+                  {labelPeriode(p)}
+                </option>
+              ),
+            )}
+          </select>
+        </div>
+      </div>
 
       <div>
         <p className="px-3 text-sm font-semibold uppercase tracking-widest text-slate-900">
@@ -82,10 +122,11 @@ export function StatistikNav({ rwAktif, rtAktif, onPilih }: StatistikNavProps) {
                             aria-current={aktif ? 'page' : undefined}
                             className={cn(itemClass(aktif), 'py-2 text-sm')}
                           >
-                            <img
-                              src={ikonRt}
-                              alt=""
-                              className="h-5 w-5 shrink-0"
+                            {/* Titik, bukan ikon: bulatan bergaris di sini
+                                terbaca sebagai radio button. */}
+                            <span
+                              aria-hidden
+                              className="ml-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-50"
                             />
                             <span className="flex-1 text-left">{rt.label}</span>
                           </button>

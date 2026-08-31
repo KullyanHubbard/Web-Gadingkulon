@@ -10,11 +10,14 @@ import { StatistikPanelView } from './StatistikPanelView';
  */
 export function StatistikPanel({
   onPilihRw,
+  periode,
 }: {
   /** Buka rincian sebuah RW dari kartu ringkasan. */
   onPilihRw: (rw: string) => void;
+  /** Bulan yang sedang dilihat, `YYYY-MM`. */
+  periode: string;
 }) {
-  const { data, isLoading, isError } = useStatistikPublik();
+  const { data, isLoading, isError } = useStatistikPublik(periode);
 
   return (
     <StatistikPanelView

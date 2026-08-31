@@ -7,7 +7,7 @@ const variantStyles: Record<Variant, string> = {
   primary:
     'bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 shadow-sm',
   secondary: 'bg-slate-100 text-slate-900 hover:bg-slate-200',
-  outline: 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50',
+  outline: 'border border-slate-300 bg-surface text-slate-700 hover:bg-slate-50',
   ghost: 'text-slate-600 hover:bg-slate-100',
   danger: 'bg-red-600 text-white hover:bg-red-700',
 };

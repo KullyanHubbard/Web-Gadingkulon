@@ -25,8 +25,9 @@ const JELAJAHI = [
  *
  * Halaman `/statistik` TIDAK memakai ini — kerangkanya rail kiri
  * (`PublicLandingLayout`) yang tingginya dikunci ke viewport, dan dua kerangka
- * itu tidak bisa ditumpuk tanpa merusak penggulungannya. Widget mengambang &
- * penghitung kunjungan ikut tidak tampil di sana.
+ * itu tidak bisa ditumpuk tanpa merusak penggulungannya. Penghitung kunjungan &
+ * tombol pengaduan/ukuran teks/tema tetap ada di sana, dipasang lewat slot bar
+ * kredit yang sama.
  */
 export function PublicShell() {
   return (
@@ -90,27 +91,23 @@ export function PublicShell() {
             </ul>
           </div>
         </div>
-
-        {/* Warna diwariskan ke span nama di dalamnya — lihat komentar
-            `KreditKkn`: sengaja tidak punya warna sendiri supaya bisa dipasang
-            di atas latar gelap begini tanpa varian baru. */}
-        <KreditKkn className="border-t border-white/10 px-4 py-4 text-brand-200 sm:px-6 lg:px-8" />
       </div>
 
-      {/* Elemen mengambang: kunjungan kiri-bawah; pengaduan, ukuran teks, lalu
-          tema di kanan-bawah — tema paling pojok.
-          `fixed` (bukan bagian alur), jadi ditulis di luar footer meski
-          posisinya visual di situ. */}
-      <div className="pointer-events-none fixed inset-x-0 bottom-4 z-40 flex items-end justify-between px-4 sm:px-6 lg:px-8">
-        <div className="pointer-events-auto">
-          <BadgeKunjungan />
-        </div>
-        <div className="pointer-events-auto flex items-end gap-3">
-          <TombolPengaduan />
-          <AksesibilitasWidget />
-          <TombolTema />
-        </div>
-      </div>
+      {/* Di luar footer ungu: `sticky` cuma menempel selama induknya terlihat,
+          dan footer itu baru muncul di dasar dokumen.
+          Widget mengambang ikut masuk ke bar ini — dulu `fixed` sendiri di atas
+          isi halaman, sekarang satu baris dengan kredit. */}
+      <KreditKkn
+        className="h-16 px-4 sm:px-6 lg:px-8"
+        kiri={<BadgeKunjungan />}
+        kanan={
+          <div className="flex items-center gap-3">
+            <TombolPengaduan />
+            <AksesibilitasWidget />
+            <TombolTema />
+          </div>
+        }
+      />
     </div>
   );
 }

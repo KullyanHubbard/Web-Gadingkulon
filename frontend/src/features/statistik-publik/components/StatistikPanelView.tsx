@@ -37,39 +37,44 @@ export function StatistikPanelView({
       errorMessage="Statistik belum bisa ditampilkan. Anda tetap bisa masuk."
     >
       {(data) => (
-        <div className="flex flex-wrap items-center gap-12">
-          <div className="w-[36rem] max-w-full shrink-0">
-            <DistribusiPieChart
-              data={data.distribusi}
-              height={576}
-              showLegend={false}
-              warna={CHART_KATEGORI_COLORS}
-              labelIrisan={(i) => {
-                const baris = data.baris[i];
-                return baris ? [baris.label, baris.persenTeks] : [];
-              }}
-              center={
-                <>
-                  {/* Hero figure: di sini `tabular-nums` justru WAJIB meski
+        // Dua kolom setara: donut dulu berdiri tanpa kartu dan mendominasi,
+        // sementara kolom kanan menggantung setengah tinggi.
+        <div className="grid items-stretch gap-6 lg:grid-cols-2">
+          <Card className="flex flex-col">
+            <CardHeader title="Sebaran Warga per RW" />
+            <div className="flex-1 p-4">
+              <DistribusiPieChart
+                data={data.distribusi}
+                height={420}
+                showLegend={false}
+                warna={CHART_KATEGORI_COLORS}
+                labelIrisan={(i) => {
+                  const baris = data.baris[i];
+                  return baris ? [baris.label, baris.persenTeks] : [];
+                }}
+                center={
+                  <>
+                    {/* Hero figure: di sini `tabular-nums` justru WAJIB meski
                       angka display biasanya lebih baik tanpanya — angkanya
                       berubah tiap bingkai, dan lebar digit proporsional bikin
                       seluruh angka bergoyang kiri-kanan selama menghitung. */}
-                  <CountUp
-                    value={data.total}
-                    className="text-7xl font-bold tabular-nums leading-none text-slate-900"
-                  />
-                  <span className="mt-2 text-xs font-medium uppercase tracking-widest text-slate-400">
-                    jiwa
-                  </span>
-                </>
-              }
-            />
-          </div>
+                    <CountUp
+                      value={data.total}
+                      className="text-6xl font-bold tabular-nums leading-none text-slate-900"
+                    />
+                    <span className="mt-2 text-xs font-medium uppercase tracking-widest text-slate-400">
+                      jiwa
+                    </span>
+                  </>
+                }
+              />
+            </div>
+          </Card>
 
-          {/* `flex-1`, bukan lebar mati: kolom kanan yang dipatok `w-72`
-              menyisakan ruang kosong lebar di layar besar. */}
-          <div className="flex min-w-[18rem] flex-1 flex-col gap-4">
-            <div className="grid gap-4 sm:grid-cols-3">
+          {/* Kolom kanan menyamakan tinggi ke kartu donut: kartu daftar RW yang
+              `flex-1` yang memanjang, bukan kartu jenis kelamin. */}
+          <div className="flex flex-col gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               {data.stat.map((stat) => (
                 <StatCard
                   key={stat.id}
@@ -79,9 +84,9 @@ export function StatistikPanelView({
               ))}
             </div>
 
-            <Card>
+            <Card className="flex flex-1 flex-col">
               <CardHeader title="Statistik Warga" />
-              <ul className="divide-y divide-slate-100 px-5">
+              <ul className="flex-1 divide-y divide-slate-100 px-5">
                 {data.baris.map((baris, i) => (
                   <li key={baris.label}>
                     <button

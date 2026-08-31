@@ -30,6 +30,12 @@ export interface RincianRw {
  * sini otomatis menjadi konsumsi publik.
  */
 export interface StatistikPublik {
+  /**
+   * Bulan paling lampau yang datanya bisa dipertanggungjawabkan, `YYYY-MM`.
+   * Buku mutasi baru mulai ditulis saat fitur periode dipasang, jadi batas ini
+   * datang dari backend — bukan dikarang frontend.
+   */
+  periodeTerawal: string;
   totalPenduduk: number;
   totalLakiLaki: number;
   totalPerempuan: number;

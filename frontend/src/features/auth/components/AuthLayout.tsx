@@ -68,7 +68,7 @@ export function AuthLayout({ title, description, children }: AuthLayoutProps) {
           </div>
         </div>
 
-        <KreditKkn className="shrink-0 pt-8" />
+        <KreditKkn className="shrink-0 py-4" />
       </div>
     </div>
   );
