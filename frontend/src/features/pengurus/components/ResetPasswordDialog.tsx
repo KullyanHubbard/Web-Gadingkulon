@@ -57,16 +57,15 @@ export function ResetPasswordDialog({
     <Modal
       open={Boolean(akun)}
       onClose={onClose}
-      title={`Reset Password — ${akun?.nama ?? ''}`}
+      title={akun?.nama ? `Reset Password ${akun.nama}` : 'Reset Password'}
     >
       <form onSubmit={onSubmit} className="space-y-4">
         <p className="text-sm text-slate-600">
-          Password lama {akun?.username} langsung tidak berlaku. Sampaikan
-          password baru ini langsung kepada yang bersangkutan; ia wajib
-          menggantinya lagi saat masuk.
+          Username: <strong>{akun?.username}</strong>
         </p>
         <PasswordInput
           label="Password Baru"
+          placeholder="Masukkan password baru"
           autoComplete="new-password"
           error={errors.password?.message}
           {...register('password')}

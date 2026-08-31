@@ -5,18 +5,22 @@ export function JudulBagian({
   judul,
   deskripsi,
   aksi,
+  className,
 }: {
   judul: string;
-  deskripsi: string;
+  deskripsi?: string;
   aksi?: ReactNode;
+  className?: string;
 }) {
   return (
     <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
+        <h2 className={`text-2xl font-bold text-slate-900 sm:text-3xl ${className ?? ''}`}>
           {judul}
         </h2>
-        <p className="mt-2 max-w-2xl text-sm text-slate-600">{deskripsi}</p>
+        {deskripsi && (
+          <p className="mt-2 max-w-2xl text-sm text-slate-600">{deskripsi}</p>
+        )}
       </div>
       {aksi}
     </div>

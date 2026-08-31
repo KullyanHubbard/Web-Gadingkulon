@@ -12,26 +12,25 @@
 export const PADUKUHAN = {
   nama: 'Gading Kulon',
   namaLengkap: 'Padukuhan Gading Kulon',
-  desa: 'Kalurahan Gading',
-  kapanewon: 'Kapanewon Playen',
-  kabupaten: 'Kabupaten Gunungkidul',
+  desa: 'Donokerto',
+  kapanewon: 'Kapanewon Turi',
+  kabupaten: 'Sleman',
   provinsi: 'Daerah Istimewa Yogyakarta',
   luasWilayah: '162,4 ha',
   /** Kontak resmi padukuhan — dicetak di footer & jadi tujuan tombol Pengaduan. */
   telepon: '+62 812-2761-391',
   email: 'gadingkulon@gmail.com',
   /**
-   * Titik tengah peta. Ubah dua angka ini kalau petanya meleset — seluruh
-   * embed peta di situs ini membacanya dari sini.
+   * Titik tengah peta (Donokerto, Kec. Turi, Sleman).
    */
-  koordinat: { lat: -7.9264, lon: 110.5527 },
+  koordinat: { lat: -7.6256, lon: 110.3789 },
   /** Radius kotak peta dalam derajat; ±0,012° ≈ 1,3 km. */
   radiusPeta: 0.012,
 } as const;
 
 export const SEJARAH_PADUKUHAN = [
-  `Gading Kulon adalah salah satu padukuhan di ${PADUKUHAN.desa}, ${PADUKUHAN.kapanewon}, ${PADUKUHAN.kabupaten}. Namanya diambil dari pohon gading yang dahulu tumbuh di sisi barat kalurahan — "kulon" berarti barat dalam bahasa Jawa.`,
-  'Sejak awal berdirinya, warga Gading Kulon hidup dari pertanian lahan kering: padi gogo, jagung, kacang tanah, dan ubi kayu. Lapangan terbang Gading di sisi utara kalurahan menjadikan wilayah ini titik lalu lintas yang cukup ramai untuk ukuran Gunungkidul.',
+  `Gading Kulon adalah salah satu padukuhan di Kalurahan ${PADUKUHAN.desa}, ${PADUKUHAN.kapanewon}, ${PADUKUHAN.kabupaten}, ${PADUKUHAN.provinsi}.`,
+  'Sejak awal berdirinya, warga Gading Kulon hidup produktif berlandaskan kebersamaan, pertanian, dan potensi lokal daerah lereng Gunung Merapi.',
   'Hari ini Gading Kulon berkembang tanpa meninggalkan gotong royong yang jadi wataknya: kerja bakti rutin, ronda malam bergilir, dan kegiatan Karang Taruna yang menggerakkan warga muda. Portal ini dibuat agar data kependudukan padukuhan bisa dibaca dengan cepat, oleh pengurus maupun warga.',
 ];
 

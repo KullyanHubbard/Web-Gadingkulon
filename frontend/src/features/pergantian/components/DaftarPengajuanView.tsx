@@ -44,7 +44,6 @@ export function DaftarPengajuanView({
             <EmptyState
               icon={FileClock}
               title="Belum ada pengajuan"
-              description="Pergantian pengurus yang Anda ajukan akan muncul di sini."
             />
           }
         >

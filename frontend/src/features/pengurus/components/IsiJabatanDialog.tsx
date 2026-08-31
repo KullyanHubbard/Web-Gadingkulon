@@ -85,16 +85,11 @@ export function IsiJabatanDialog({ jabatan, onClose }: IsiJabatanDialogProps) {
     <Modal
       open={Boolean(jabatan)}
       onClose={tutup}
-      title={`Buatkan Akun — ${jabatan?.label ?? ''}`}
+      title={jabatan?.label ? `Buatkan Akun ${jabatan.label}` : 'Buatkan Akun'}
     >
       <form onSubmit={onSubmit} className="space-y-4">
         <PilihWarga
           label="Siapa yang memegang jabatan ini"
-          hint={
-            jabatan?.calon
-              ? 'Sudah terpilih dari kolom Jabatan di file Excel. Cari nama lain kalau orangnya berbeda.'
-              : 'Hanya warga wilayah jabatan ini yang muncul.'
-          }
           cari={cari}
           onCariChange={setCari}
           hasil={hasil}
@@ -105,15 +100,15 @@ export function IsiJabatanDialog({ jabatan, onClose }: IsiJabatanDialogProps) {
 
         <Input
           label="Username"
+          placeholder="Masukkan username"
           autoComplete="off"
-          hint="Saran: dukuh, rw019, rt001 — pendek dan gampang diingat."
           error={errors.username?.message}
           {...register('username')}
         />
         <PasswordInput
           label="Password Awal"
+          placeholder="Masukkan password awal"
           autoComplete="new-password"
-          hint="Serahkan tatap muka. Dia wajib menggantinya saat pertama masuk, dan setelah itu password ini tidak berlaku lagi."
           error={errors.password?.message}
           {...register('password')}
         />

@@ -143,7 +143,7 @@ export function WargaFormDialog({ target, onClose }: WargaFormDialogProps) {
     <Modal
       open={Boolean(target)}
       onClose={onClose}
-      title={menambah ? 'Tambah Warga' : `Ubah Data — ${warga?.nama ?? ''}`}
+      title={menambah ? 'Tambah Warga' : `Ubah Data ${warga?.nama ?? ''}`}
     >
       <form onSubmit={onSubmit} className="space-y-4">
         {!menambah && (

@@ -38,7 +38,7 @@ export function PilihWarga({
     <div className="space-y-2">
       <Input
         label={label}
-        placeholder="Ketik nama, minimal 2 huruf…"
+        placeholder="Ketik nama…"
         hint={hint}
         value={cari}
         onChange={(e) => onCariChange(e.target.value)}

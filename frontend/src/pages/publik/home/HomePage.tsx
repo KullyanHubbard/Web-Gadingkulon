@@ -1,10 +1,6 @@
-import { Link } from 'react-router-dom';
 import { BarChart3, Building2, Newspaper } from 'lucide-react';
 import { WADAH } from '@/components/layout/wadah';
-import { buttonClass } from '@/components/ui/button-class';
-import { Card } from '@/components/ui/Card';
 import { PetaPadukuhan } from '@/components/ui/PetaPadukuhan';
-import { PADUKUHAN } from '@/lib/padukuhan';
 import { paths } from '@/routes/paths';
 import { BeritaTerkini } from './components/BeritaTerkini';
 import { HeroBeranda } from './components/HeroBeranda';
@@ -25,27 +21,24 @@ export default function HomePage() {
       <HeroBeranda />
 
       <section className={`${WADAH} py-16`}>
-        <JudulBagian
-          judul="Jelajahi Padukuhan"
-          deskripsi="Tiga pintu masuk utama ke isi portal: siapa kami, angka-angkanya, dan apa yang sedang terjadi."
-        />
+        <JudulBagian judul="JELAJAHI PADUKUHAN" className="uppercase" />
         <div className="grid gap-6 md:grid-cols-3">
           <KartuJelajah
             ke={paths.profil}
-            judul="Profil Desa"
-            deskripsi="Sejarah singkat, struktur organisasi padukuhan, batas wilayah, dan luas wilayah."
+            judul="Profil Padukuhan"
+            deskripsi="Struktur kelembagaan dan informasi wilayah."
             ikon={<Building2 className="h-6 w-6" />}
           />
           <KartuJelajah
             ke={paths.infografis}
-            judul="Infografis"
-            deskripsi="Demografi penduduk — usia, pekerjaan, status perkawinan, agama — serta sebaran penerima bantuan sosial."
+            judul="Statistik Kependudukan"
+            deskripsi="Visualisasi data demografi dan sebaran warga."
             ikon={<BarChart3 className="h-6 w-6" />}
           />
           <KartuJelajah
             ke={paths.berita}
-            judul="Berita & Kegiatan"
-            deskripsi="Kabar kerja bakti, posyandu, penyaluran bantuan, dan agenda warga lainnya."
+            judul="Kabar & Agenda Warga"
+            deskripsi="Informasi kegiatan terkini dan agenda masyarakat."
             ikon={<Newspaper className="h-6 w-6" />}
           />
         </div>
@@ -55,34 +48,13 @@ export default function HomePage() {
 
       <section className={`${WADAH} py-16`}>
         <JudulBagian
-          judul="Peta Padukuhan"
-          deskripsi={`${PADUKUHAN.namaLengkap}, ${PADUKUHAN.desa}, ${PADUKUHAN.kapanewon}, ${PADUKUHAN.kabupaten}.`}
+          judul="PETA PADUKUHAN"
+          className="uppercase"
         />
         <PetaPadukuhan className="h-[26rem]" />
       </section>
 
       <BeritaTerkini />
-
-      {/* Kartu penutup: satu ajakan terakhir ke statistik lengkap. */}
-      <section className={`${WADAH} pb-16`}>
-        <Card className="flex flex-wrap items-center justify-between gap-4 bg-brand-950 p-8 text-white">
-          <div>
-            <h2 className="text-xl font-bold">Butuh angka yang lebih rinci?</h2>
-            <p className="mt-1 text-sm text-brand-200">
-              Statistik warga bisa ditelusuri sampai tingkat RT, tanpa perlu
-              masuk.
-            </p>
-          </div>
-          <Link
-            to={paths.statistik}
-            className={buttonClass({
-              className: 'bg-white text-brand-800 hover:bg-brand-50',
-            })}
-          >
-            Buka Statistik Warga
-          </Link>
-        </Card>
-      </section>
     </div>
   );
 }

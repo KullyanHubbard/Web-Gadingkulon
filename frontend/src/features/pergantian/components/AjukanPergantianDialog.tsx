@@ -57,13 +57,11 @@ export function AjukanPergantianDialog({
     <Modal
       open={Boolean(jabatan)}
       onClose={tutup}
-      title={`Ajukan Pergantian — ${jabatan?.label ?? ''}`}
+      title={jabatan?.label ? `Ajukan Pergantian ${jabatan.label}` : 'Ajukan Pergantian'}
     >
       <div className="space-y-4">
         <p className="text-sm text-slate-600">
-          Pemegang sekarang: <strong>{jabatan?.namaPemegang}</strong>.
-          Pergantian baru berlaku setelah disetujui perangkat desa yang
-          berwenang — Anda mengajukan, mereka yang memutuskan.
+          Pemegang saat ini: <strong>{jabatan?.namaPemegang}</strong>.
         </p>
 
         <PilihWarga

@@ -21,8 +21,8 @@ export function BeritaTerkini() {
     <section className="border-t border-slate-200 bg-white py-16">
       <div className={WADAH}>
         <JudulBagian
-          judul="Berita Terkini"
-          deskripsi="Kabar terbaru dari kegiatan warga padukuhan."
+          judul="BERITA TERKINI"
+          className="uppercase"
           aksi={
             <Link
               to={paths.berita}

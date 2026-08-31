@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
 import { WADAH } from '@/components/layout/wadah';
-import { buttonClass } from '@/components/ui/button-class';
 import { QueryBoundary } from '@/components/ui/QueryBoundary';
 import { StatCard } from '@/components/ui/StatCard';
 import { useStatistikPublik } from '@/features/statistik-publik/hooks/use-statistik-publik';
+import petaSatelit from '@/assets/BG-padding/Bg-padding.png';
 import ikonKeluarga from '@/assets/icons/keluarga.png';
 import ikonLakiLaki from '@/assets/icons/laki-laki.png';
 import ikonPenduduk from '@/assets/icons/penduduk.png';
@@ -23,16 +23,8 @@ export function RingkasanPenduduk() {
     <section className="border-y border-slate-200 bg-white py-16">
       <div className={WADAH}>
         <JudulBagian
-          judul="Administrasi Penduduk"
-          deskripsi="Ringkasan data kependudukan padukuhan. Angka ini cacah saja — nama dan alamat warga tidak pernah dibuka ke publik."
-          aksi={
-            <Link
-              to={paths.statistik}
-              className={buttonClass({ variant: 'outline' })}
-            >
-              Lihat rincian per RW
-            </Link>
-          }
+          judul="ADMINISTRASI PENDUDUK"
+          className="uppercase"
         />
 
         <QueryBoundary
@@ -43,31 +35,60 @@ export function RingkasanPenduduk() {
           errorMessage="Ringkasan penduduk belum bisa ditampilkan."
         >
           {(data) => (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <StatCard
-                label="Total Penduduk"
-                value={formatAngka(data.totalPenduduk)}
-                icon={ikonPenduduk}
-              />
-              {/* "Jumlah KK" dihitung dari cacah kepala keluarga: nomor KK
-                  sendiri memang tidak didata lagi (CLAUDE.md), jadi tidak ada
-                  kartu keluarga untuk dihitung langsung. */}
-              <StatCard
-                label="Jumlah KK"
-                value={formatAngka(data.totalKepalaKeluarga)}
-                icon={ikonKeluarga}
-              />
-              <StatCard
-                label="Laki-laki"
-                value={formatAngka(data.totalLakiLaki)}
-                icon={ikonLakiLaki}
-              />
-              <StatCard
-                label="Perempuan"
-                value={formatAngka(data.totalPerempuan)}
-                icon={ikonPerempuan}
-              />
-            </div>
+            <>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <StatCard
+                  label="Total Penduduk"
+                  value={formatAngka(data.totalPenduduk)}
+                  icon={ikonPenduduk}
+                />
+                <StatCard
+                  label="Jumlah KK"
+                  value={formatAngka(data.totalKepalaKeluarga)}
+                  icon={ikonKeluarga}
+                />
+                <StatCard
+                  label="Laki-laki"
+                  value={formatAngka(data.totalLakiLaki)}
+                  icon={ikonLakiLaki}
+                />
+                <StatCard
+                  label="Perempuan"
+                  value={formatAngka(data.totalPerempuan)}
+                  icon={ikonPerempuan}
+                />
+              </div>
+
+              <div className="relative overflow-hidden mt-8 rounded-2xl bg-gradient-to-br from-[#2E1065] via-[#3B1280] to-[#1E0A45] p-8 sm:p-10 lg:p-12 shadow-2xl shadow-purple-950/50 text-white">
+                {/* Peta satelit Donokerto — menyatu di background card */}
+                <img
+                  src={petaSatelit}
+                  alt=""
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-20 mix-blend-luminosity"
+                />
+
+                {/* Content: Text left — CTA right */}
+                <div className="relative z-10 flex flex-col items-center gap-6 lg:flex-row lg:justify-between">
+                  <div className="max-w-lg text-center lg:text-left">
+                    <h3 className="text-2xl font-bold leading-snug tracking-tight sm:text-3xl">
+                      Eksplorasi Data Kependudukan
+                    </h3>
+                    <p className="mt-3 text-sm leading-relaxed text-purple-200/90 sm:text-base">
+                      Visualisasi data demografi terpadu hingga tingkat RT secara
+                      transparan dan terbuka.
+                    </p>
+                  </div>
+
+                  <Link
+                    to={paths.statistik}
+                    className="inline-flex shrink-0 items-center justify-center rounded-xl bg-white px-7 py-3.5 text-base font-semibold text-purple-900 shadow-lg transition-all duration-200 hover:bg-purple-50 hover:shadow-xl active:scale-[0.98]"
+                  >
+                    Jelajahi Statistik Warga
+                  </Link>
+                </div>
+              </div>
+            </>
           )}
         </QueryBoundary>
       </div>

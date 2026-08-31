@@ -7,9 +7,9 @@ export function BarisKeterangan({
   nilai: string;
 }) {
   return (
-    <div className="flex items-baseline justify-between gap-4 border-b border-slate-100 py-3 last:border-b-0">
-      <dt className="text-sm text-slate-500">{label}</dt>
-      <dd className="text-right font-semibold text-slate-900">{nilai}</dd>
+    <div className="flex items-baseline gap-4 border-b border-slate-100 py-3 last:border-b-0">
+      <dt className="min-w-[8rem] text-sm text-slate-500">{label}</dt>
+      <dd className="flex-1 text-right font-semibold text-slate-900">{nilai}</dd>
     </div>
   );
 }

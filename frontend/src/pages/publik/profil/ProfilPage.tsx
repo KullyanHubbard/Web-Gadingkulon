@@ -23,8 +23,7 @@ export default function ProfilPage() {
             {PADUKUHAN.namaLengkap}
           </h1>
           <p className="mt-3 max-w-2xl text-brand-200">
-            {PADUKUHAN.desa}, {PADUKUHAN.kapanewon}, {PADUKUHAN.kabupaten},{' '}
-            {PADUKUHAN.provinsi}
+            Kalurahan {PADUKUHAN.desa}, {PADUKUHAN.kapanewon}, {PADUKUHAN.kabupaten}
           </p>
         </div>
       </section>
@@ -92,9 +91,6 @@ export default function ProfilPage() {
           <h2 className="text-2xl font-bold text-slate-900">
             Struktur Organisasi Padukuhan
           </h2>
-          <p className="mt-2 text-sm text-slate-600">
-            Dukuh, Ketua LPM, dan pengurus RW/RT.
-          </p>
           <div className="mt-8">
             <BaganOrganisasi />
           </div>
@@ -102,12 +98,12 @@ export default function ProfilPage() {
       </section>
 
       <section className={`${WADAH} py-14`}>
+        <h2 className="mb-6 text-2xl font-bold text-slate-900">
+          Peta & Letak Wilayah
+        </h2>
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <h2 className="text-2xl font-bold text-slate-900">
-              Peta & Letak Wilayah
-            </h2>
-            <PetaPadukuhan className="mt-4 h-[24rem]" />
+            <PetaPadukuhan className="h-[24rem]" />
           </div>
 
           <Card className="h-fit">
