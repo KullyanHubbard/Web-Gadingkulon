@@ -100,14 +100,20 @@ class StrukturOrganisasiPublik(BaseModel):
     """Bagan pengurus untuk halaman profil publik.
 
     TANPA username, id, atau status akun — beda dari `JabatanOut` yang
-    dipakai Admin. Diturunkan dari `pengurus.daftar_jabatan()`, sumber yang
-    sama dipakai halaman kelola akun, jadi pergantian jabatan yang disetujui
-    otomatis terlihat di sini tanpa deploy ulang.
-
-    LPM sengaja tidak ikut: ketuanya bukan salah satu dari empat peran akun
-    (ADMIN/DUKUH/RW/RT), jadi tidak punya baris di tabel `pengurus` — namanya
-    tetap konstanta manual di frontend (`lib/padukuhan.ts`).
+    dipakai Admin. `dukuh`/`rw` diturunkan dari `pengurus.daftar_jabatan()`,
+    sumber yang sama dipakai halaman kelola akun. `lpm` datang dari tabel
+    terpisah (`app/data/lpm.py`): Ketua LPM bukan salah satu dari empat peran
+    akun (ADMIN/DUKUH/RW/RT), jadi tidak punya baris di tabel `pengurus`.
     """
 
     dukuh: Optional[str] = None
     rw: list[RwPublik] = []
+    lpm: Optional[str] = None
+
+
+class LpmUbah(BaseModel):
+    """Ganti nama Ketua LPM. Tanpa Kode Warga: berbeda dari `PengurusBaru`,
+    LPM tidak terhubung ke data warga sama sekali, jadi tidak ada yang bisa
+    diperiksa selain panjangnya."""
+
+    nama: str = Field(max_length=100)

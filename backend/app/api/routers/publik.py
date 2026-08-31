@@ -11,6 +11,7 @@ from app.data.agregat import (
     format_rw,
 )
 from app.data import kunjungan
+from app.data import lpm as data_lpm
 from app.data import pengurus as data_pengurus
 from app.data.store import hanya_aktif, semua_penduduk
 from app.schemas.penduduk import Penduduk, RincianRw, StatistikPublik
@@ -134,4 +135,5 @@ def struktur_organisasi_publik() -> StrukturOrganisasiPublik:
     return StrukturOrganisasiPublik(
         dukuh=dukuh.pemegang.nama if dukuh and dukuh.pemegang else None,
         rw=[rw_map[rw] for rw in urutan_rw],
+        lpm=data_lpm.nama() or None,
     )
