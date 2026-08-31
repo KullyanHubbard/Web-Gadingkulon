@@ -45,15 +45,12 @@ export default function InfografisPublikPage() {
           <h1 className="mt-3 text-3xl font-bold sm:text-4xl">
             Data {PADUKUHAN.namaLengkap}
           </h1>
-          <p className="mt-3 max-w-2xl text-brand-200">
-            Angka agregat, tanpa nama maupun alamat warga.
-          </p>
         </div>
       </section>
 
       {/* Tab sebagai bilah tersendiri di bawah judul: `sticky` supaya tetap
           terjangkau saat panel bawah digulung. */}
-      <div className="sticky top-16 z-20 border-b border-slate-200 bg-white">
+      <div className="sticky top-16 z-20 border-b border-slate-200 bg-surface">
         <div className={`${WADAH} flex gap-1 overflow-x-auto`} role="tablist">
           {TAB.map((t) => (
             <button

@@ -22,9 +22,6 @@ export default function ProfilPage() {
           <h1 className="mt-3 text-3xl font-bold sm:text-4xl">
             {PADUKUHAN.namaLengkap}
           </h1>
-          <p className="mt-3 max-w-2xl text-brand-200">
-            Kalurahan {PADUKUHAN.desa}, {PADUKUHAN.kapanewon}, {PADUKUHAN.kabupaten}
-          </p>
         </div>
       </section>
 
@@ -86,7 +83,7 @@ export default function ProfilPage() {
         </div>
       </section>
 
-      <section className="border-y border-slate-200 bg-white py-14">
+      <section className="border-y border-slate-200 bg-surface py-14">
         <div className={WADAH}>
           <h2 className="text-2xl font-bold text-slate-900">
             Struktur Organisasi Padukuhan

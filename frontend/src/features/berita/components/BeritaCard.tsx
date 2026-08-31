@@ -46,7 +46,7 @@ export function BeritaCard({ berita }: { berita: Berita }) {
   return (
     <Link
       to={paths.beritaDetail(berita.slug)}
-      className="focus-ring group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md"
+      className="focus-ring group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-surface shadow-sm transition-shadow hover:shadow-md"
     >
       <FotoBerita berita={berita} className="h-44 w-full" />
       <div className="flex flex-1 flex-col p-5">

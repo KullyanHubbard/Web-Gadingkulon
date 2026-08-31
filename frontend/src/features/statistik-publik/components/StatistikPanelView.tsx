@@ -106,7 +106,7 @@ export function StatistikPanelView({
                       </span>
                       <span className="flex items-center gap-1 text-slate-500">
                         {baris.jumlahTeks}
-                        <ChevronRight className="h-4 w-4 text-slate-300" />
+                        <ChevronRight className="h-4 w-4 text-slate-400" />
                       </span>
                     </button>
                   </li>

@@ -29,7 +29,7 @@ export function Logo({ className }: LogoProps) {
     <img
       src={logoUtama}
       alt={env.appName}
-      className={cn('h-7 w-auto', className)}
+      className={cn('h-7 w-auto dark:brightness-0 dark:invert', className)}
     />
   );
 }

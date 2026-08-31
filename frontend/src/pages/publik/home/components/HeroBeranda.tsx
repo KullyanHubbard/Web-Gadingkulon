@@ -68,9 +68,6 @@ export function HeroBeranda() {
               aria-hidden
             />
             <Maskot className="relative h-56 drop-shadow-2xl sm:h-64 lg:h-72" />
-            <p className="relative mt-4 text-center text-sm font-semibold text-white">
-              Halo! Aku <span className="text-amber-300">Gading Si Galon</span>
-            </p>
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -18,6 +19,29 @@ export default {
           800: '#5B21B6', // purple-800  ← active/deep
           900: '#4C1D95', // purple-900  ← darkest
           950: '#2E1065', // purple-950
+        },
+
+        // Ramp abu-abu & warna permukaan dibaca dari CSS variable
+      // (`styles/index.css`). Satu blok `:root.dark` di situ membalik seluruh
+        // situs — kalau nilainya ditulis literal di sini, mode gelap berarti
+        // menempelkan `dark:` di ±275 kelas yang tersebar di 98 berkas.
+      //
+        // `white` sengaja TIDAK ikut: `text-white` selalu duduk di atas latar
+        // brand/rose yang warnanya sama di kedua mode. Latar kartu memakai
+        // `bg-surface`, bukan `bg-white`.
+        surface: 'rgb(var(--surface) / <alpha-value>)',
+        slate: {
+          50: 'rgb(var(--slate-50) / <alpha-value>)',
+          100: 'rgb(var(--slate-100) / <alpha-value>)',
+          200: 'rgb(var(--slate-200) / <alpha-value>)',
+          300: 'rgb(var(--slate-300) / <alpha-value>)',
+          400: 'rgb(var(--slate-400) / <alpha-value>)',
+          500: 'rgb(var(--slate-500) / <alpha-value>)',
+          600: 'rgb(var(--slate-600) / <alpha-value>)',
+          700: 'rgb(var(--slate-700) / <alpha-value>)',
+          800: 'rgb(var(--slate-800) / <alpha-value>)',
+          900: 'rgb(var(--slate-900) / <alpha-value>)',
+            950: 'rgb(var(--slate-950) / <alpha-value>)',
         },
       },
       borderColor: ({ theme }) => ({

@@ -202,6 +202,26 @@ Komponen tidak pernah memanggil `apiClient` langsung — selalu lewat `pendudukA
 - Tailwind utility-first. Hindari file CSS terpisah kecuali untuk global (`styles/index.css`).
 - Kelas panjang: urutkan otomatis oleh `prettier-plugin-tailwindcss` (jalankan `npm run format`).
 
+**Mode gelap: JANGAN menulis `dark:` untuk warna netral.** Ramp `slate-*` dan
+`bg-surface` dibaca dari CSS variable yang dibalik satu kali di `:root.dark`
+(`styles/index.css`), jadi komponen baru ikut gelap sendiri asal memakai kelas
+netral yang sudah ada. Dua aturan yang mengikat:
+- **Latar kartu/panel = `bg-surface`, bukan `bg-white`.** `white` sengaja tidak
+  ikut dibalik supaya `text-white` di atas tombol brand/rose tetap putih —
+  `bg-white` cuma untuk elemen yang memang duduk di atas latar ungu (hero).
+- **Tirai/overlay = `bg-black/40`, bukan `bg-slate-900/40`** — slate-900 jadi
+  terang di mode gelap dan tirainya berubah putih.
+
+Ramp gelapnya dibalik menurut PERAN, bukan angka: 400/500 (teks redup) jadi
+terang, 100–300 (latar & garis) tetap gelap. Chip bernuansa
+(`bg-brand-50 text-brand-700` di `Badge`/`Alert`) sengaja dibiarkan terang —
+brand-700 dipakai ganda sebagai teks DAN `hover:bg-brand-700`, jadi membalik
+ramp brand merusak tombol. Tombolnya `components/layout/TombolTema.tsx`
+(pojok kanan-bawah `PublicShell`, setelah ukuran teks); kelas awal dipasang
+skrip kecil di `index.html` supaya tidak berkedip putih saat muat. Halaman
+`/statistik` memakai kerangka lain, jadi tidak punya tombol itu — temanya tetap
+ikut pilihan yang tersimpan.
+
 ### Data fetching (React Query)
 
 - Semua akses server lewat hook di `features/*/hooks/`, **bukan** `useEffect + fetch`.

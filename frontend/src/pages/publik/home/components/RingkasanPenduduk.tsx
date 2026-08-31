@@ -20,12 +20,9 @@ export function RingkasanPenduduk() {
   const statistik = useStatistikPublik();
 
   return (
-    <section className="border-y border-slate-200 bg-white py-16">
+    <section className="border-y border-slate-200 bg-surface py-16">
       <div className={WADAH}>
-        <JudulBagian
-          judul="ADMINISTRASI PENDUDUK"
-          className="uppercase"
-        />
+        <JudulBagian judul="ADMINISTRASI PENDUDUK" className="uppercase" />
 
         <QueryBoundary
           isLoading={statistik.isLoading}
@@ -59,7 +56,7 @@ export function RingkasanPenduduk() {
                 />
               </div>
 
-              <div className="relative overflow-hidden mt-8 rounded-2xl bg-gradient-to-br from-[#2E1065] via-[#3B1280] to-[#1E0A45] p-8 sm:p-10 lg:p-12 shadow-2xl shadow-purple-950/50 text-white">
+              <div className="relative mt-8 overflow-hidden rounded-2xl bg-gradient-to-br from-[#2E1065] via-[#3B1280] to-[#1E0A45] p-8 text-white shadow-2xl shadow-purple-950/50 sm:p-10 lg:p-12">
                 {/* Peta satelit Donokerto — menyatu di background card */}
                 <img
                   src={petaSatelit}
@@ -75,8 +72,8 @@ export function RingkasanPenduduk() {
                       Eksplorasi Data Kependudukan
                     </h3>
                     <p className="mt-3 text-sm leading-relaxed text-purple-200/90 sm:text-base">
-                      Visualisasi data demografi terpadu hingga tingkat RT secara
-                      transparan dan terbuka.
+                      Visualisasi data demografi terpadu hingga tingkat RT
+                      secara transparan dan terbuka.
                     </p>
                   </div>
 

@@ -10,7 +10,7 @@ import { AccountButton } from './AccountButton';
  */
 export function PublicTopbar({ onOpenNav }: { onOpenNav: () => void }) {
   return (
-    <div className="flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4 lg:hidden">
+    <div className="flex items-center justify-between border-b border-slate-200 bg-surface px-5 py-4 lg:hidden">
       <div className="flex items-center gap-2">
         <button
           className="-ml-1 rounded-md p-2 text-slate-500 hover:bg-slate-100"

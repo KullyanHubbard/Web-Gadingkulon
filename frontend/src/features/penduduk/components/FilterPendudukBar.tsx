@@ -45,7 +45,7 @@ function Pilihan({
       <span className="font-medium text-slate-500">{label}</span>
       <select
         className={cn(
-          'rounded-md border bg-white px-2 py-1.5 text-sm text-slate-800',
+          'rounded-md border bg-surface px-2 py-1.5 text-sm text-slate-800',
           nilai ? 'border-slate-900 font-medium' : 'border-slate-300',
         )}
         value={nilai ?? ''}

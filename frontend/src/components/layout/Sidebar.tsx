@@ -21,7 +21,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       {/* Overlay mobile */}
       {open && (
         <div
-          className="fixed inset-0 z-30 bg-slate-900/40 lg:hidden"
+          className="fixed inset-0 z-30 bg-black/40 lg:hidden"
           onClick={onClose}
           aria-hidden
         />
@@ -29,7 +29,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex h-full max-h-dvh min-h-0 w-80 flex-col border-r border-slate-200 bg-white transition-transform lg:static lg:h-full lg:max-h-full lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-40 flex h-full max-h-dvh min-h-0 w-80 flex-col border-r border-slate-200 bg-surface transition-transform lg:static lg:h-full lg:max-h-full lg:translate-x-0',
           open ? 'translate-x-0' : '-translate-x-full',
         )}
       >

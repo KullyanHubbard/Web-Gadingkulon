@@ -7,6 +7,7 @@ import { AksesibilitasWidget } from './AksesibilitasWidget';
 import { BadgeKunjungan } from './BadgeKunjungan';
 import { PublicNavbar } from './PublicNavbar';
 import { TombolPengaduan } from './TombolPengaduan';
+import { TombolTema } from './TombolTema';
 
 const JELAJAHI = [
   { label: 'Beranda', to: paths.landing },
@@ -96,7 +97,8 @@ export function PublicShell() {
         <KreditKkn className="border-t border-white/10 px-4 py-4 text-brand-200 sm:px-6 lg:px-8" />
       </div>
 
-      {/* Elemen mengambang: kunjungan kiri-bawah, aksesibilitas kanan-bawah.
+      {/* Elemen mengambang: kunjungan kiri-bawah; pengaduan, ukuran teks, lalu
+          tema di kanan-bawah — tema paling pojok.
           `fixed` (bukan bagian alur), jadi ditulis di luar footer meski
           posisinya visual di situ. */}
       <div className="pointer-events-none fixed inset-x-0 bottom-4 z-40 flex items-end justify-between px-4 sm:px-6 lg:px-8">
@@ -106,6 +108,7 @@ export function PublicShell() {
         <div className="pointer-events-auto flex items-end gap-3">
           <TombolPengaduan />
           <AksesibilitasWidget />
+          <TombolTema />
         </div>
       </div>
     </div>

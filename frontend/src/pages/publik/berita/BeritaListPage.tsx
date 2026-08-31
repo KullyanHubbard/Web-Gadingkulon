@@ -1,7 +1,6 @@
 import { QueryBoundary } from '@/components/ui/QueryBoundary';
 import { BeritaCard } from '@/features/berita/components/BeritaCard';
 import { useBeritaList } from '@/features/berita/hooks/use-berita';
-import { PADUKUHAN } from '@/lib/padukuhan';
 import { WADAH } from '@/components/layout/wadah';
 
 /** Daftar berita publik: grid kartu, terbaru dulu. */
@@ -18,10 +17,6 @@ export default function BeritaListPage() {
           <h1 className="mt-3 text-3xl font-bold sm:text-4xl">
             Kabar & Kegiatan Warga
           </h1>
-          <p className="mt-3 max-w-2xl text-brand-200">
-            Catatan kegiatan {PADUKUHAN.namaLengkap}, dari kerja bakti sampai
-            penyaluran bantuan.
-          </p>
         </div>
       </section>
 

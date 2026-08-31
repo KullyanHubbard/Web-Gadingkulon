@@ -3,8 +3,52 @@
 @tailwind utilities;
 
 @layer base {
+  /* Satu-satunya definisi ramp abu-abu; `tailwind.config.js` cuma menunjuk ke
+     variabel di sini (`rgb(var(--slate-500) / <alpha-value>)`), jadi kelas
+     seperti `text-slate-500` atau `bg-surface` ikut berganti begitu kelas
+     `dark` menempel di <html>. */
   :root {
     color-scheme: light;
+
+    --surface: 255 255 255;
+    --slate-50: 248 250 252;
+    --slate-100: 241 245 249;
+    --slate-200: 226 232 240;
+    --slate-300: 203 213 225;
+    --slate-400: 148 163 184;
+    --slate-500: 100 116 139;
+    --slate-600: 71 85 105;
+    --slate-700: 51 65 85;
+    --slate-800: 30 41 59;
+    --slate-900: 15 23 42;
+    --slate-950: 2 6 23;
+  }
+
+  /* Bukan cerminan matematis ramp terang — dibalik menurut PERAN. 400 & 500
+     dipakai sebagai teks redup, jadi di sini keduanya harus terang; 100–300
+     dipakai sebagai latar & garis, jadi tetap gelap. Membalik angkanya
+     mentah-mentah (500 → 500) menghasilkan teks abu di atas kartu abu.
+
+     ponytail: chip bernuansa (`bg-brand-50 text-brand-700`, Badge/Alert)
+     sengaja dibiarkan terang — brand-700 dipakai ganda sebagai teks DAN
+     `hover:bg-brand-700`, jadi membaliknya merusak tombol. Kalau chip terang
+     di atas kartu gelap terasa mengganggu, ganti pasangannya per komponen
+     pakai `dark:`, bukan dengan membalik ramp brand. */
+  :root.dark {
+    color-scheme: dark;
+
+    --surface: 15 23 42;
+    --slate-50: 2 6 23;
+    --slate-100: 30 41 59;
+    --slate-200: 30 41 59;
+    --slate-300: 51 65 85;
+    --slate-400: 148 163 184;
+    --slate-500: 148 163 184;
+    --slate-600: 203 213 225;
+    --slate-700: 203 213 225;
+    --slate-800: 226 232 240;
+    --slate-900: 241 245 249;
+    --slate-950: 248 250 252;
   }
 
   html,
@@ -40,4 +84,33 @@
    dan rule ini hilang diam-diam dari bundle. */
 .recharts-wrapper :focus {
   outline: none;
+}
+
+/* Peralihan tema. Kelas ini ditempel sebentar di <html> oleh `TombolTema`
+   supaya perpindahan terang↔gelap meluncur, bukan berkedip.
+
+   Sengaja SEMENTARA, bukan dipasang permanen di `*`: transisi warna yang
+   selalu menyala membuat setiap hover, fokus, dan keadaan aktif di seluruh
+   situs ikut tertahan 300ms — mode gelap jadi terasa halus dengan ongkos
+   seluruh aplikasi terasa lamban.
+
+   WAJIB di luar @layer, alasan yang sama dengan aturan `recharts` di atas:
+   Tailwind membuang isi @layer yang dianggap tak terpakai, dan kelas ini cuma
+   muncul saat runtime.
+
+   Angka 300ms kembar dengan `DURASI_MS` di `TombolTema.tsx` — ubah keduanya
+   kalau salah satu diubah, kalau tidak kelasnya lepas sebelum animasinya
+   selesai (atau menggantung sesudahnya). */
+@media (prefers-reduced-motion: no-preference) {
+  .tema-beralih,
+  .tema-beralih *,
+  .tema-beralih *::before,
+  .tema-beralih *::after {
+    transition:
+      background-color 300ms ease,
+      border-color 300ms ease,
+      color 300ms ease,
+      fill 300ms ease,
+      stroke 300ms ease !important;
+  }
 }

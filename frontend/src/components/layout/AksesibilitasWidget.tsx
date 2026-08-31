@@ -64,7 +64,7 @@ export function AksesibilitasWidget() {
       {open && (
         <div
           role="menu"
-          className="absolute bottom-14 right-0 w-52 rounded-xl border border-slate-200 bg-white p-3 shadow-xl"
+          className="absolute bottom-14 right-0 w-52 rounded-xl border border-slate-200 bg-surface p-3 shadow-xl"
         >
           <p className="px-1 pb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
             Ukuran Teks

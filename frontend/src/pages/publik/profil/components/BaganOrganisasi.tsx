@@ -44,7 +44,7 @@ function Kotak({
         // `min-h-20`: tiap grup RW punya grid RT sendiri, jadi tinggi barisnya
         // dihitung terpisah — tanpa lantai ini kotak yang namanya turun baris
         // jadi lebih jangkung daripada kotak di grup sebelahnya.
-        'flex min-h-24 w-full flex-col bg-white p-1',
+        'flex min-h-24 w-full flex-col bg-surface p-1',
         'border-1',
         putus && 'border-dashed',
         utama ? 'border-slate-900' : 'border-slate-400',
@@ -86,10 +86,7 @@ function Tiang({ className }: { className?: string }) {
 /** Ruas tegak yang berujung mata panah — dipakai versi ponsel yang menumpuk. */
 function TiangPanah({ className }: { className?: string }) {
   return (
-    <span
-      aria-hidden
-      className={cn('flex flex-col items-center', className)}
-    >
+    <span aria-hidden className={cn('flex flex-col items-center', className)}>
       <span className={cn('block h-6 w-px', GARIS)} />
       <span className={PANAH} />
     </span>

@@ -50,7 +50,7 @@ export function PublicLandingLayout({
       {/* Bar & main dibungkus satu sel grid: keduanya menumpuk di kolom kanan,
           bukan dua baris grid yang bisa bergeser dari sidebar. */}
       <div className="flex flex-1 flex-col lg:col-start-2 lg:row-start-1 lg:min-h-0">
-        <div className="flex h-20 shrink-0 items-center border-b border-slate-200 bg-white px-6 lg:px-12">
+        <div className="flex h-20 shrink-0 items-center border-b border-slate-200 bg-surface px-6 lg:px-12">
           {breadcrumb}
         </div>
 
@@ -61,7 +61,7 @@ export function PublicLandingLayout({
           <div className="my-auto w-full">{children}</div>
         </main>
 
-        <KreditKkn className="shrink-0 border-t border-slate-200 bg-white px-6 py-4 lg:px-12" />
+        <KreditKkn className="shrink-0 border-t border-slate-200 bg-surface px-6 py-4 lg:px-12" />
       </div>
     </div>
   );

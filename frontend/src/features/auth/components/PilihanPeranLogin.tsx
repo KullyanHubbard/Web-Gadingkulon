@@ -80,7 +80,7 @@ export function PilihanPeranLogin({ dipilih, onPilih }: Props) {
       <span
         aria-hidden
         className={cn(
-          'absolute inset-y-1 rounded-lg bg-white shadow-sm',
+          'absolute inset-y-1 rounded-lg bg-surface shadow-sm',
           ready &&
             'duration-250 transition-all ease-[cubic-bezier(0.4,0,0.2,1)]',
         )}
