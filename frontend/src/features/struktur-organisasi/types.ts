@@ -18,4 +18,5 @@ export interface RwPublik extends JabatanWilayahPublik {
 export interface StrukturOrganisasiPublik {
   dukuh: string | null;
   rw: RwPublik[];
+  lpm: string | null;
 }

@@ -2,7 +2,6 @@ import type { CSSProperties } from 'react';
 import { QueryBoundary } from '@/components/ui/QueryBoundary';
 import { useStrukturOrganisasi } from '@/features/struktur-organisasi/hooks/use-struktur-organisasi';
 import type { RwPublik } from '@/features/struktur-organisasi/types';
-import { LPM } from '@/lib/padukuhan';
 import { cn } from '@/lib/utils';
 
 /**
@@ -164,11 +163,12 @@ function GrupRw({ wilayah }: { wilayah: RwPublik }) {
  * Bagan pengurus Padukuhan Gading Kulon — bentuk papan struktur: kotak
  * berbingkai, palang mendatar, panah turun ke tiap bawahan.
  *
- * Dukuh & RW/RT dari `/publik/struktur-organisasi` — sumber yang sama dipakai
- * halaman kelola akun Admin, jadi pergantian jabatan yang disetujui otomatis
- * terlihat di sini tanpa deploy ulang. LPM tetap konstanta manual
- * (`lib/padukuhan.ts`): ketuanya bukan salah satu dari empat peran akun, jadi
- * tidak ikut sistem ganti-jabatan.
+ * Dukuh, RW/RT, & LPM semuanya dari `/publik/struktur-organisasi` — sumber
+ * yang sama dipakai halaman kelola akun Admin, jadi pergantian jabatan yang
+ * disetujui dan perubahan nama Ketua LPM otomatis terlihat di sini tanpa
+ * deploy ulang. LPM tetap bukan salah satu dari empat peran akun, jadi tidak
+ * ikut sistem ganti-jabatan yang disetujui — hanya sumber datanya yang kini
+ * sama dengan yang lain.
  *
  * LPM menempel ke Dukuh lewat GARIS PUTUS-PUTUS. Bedanya bukan hiasan: di
  * bagan pemerintahan garis lurus berarti komando dan putus-putus berarti
@@ -224,7 +224,7 @@ export function BaganOrganisasi() {
                   className="hidden flex-1 border-t-1 border-dashed border-slate-400 md:block"
                 />
                 <div className="w-56">
-                  <Kotak label={LPM.jabatan} nama={LPM.nama} putus />
+                  <Kotak label="Ketua LPM" nama={struktur.lpm} putus />
                 </div>
                 <span aria-hidden className="hidden flex-1 md:block" />
               </div>

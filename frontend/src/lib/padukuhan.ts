@@ -46,15 +46,3 @@ export const BATAS_WILAYAH: BatasWilayah[] = [
   { arah: 'Selatan', wilayah: 'Padukuhan Ngipak' },
   { arah: 'Barat', wilayah: 'Kalurahan Banyusoco' },
 ];
-
-/**
- * Lembaga Permusyawaratan Masyarakat. Berada di bawah Dukuh tapi TIDAK
- * membawahi RW/RT — di bagan digambar dengan garis putus-putus (koordinasi),
- * bukan garis lurus (komando).
- *
- * Konstanta manual, BUKAN dari `useStrukturOrganisasi()` seperti Dukuh/RW/RT:
- * Ketua LPM bukan salah satu dari empat peran akun (ADMIN/DUKUH/RW/RT), jadi
- * tidak punya baris di tabel `pengurus` dan tidak ikut sistem ganti-jabatan
- * yang disetujui. Ganti nilainya langsung di sini kalau ketuanya berganti.
- */
-export const LPM = { jabatan: 'Ketua LPM', nama: 'Masjkuri' } as const;
