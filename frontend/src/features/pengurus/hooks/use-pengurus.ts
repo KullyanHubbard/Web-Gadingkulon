@@ -37,3 +37,18 @@ export function useResetPassword() {
     onSuccess: segarkan,
   });
 }
+
+/**
+ * Menyegarkan `/publik/struktur-organisasi` lewat key literalnya, BUKAN
+ * `strukturOrganisasiKeys` yang diekspor `features/struktur-organisasi`:
+ * fitur ini tidak boleh mengimpor internal fitur lain (CLAUDE.md §4).
+ */
+export function useUbahLpm() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (nama: string) => pengurusApi.ubahLpm(nama),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['struktur-organisasi'] });
+    },
+  });
+}
