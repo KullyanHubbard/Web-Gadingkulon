@@ -20,6 +20,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.api.routers.auth import current_admin, ke_auth_user
 from app.core.audit import catat_audit
+from app.data import lpm as data_lpm
 from app.data import pengurus as data
 from app.data import sesi as data_sesi
 from app.data.store import semua_penduduk
@@ -27,6 +28,7 @@ from app.schemas.auth import AuthUser
 from app.schemas.pengurus import (
     CalonOut,
     JabatanOut,
+    LpmUbah,
     WargaPilihan,
     PasswordBaru,
     PengurusBaru,
@@ -160,6 +162,25 @@ def tambah_pengurus(
         sasaran_id=baru.id,
     )
     return _keluaran(baru)
+
+
+@router.patch("/lpm")
+def ubah_lpm(
+    payload: LpmUbah, admin: AuthUser = Depends(current_admin)
+) -> dict[str, str]:
+    """Ganti nama Ketua LPM. Bukan jabatan berakun — tanpa login, tanpa
+    persetujuan siapa pun, beda dari seluruh jabatan lain di router ini.
+    Path statis (`lpm`), tidak pernah tertangkap oleh `/{id}/...` di bawahnya.
+    """
+    lama = data_lpm.nama()
+    baru = data_lpm.ubah(payload.nama.strip())
+    catat_audit(
+        aktor=admin.username,
+        aksi="ubah-lpm",
+        sasaran="Ketua LPM",
+        perubahan=f"{lama or '(kosong)'} → {baru or '(kosong)'}",
+    )
+    return {"nama": baru}
 
 
 @router.post("/{id}/reset-password", status_code=204)

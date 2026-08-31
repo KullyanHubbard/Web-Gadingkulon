@@ -23,6 +23,7 @@ const AKSI_LABEL: Record<string, string> = {
   'tambah-warga': 'Menambah warga',
   'tambah-pengurus': 'Membuatkan akun',
   'reset-password': 'Mereset password',
+  'ubah-lpm': 'Mengubah nama Ketua LPM',
 };
 
 /** Satu perubahan kolom, sudah dipecah supaya bisa ditata di layar. */

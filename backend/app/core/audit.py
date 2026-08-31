@@ -19,7 +19,7 @@ from app.data import db
 AKSI_WARGA = ("ubah-warga", "tambah-warga")
 # Aksi atas akun — dibaca Admin. Dua daftar ini berpotongan kosong, sama seperti
 # kewenangan yang menghasilkannya.
-AKSI_AKUN = ("tambah-pengurus", "reset-password")
+AKSI_AKUN = ("tambah-pengurus", "reset-password", "ubah-lpm")
 
 
 def catat_audit(
