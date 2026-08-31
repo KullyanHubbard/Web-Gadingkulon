@@ -489,6 +489,9 @@ Kontrak endpoint yang **sudah diimplementasikan** (bentuknya sinkron dengan
 | PATCH  | `/penduduk/{id}`                 | ubah data warga; RT/RW hanya Dukuh — PENGURUS           |
 | GET    | `/infografis`                    | agregat lengkap — semua pengurus                        |
 | GET    | `/publik/statistik`              | cacah per RW + cacah kepala keluarga + 10 pekerjaan terbanyak — **tanpa auth** |
+| POST   | `/publik/kunjungan`              | tambah 1 ke hitungan kunjungan hari ini, kembalikan totalnya — **tanpa auth** |
+| GET    | `/publik/kunjungan`              | hitungan kunjungan hari ini tanpa menambah — **tanpa auth** |
+| GET    | `/publik/struktur-organisasi`    | bagan Dukuh/RW/RT + nama pemegang jabatan aktif — **tanpa auth** |
 | GET    | `/pengurus`                      | daftar **jabatan** (terisi & kosong) — ADMIN            |
 | GET    | `/pengurus/warga`                | cari warga buat dropdown (nama + RT/RW saja) — ADMIN    |
 | POST   | `/pengurus`                      | isi satu jabatan **kosong** — ADMIN                     |
@@ -572,15 +575,58 @@ pengunjung lain dan kuotanya ±5 MB (foto ikut dihitung sebagai data URL, dibata
 akun dan sengaja tidak punya kewenangan atas isi situs. Untuk memindahkannya:
 tabel `berita` + endpoint unggah, lalu ganti isi `beritaApi` saja.
 
+**Footer publik** (`components/layout/PublicShell.tsx`) punya tiga bagian
+tambahan di luar footer statis biasa:
+- **Kunjungan hari ini** — badge kiri-bawah, dari tabel `kunjungan` (satu baris
+  per tanggal, `app/data/kunjungan.py`). Ditambah SEKALI per browser per hari
+  (dijaga `localStorage` di `features/kunjungan/hooks/use-kunjungan.ts`), jadi
+  ini cacah per-BROWSER, bukan pengunjung unik — dua orang berbagi satu
+  komputer balai desa terhitung satu.
+- **Tombol Aksesibilitas** (`AksesibilitasWidget.tsx`) — murni klien, menskalakan
+  `font-size` akar dokumen (100/115/130%), tersimpan `localStorage`. Tidak ada
+  toggle kontras; tambahkan kalau memang diminta.
+- **Tombol Pengaduan** (`TombolPengaduan.tsx`) — `mailto:` ke `PADUKUHAN.email`,
+  bukan formulir dengan penyimpanan sendiri. Formulir pengaduan sungguhan (perlu
+  backend + moderasi) belum punya spesifikasi.
+
+Kontak (`PADUKUHAN.telepon`/`.email` di `lib/padukuhan.ts`) sudah data asli dari
+desa — bukan placeholder seperti nama di bagan organisasi.
+
 **Angka bantuan sosial di `/infografis` adalah CONTOH**
 (`pages/publik/infografis/bansos.ts`) — status penerima bantuan tidak ada di
 tabel `penduduk`, jadi tidak ada yang bisa diagregasi. Halamannya memasang
 peringatan "Data contoh" secara menyolok; jangan dicabut sebelum datanya nyata.
 
-**Isi statis portal publik** (sejarah, batas wilayah, luas, nama pengurus di
-bagan struktur organisasi) tinggal di `lib/padukuhan.ts` sebagai konstanta.
-Nama di bagan itu SENGAJA tidak diambil dari tabel `pengurus`: daftar akun ada
-di balik login ADMIN, sedangkan halaman profil terbuka untuk siapa saja.
+**Isi statis portal publik** (sejarah, batas wilayah, luas) tinggal di
+`lib/padukuhan.ts` sebagai konstanta.
+
+**Bagan struktur organisasi (`/profil`) HIDUP, bukan konstanta** — keputusan
+31 Agustus 2026, membalik keputusan sebelumnya di paragraf yang sama. Dukuh &
+Ketua RW/RT dibaca `GET /publik/struktur-organisasi`
+(`app/api/routers/publik.py`), yang membangun ulang dari
+`pengurus.daftar_jabatan()` — SUMBER YANG SAMA dipakai halaman kelola akun
+Admin. Begitu Admin isi jabatan atau pergantian disetujui
+(`app/api/routers/pergantian.py`), bagan publik ikut berubah tanpa deploy
+ulang; jabatan tanpa akun aktif tampil `nama: null`, ditandai "Belum diisi" di
+frontend (`pages/publik/profil/components/BaganOrganisasi.tsx`), BUKAN
+disembunyikan atau diisi karangan.
+
+RW/RT yang muncul mengikuti alamat warga AKTIF di data penduduk — bukan
+daftar tetap. **Kalau tabel `penduduk` masih kosong, bagan kosong total**
+(cuma Dukuh "Belum diisi" tanpa RW/RT sama sekali); isinya baru muncul setelah
+`impor_excel` dijalankan.
+
+**LPM tetap konstanta manual** (`LPM` di `lib/padukuhan.ts`) — Ketua LPM
+BUKAN salah satu dari empat peran akun (ADMIN/DUKUH/RW/RT), jadi tidak punya
+baris di tabel `pengurus` dan tidak ikut sistem ganti-jabatan yang disetujui.
+Ganti nilainya langsung di kode kalau ketuanya berganti. Di bagan LPM
+digambar dengan garis putus-putus (koordinasi) ke Dukuh, bukan garis lurus
+(komando) seperti RW/RT — LPM bukan atasan wilayah mana pun.
+
+Skema respons publiknya (`StrukturOrganisasiPublik`/`RwPublik`/
+`JabatanWilayahPublik` di `app/schemas/pengurus.py`) SENGAJA lebih ramping
+dari `JabatanOut` yang dipakai Admin: tidak ada username, id, atau status
+akun — cuma nomor wilayah + nama, karena endpoint ini terbuka tanpa auth.
 
 **Utang yang masih terbuka** — tercatat di spec 2026-08-26, jangan dianggap
 kondisi final:

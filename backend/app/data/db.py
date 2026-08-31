@@ -158,6 +158,15 @@ CREATE TABLE IF NOT EXISTS sesi (
 );
 
 CREATE INDEX IF NOT EXISTS idx_sesi_pengurus ON sesi(pengurus_id);
+
+-- Penghitung kunjungan portal publik. Satu baris per tanggal; frontend
+-- menjaga "sekali per browser per hari" lewat `localStorage`, jadi ini BUKAN
+-- pengunjung unik — dua orang berbagi satu komputer balai desa terhitung satu.
+-- Cukup untuk angka hiasan di footer (lihat `app/data/kunjungan.py`).
+CREATE TABLE IF NOT EXISTS kunjungan (
+    tanggal TEXT PRIMARY KEY,
+    jumlah  INTEGER NOT NULL DEFAULT 0
+);
 """
 
 

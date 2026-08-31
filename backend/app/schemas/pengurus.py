@@ -81,3 +81,33 @@ class PengurusUbah(BaseModel):
 
 class PasswordBaru(BaseModel):
     password: str = Field(min_length=8)
+
+
+class JabatanWilayahPublik(BaseModel):
+    """Satu RT (atau induk RW) di bagan publik: nomor wilayah + nama
+    pemegangnya. `nama` kosong berarti jabatan itu belum ada akunnya —
+    frontend menandainya "Belum diisi", bukan menyembunyikannya."""
+
+    nomor: str
+    nama: Optional[str] = None
+
+
+class RwPublik(JabatanWilayahPublik):
+    rt: list[JabatanWilayahPublik] = []
+
+
+class StrukturOrganisasiPublik(BaseModel):
+    """Bagan pengurus untuk halaman profil publik.
+
+    TANPA username, id, atau status akun — beda dari `JabatanOut` yang
+    dipakai Admin. Diturunkan dari `pengurus.daftar_jabatan()`, sumber yang
+    sama dipakai halaman kelola akun, jadi pergantian jabatan yang disetujui
+    otomatis terlihat di sini tanpa deploy ulang.
+
+    LPM sengaja tidak ikut: ketuanya bukan salah satu dari empat peran akun
+    (ADMIN/DUKUH/RW/RT), jadi tidak punya baris di tabel `pengurus` — namanya
+    tetap konstanta manual di frontend (`lib/padukuhan.ts`).
+    """
+
+    dukuh: Optional[str] = None
+    rw: list[RwPublik] = []

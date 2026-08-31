@@ -17,6 +17,9 @@ export const PADUKUHAN = {
   kabupaten: 'Kabupaten Gunungkidul',
   provinsi: 'Daerah Istimewa Yogyakarta',
   luasWilayah: '162,4 ha',
+  /** Kontak resmi padukuhan — dicetak di footer & jadi tujuan tombol Pengaduan. */
+  telepon: '+62 812-2761-391',
+  email: 'gadingkulon@gmail.com',
   /**
    * Titik tengah peta. Ubah dua angka ini kalau petanya meleset — seluruh
    * embed peta di situs ini membacanya dari sini.
@@ -45,44 +48,13 @@ export const BATAS_WILAYAH: BatasWilayah[] = [
 ];
 
 /**
- * Bagan struktur organisasi. Nama pengurus TIDAK diambil dari tabel `pengurus`
- * — daftar akun itu ada di balik login ADMIN, dan halaman ini terbuka untuk
- * siapa saja. Yang boleh dipublikasikan disetel manual di sini.
+ * Lembaga Permusyawaratan Masyarakat. Berada di bawah Dukuh tapi TIDAK
+ * membawahi RW/RT — di bagan digambar dengan garis putus-putus (koordinasi),
+ * bukan garis lurus (komando).
+ *
+ * Konstanta manual, BUKAN dari `useStrukturOrganisasi()` seperti Dukuh/RW/RT:
+ * Ketua LPM bukan salah satu dari empat peran akun (ADMIN/DUKUH/RW/RT), jadi
+ * tidak punya baris di tabel `pengurus` dan tidak ikut sistem ganti-jabatan
+ * yang disetujui. Ganti nilainya langsung di sini kalau ketuanya berganti.
  */
-export interface PosisiOrganisasi {
-  jabatan: string;
-  nama: string;
-  /** Anak buah langsung; kosong bila posisi terakhir di cabangnya. */
-  bawahan?: PosisiOrganisasi[];
-}
-
-export const STRUKTUR_ORGANISASI: PosisiOrganisasi = {
-  jabatan: 'Dukuh',
-  nama: 'Sujarwo',
-  bawahan: [
-    {
-      jabatan: 'Ketua RW 01',
-      nama: 'Bambang Riyanto',
-      bawahan: [
-        { jabatan: 'Ketua RT 01', nama: 'Slamet Widodo' },
-        { jabatan: 'Ketua RT 02', nama: 'Marjuki' },
-      ],
-    },
-    {
-      jabatan: 'Ketua RW 02',
-      nama: 'Sunarto',
-      bawahan: [
-        { jabatan: 'Ketua RT 03', nama: 'Agus Purwanto' },
-        { jabatan: 'Ketua RT 04', nama: 'Tukiman' },
-      ],
-    },
-    {
-      jabatan: 'Ketua Karang Taruna',
-      nama: 'Rizal Fahrezi',
-      bawahan: [
-        { jabatan: 'Sekretaris', nama: 'Nur Aisyah' },
-        { jabatan: 'Bendahara', nama: 'Dwi Lestari' },
-      ],
-    },
-  ],
-};
+export const LPM = { jabatan: 'Ketua LPM', nama: 'Masjkuri' } as const;

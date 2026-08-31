@@ -93,7 +93,7 @@ export default function ProfilPage() {
             Struktur Organisasi Padukuhan
           </h2>
           <p className="mt-2 text-sm text-slate-600">
-            Dukuh, pengurus RW dan RT, serta Karang Taruna.
+            Dukuh, Ketua LPM, dan pengurus RW/RT.
           </p>
           <div className="mt-8">
             <BaganOrganisasi />

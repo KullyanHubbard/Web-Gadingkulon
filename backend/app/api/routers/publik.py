@@ -10,8 +10,15 @@ from app.data.agregat import (
     format_rt,
     format_rw,
 )
+from app.data import kunjungan
+from app.data import pengurus as data_pengurus
 from app.data.store import hanya_aktif, semua_penduduk
 from app.schemas.penduduk import Penduduk, RincianRw, StatistikPublik
+from app.schemas.pengurus import (
+    JabatanWilayahPublik,
+    RwPublik,
+    StrukturOrganisasiPublik,
+)
 
 router = APIRouter(tags=["publik"])
 
@@ -73,4 +80,58 @@ def statistik_publik() -> StatistikPublik:
             )
             for rw, warga in _kelompokkan(semua, lambda p: p.alamat.rw)
         ],
+    )
+
+
+@router.post("/publik/kunjungan")
+def catat_kunjungan() -> dict[str, int]:
+    """Tambah 1 ke hitungan kunjungan hari ini. Dipanggil frontend sekali per
+    browser per hari — lihat `app/data/kunjungan.py` untuk batasannya."""
+    return {"jumlah": kunjungan.tambah()}
+
+
+@router.get("/publik/kunjungan")
+def lihat_kunjungan() -> dict[str, int]:
+    """Hitungan hari ini tanpa menambah — dipanggil browser yang sudah
+    mencatat kunjungannya untuk hari yang sama."""
+    return {"jumlah": kunjungan.hari_ini()}
+
+
+@router.get("/publik/struktur-organisasi", response_model=StrukturOrganisasiPublik)
+def struktur_organisasi_publik() -> StrukturOrganisasiPublik:
+    """Bagan pengurus untuk halaman profil — Dukuh & Ketua RW/RT beserta nama
+    pemegangnya kalau ada. Dibangun dari `pengurus.daftar_jabatan()`, sumber
+    yang sama dipakai halaman Admin, jadi pergantian jabatan yang disetujui
+    otomatis terlihat di sini tanpa deploy ulang.
+
+    RW/RT hanya muncul kalau ada warga AKTIF ber-alamat di situ —
+    `daftar_jabatan()` menurunkan wilayahnya dari data warga, bukan daftar
+    tetap. Jabatan tanpa akun aktif tampil dengan `nama=None`; frontend yang
+    menandainya "Belum diisi".
+    """
+    jabatan = data_pengurus.daftar_jabatan()
+
+    dukuh = next(
+        (j for j in jabatan if j.role == data_pengurus.ROLE_DUKUH), None
+    )
+
+    rw_map: dict[str, RwPublik] = {}
+    urutan_rw: list[str] = []
+    for j in jabatan:
+        if j.role == data_pengurus.ROLE_RW and j.rw is not None:
+            rw_map[j.rw] = RwPublik(
+                nomor=j.rw, nama=j.pemegang.nama if j.pemegang else None
+            )
+            urutan_rw.append(j.rw)
+    for j in jabatan:
+        if j.role == data_pengurus.ROLE_RT and j.rw is not None and j.rt is not None:
+            rw_map[j.rw].rt.append(
+                JabatanWilayahPublik(
+                    nomor=j.rt, nama=j.pemegang.nama if j.pemegang else None
+                )
+            )
+
+    return StrukturOrganisasiPublik(
+        dukuh=dukuh.pemegang.nama if dukuh and dukuh.pemegang else None,
+        rw=[rw_map[rw] for rw in urutan_rw],
     )

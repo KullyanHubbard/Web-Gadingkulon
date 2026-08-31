@@ -1,16 +1,31 @@
-import { Outlet } from 'react-router-dom';
+import { Mail, Phone } from 'lucide-react';
+import { Link, Outlet } from 'react-router-dom';
 import { KreditKkn } from '@/components/ui/KreditKkn';
 import { PADUKUHAN } from '@/lib/padukuhan';
+import { paths } from '@/routes/paths';
+import { AksesibilitasWidget } from './AksesibilitasWidget';
+import { BadgeKunjungan } from './BadgeKunjungan';
 import { PublicNavbar } from './PublicNavbar';
+import { TombolPengaduan } from './TombolPengaduan';
+
+const JELAJAHI = [
+  { label: 'Beranda', to: paths.landing },
+  { label: 'Profil Desa', to: paths.profil },
+  { label: 'Infografis', to: paths.infografis },
+  { label: 'Berita', to: paths.berita },
+  { label: 'Statistik Warga', to: paths.statistik },
+];
 
 /**
  * Kerangka semua halaman publik ber-navbar: beranda, profil, infografis,
- * berita. Dipasang sebagai layout route, jadi navbar tidak ikut di-mount ulang
- * saat berpindah halaman.
+ * berita. Dipasang sebagai layout route, jadi navbar & footer tidak ikut
+ * di-mount ulang saat berpindah halaman — termasuk widget mengambangnya, yang
+ * kalau tidak begitu akan memicu ulang hitungan kunjungan tiap navigasi.
  *
  * Halaman `/statistik` TIDAK memakai ini — kerangkanya rail kiri
  * (`PublicLandingLayout`) yang tingginya dikunci ke viewport, dan dua kerangka
- * itu tidak bisa ditumpuk tanpa merusak penggulungannya.
+ * itu tidak bisa ditumpuk tanpa merusak penggulungannya. Widget mengambang &
+ * penghitung kunjungan ikut tidak tampil di sana.
  */
 export function PublicShell() {
   return (
@@ -19,19 +34,79 @@ export function PublicShell() {
       <main className="flex-1">
         <Outlet />
       </main>
-      {/* `<div>`, bukan `<footer>` kedua: `KreditKkn` sudah mencetak
-          `<footer>` sendiri, dan footer bersarang bukan HTML yang sah. */}
-      <div className="border-t border-slate-200 bg-white">
-        <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <p className="text-sm font-semibold text-slate-900">
-            {PADUKUHAN.namaLengkap}
-          </p>
-          <p className="mt-1 text-sm text-slate-500">
-            {PADUKUHAN.desa}, {PADUKUHAN.kapanewon}, {PADUKUHAN.kabupaten},{' '}
-            {PADUKUHAN.provinsi}
-          </p>
+
+      <div className="bg-brand-950 text-brand-100">
+        <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-3 lg:px-8">
+          <div>
+            <p className="text-lg font-bold text-white">
+              {PADUKUHAN.namaLengkap}
+            </p>
+            <p className="mt-2 text-sm">
+              {PADUKUHAN.desa}, {PADUKUHAN.kapanewon}
+              <br />
+              {PADUKUHAN.kabupaten}, {PADUKUHAN.provinsi}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-brand-300">
+              Hubungi Kami
+            </p>
+            <ul className="mt-3 space-y-2 text-sm">
+              <li>
+                <a
+                  href={`tel:${PADUKUHAN.telepon.replace(/[^+\d]/g, '')}`}
+                  className="flex items-center gap-2 hover:text-white"
+                >
+                  <Phone className="h-4 w-4 shrink-0" aria-hidden />
+                  {PADUKUHAN.telepon}
+                </a>
+              </li>
+              <li>
+                <a
+                  href={`mailto:${PADUKUHAN.email}`}
+                  className="flex items-center gap-2 hover:text-white"
+                >
+                  <Mail className="h-4 w-4 shrink-0" aria-hidden />
+                  {PADUKUHAN.email}
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-brand-300">
+              Jelajahi
+            </p>
+            <ul className="mt-3 space-y-2 text-sm">
+              {JELAJAHI.map((j) => (
+                <li key={j.to}>
+                  <Link to={j.to} className="hover:text-white">
+                    {j.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
-        <KreditKkn className="border-t border-slate-100 px-4 py-4 sm:px-6 lg:px-8" />
+
+        {/* Warna diwariskan ke span nama di dalamnya — lihat komentar
+            `KreditKkn`: sengaja tidak punya warna sendiri supaya bisa dipasang
+            di atas latar gelap begini tanpa varian baru. */}
+        <KreditKkn className="border-t border-white/10 px-4 py-4 text-brand-200 sm:px-6 lg:px-8" />
+      </div>
+
+      {/* Elemen mengambang: kunjungan kiri-bawah, aksesibilitas kanan-bawah.
+          `fixed` (bukan bagian alur), jadi ditulis di luar footer meski
+          posisinya visual di situ. */}
+      <div className="pointer-events-none fixed inset-x-0 bottom-4 z-40 flex items-end justify-between px-4 sm:px-6 lg:px-8">
+        <div className="pointer-events-auto">
+          <BadgeKunjungan />
+        </div>
+        <div className="pointer-events-auto flex items-end gap-3">
+          <TombolPengaduan />
+          <AksesibilitasWidget />
+        </div>
       </div>
     </div>
   );

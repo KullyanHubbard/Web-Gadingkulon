@@ -1,71 +1,268 @@
-import { STRUKTUR_ORGANISASI, type PosisiOrganisasi } from '@/lib/padukuhan';
+import type { CSSProperties } from 'react';
+import { QueryBoundary } from '@/components/ui/QueryBoundary';
+import { useStrukturOrganisasi } from '@/features/struktur-organisasi/hooks/use-struktur-organisasi';
+import type { RwPublik } from '@/features/struktur-organisasi/types';
+import { LPM } from '@/lib/padukuhan';
+import { cn } from '@/lib/utils';
 
-/** Satu kotak jabatan pada bagan. */
-function KotakJabatan({ posisi }: { posisi: PosisiOrganisasi }) {
+/**
+ * Garis rambut bagan. `w-px`/`border-1`, BUKAN `border` telanjang — di proyek
+ * ini `borderWidth.DEFAULT` disetel 4px (lihat `tailwind.config.js`), jadi
+ * `border` polos menghasilkan garis setebal batang korek.
+ */
+const GARIS = 'bg-slate-400';
+
+/** Mata panah, dicetak dengan `clip-path` supaya tidak perlu berkas SVG. */
+const PANAH =
+  'h-1.5 w-2.5 bg-slate-400 [clip-path:polygon(50%_100%,0_0,100%_0)]';
+
+/**
+ * Kotak jabatan: bingkai ganda, teks kapital, dua baris — jabatan di atas,
+ * nama di bawah. Bentuk papan struktur yang dipakai balai desa.
+ */
+function Kotak({
+  label,
+  nama,
+  utama = false,
+  putus = false,
+}: {
+  label: string;
+  /** `null`/kosong berarti jabatan itu belum ada akun aktifnya. */
+  nama: string | null;
+  /** Kotak puncak (Dukuh): bingkai lebih tegas. */
+  utama?: boolean;
+  /** Bingkai putus-putus untuk jabatan yang hubungannya koordinasi. */
+  putus?: boolean;
+}) {
+  const kosong = !nama || nama.trim() === '';
+
   return (
-    <div className="inline-block min-w-[11rem] rounded-xl border border-slate-200 bg-white px-5 py-3 text-center shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">
-        {posisi.jabatan}
-      </p>
-      <p className="mt-1 font-bold text-slate-900">{posisi.nama}</p>
+    <div
+      className={cn(
+        // `h-full flex` + `flex-1` di bingkai dalam: sel grid diregangkan
+        // setinggi baris, dan tanpa ini bingkai dalam kotak yang namanya tidak
+        // ikut turun baris menyisakan ruang kosong di bawahnya.
+        // `min-h-20`: tiap grup RW punya grid RT sendiri, jadi tinggi barisnya
+        // dihitung terpisah — tanpa lantai ini kotak yang namanya turun baris
+        // jadi lebih jangkung daripada kotak di grup sebelahnya.
+        'flex min-h-24 w-full flex-col bg-white p-1',
+        'border-1',
+        putus && 'border-dashed',
+        utama ? 'border-slate-900' : 'border-slate-400',
+      )}
+    >
+      <div
+        className={cn(
+          'flex flex-1 flex-col justify-center border-1 px-3 py-2.5 text-center',
+          putus && 'border-dashed',
+          utama ? 'border-slate-900' : 'border-slate-300',
+        )}
+      >
+        <p className="text-[0.7rem] font-bold uppercase tracking-wider text-brand-700">
+          {label}
+        </p>
+        {/* Nama kosong ditandai terang-terangan, bukan disamarkan: bagan ini
+            terbuka untuk umum, jadi lebih baik jelas belum diisi daripada
+            terlihat seolah sudah benar. */}
+        <p
+          className={cn(
+            'mt-0.5 text-sm font-bold uppercase leading-snug',
+            kosong ? 'italic text-slate-400' : 'text-slate-900',
+          )}
+        >
+          {kosong ? 'Belum diisi' : nama}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/** Ruas tegak polos antar-tingkat. */
+function Tiang({ className }: { className?: string }) {
+  return (
+    <span aria-hidden className={cn('block h-6 w-px', GARIS, className)} />
+  );
+}
+
+/** Ruas tegak yang berujung mata panah — dipakai versi ponsel yang menumpuk. */
+function TiangPanah({ className }: { className?: string }) {
+  return (
+    <span
+      aria-hidden
+      className={cn('flex flex-col items-center', className)}
+    >
+      <span className={cn('block h-6 w-px', GARIS)} />
+      <span className={PANAH} />
+    </span>
+  );
+}
+
+/**
+ * Palang mendatar yang mencabang jadi beberapa turunan berpanah — satu turunan
+ * tepat di atas tiap kotak anak.
+ *
+ * Dibentuk per kolom (setengah garis di ujung, penuh di tengah), jadi jumlah
+ * anaknya boleh berubah tanpa menghitung ulang posisi persen. Celah grid
+ * (`gap-x-4` = 16px) dijembatani dengan menjulurkan garis 8px ke luar sel —
+ * kalau tidak, palangnya putus tepat di setiap celah.
+ *
+ * Satu anak berarti `left-1/2` dan `right-1/2` berlaku sekaligus: palangnya
+ * jadi selebar nol, dan itu memang benar — tidak ada yang perlu dijembatani.
+ */
+function PalangKeAnak({ jumlah }: { jumlah: number }) {
+  return (
+    <div
+      aria-hidden
+      className="grid w-full gap-x-4 [grid-template-columns:repeat(var(--n),minmax(0,1fr))]"
+      style={{ '--n': jumlah } as CSSProperties}
+    >
+      {Array.from({ length: jumlah }, (_, i) => (
+        <div key={i} className="relative h-8">
+          <span
+            className={cn(
+              'absolute top-0 h-px',
+              GARIS,
+              i === 0 ? 'left-1/2' : '-left-2',
+              i === jumlah - 1 ? 'right-1/2' : '-right-2',
+            )}
+          />
+          <span
+            className={cn(
+              'absolute left-1/2 top-0 h-[calc(100%-0.375rem)] w-px',
+              GARIS,
+            )}
+          />
+          <span
+            className={cn('absolute bottom-0 left-1/2 -translate-x-1/2', PANAH)}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Satu RW beserta kotak-kotak RT yang mengipas di bawahnya. */
+function GrupRw({ wilayah }: { wilayah: RwPublik }) {
+  return (
+    <div className="flex w-full flex-col items-center">
+      <Kotak label={`RW ${wilayah.nomor}`} nama={wilayah.nama} />
+      <Tiang />
+      <PalangKeAnak jumlah={wilayah.rt.length} />
+      <div
+        className="grid w-full gap-x-4 [grid-template-columns:repeat(var(--n),minmax(0,1fr))]"
+        style={{ '--n': wilayah.rt.length } as CSSProperties}
+      >
+        {wilayah.rt.map((rt) => (
+          <Kotak key={rt.nomor} label={`RT ${rt.nomor}`} nama={rt.nama} />
+        ))}
+      </div>
     </div>
   );
 }
 
 /**
- * Satu cabang bagan, rekursif — susunannya memang bersarang: Dukuh -> Ketua RW
- * -> Ketua RT, dan cabang Karang Taruna yang berbentuk sama.
+ * Bagan pengurus Padukuhan Gading Kulon — bentuk papan struktur: kotak
+ * berbingkai, palang mendatar, panah turun ke tiap bawahan.
  *
- * Garis penghubung ke atas dicetak simpul anak, bukan induknya: dengan begitu
- * simpul akar tidak butuh cabang kode sendiri untuk menghilangkannya.
- */
-function CabangOrganisasi({
-  posisi,
-  akar = false,
-}: {
-  posisi: PosisiOrganisasi;
-  akar?: boolean;
-}) {
-  return (
-    <li className="flex list-none flex-col items-center">
-      {!akar && <span aria-hidden className="h-6 w-px bg-slate-300" />}
-      <KotakJabatan posisi={posisi} />
-
-      {posisi.bawahan && posisi.bawahan.length > 0 && (
-        <>
-          <span aria-hidden className="h-6 w-px bg-slate-300" />
-          <ul className="flex flex-col items-center gap-2 sm:flex-row sm:items-start sm:gap-8">
-            {posisi.bawahan.map((anak) => (
-              <CabangOrganisasi
-                key={`${anak.jabatan}-${anak.nama}`}
-                posisi={anak}
-              />
-            ))}
-          </ul>
-        </>
-      )}
-    </li>
-  );
-}
-
-/**
- * Bagan pengurus padukuhan.
+ * Dukuh & RW/RT dari `/publik/struktur-organisasi` — sumber yang sama dipakai
+ * halaman kelola akun Admin, jadi pergantian jabatan yang disetujui otomatis
+ * terlihat di sini tanpa deploy ulang. LPM tetap konstanta manual
+ * (`lib/padukuhan.ts`): ketuanya bukan salah satu dari empat peran akun, jadi
+ * tidak ikut sistem ganti-jabatan.
  *
- * `<ul>` bersarang, bukan SVG: susunannya memang daftar bertingkat, dan `<ul>`
- * sudah dibacakan pembaca layar sebagai hierarki tanpa perlu ARIA tambahan.
+ * LPM menempel ke Dukuh lewat GARIS PUTUS-PUTUS. Bedanya bukan hiasan: di
+ * bagan pemerintahan garis lurus berarti komando dan putus-putus berarti
+ * koordinasi, dan LPM memang tidak membawahi RW/RT.
  *
- * Namanya datang dari konstanta `lib/padukuhan.ts`, BUKAN dari tabel
- * `pengurus` — daftar akun itu ada di balik login ADMIN, halaman ini terbuka
- * untuk siapa saja.
+ * Di bawah `md` tiap RW menumpuk — palang bercabangnya diganti tiang berpanah
+ * per grup. Bentuk kotak-dan-panahnya tetap sama di tiap tingkat, dan dua
+ * kotak RT masih muat berdampingan di layar 390px, jadi tidak ada gulung
+ * mendatar sama sekali. Pembacanya mayoritas di ponsel.
  */
 export function BaganOrganisasi() {
+  const { data, isLoading, isError } = useStrukturOrganisasi();
+
   return (
-    // Bagan lebih lebar dari layar ponsel; digulung mendatar di dalam kotaknya
-    // sendiri supaya badan halaman tidak ikut bergeser.
-    <div className="overflow-x-auto pb-4">
-      <ul className="flex min-w-max flex-col items-center px-4">
-        <CabangOrganisasi posisi={STRUKTUR_ORGANISASI} akar />
-      </ul>
-    </div>
+    // TANPA `isEmpty`: Dukuh & LPM bukan turunan RW/RT — keduanya tetap berarti
+    // ditampilkan (dengan "Belum diisi" bila kosong) meski `rw` belum ada
+    // satu pun, sebelum data warga diimpor. `rw.length === 0` bukan kegagalan,
+    // cuma bagian bagan yang belum punya isi — ditangani di dalam, bukan
+    // dengan mengganti seluruh bagan jadi pesan "tidak ada data".
+    <QueryBoundary
+      isLoading={isLoading}
+      isError={isError}
+      data={data}
+      loadingLabel="Memuat struktur organisasi"
+      errorMessage="Struktur organisasi belum bisa ditampilkan."
+    >
+      {(struktur) => (
+        <figure className="m-0">
+          <div className="mx-auto flex max-w-5xl flex-col items-center">
+            <div className="w-64">
+              <Kotak label="Dukuh" nama={struktur.dukuh} utama />
+            </div>
+
+            {/* Garis komando Dukuh -> RW tidak boleh putus saat melewati baris
+                ini: LPM MENCABANG dari garis itu, bukan menyela. */}
+            <Tiang />
+            <div className="relative flex w-full flex-col items-center md:flex-row md:justify-center">
+              <span
+                aria-hidden
+                className={cn(
+                  'absolute left-1/2 top-0 hidden h-full w-px -translate-x-1/2 md:block',
+                  GARIS,
+                )}
+              />
+              <span
+                aria-hidden
+                className="block h-5 border-l-1 border-dashed border-slate-400 md:hidden"
+              />
+              <div className="hidden flex-1 md:block" />
+              <div className="flex w-full items-center md:w-1/2">
+                <span
+                  aria-hidden
+                  className="hidden flex-1 border-t-1 border-dashed border-slate-400 md:block"
+                />
+                <div className="w-56">
+                  <Kotak label={LPM.jabatan} nama={LPM.nama} putus />
+                </div>
+                <span aria-hidden className="hidden flex-1 md:block" />
+              </div>
+            </div>
+            {struktur.rw.length === 0 ? (
+              // `repeat(0, ...)` bukan CSS yang sah — grid RW di bawah ini
+              // butuh minimal satu kolom, jadi belum ada RW ditangani sebagai
+              // cabang terpisah, bukan dengan memaksa `jumlah={0}` ke `PalangKeAnak`.
+              <>
+                <Tiang />
+                <p className="max-w-xs text-center text-xs text-slate-400">
+                  Data RW/RT belum diimpor.
+                </p>
+              </>
+            ) : (
+              <>
+                <Tiang />
+
+                <div className="hidden w-full md:block">
+                  <PalangKeAnak jumlah={struktur.rw.length} />
+                </div>
+
+                <div
+                  className="grid w-full grid-cols-1 gap-x-4 gap-y-2 md:[grid-template-columns:repeat(var(--n),minmax(0,1fr))]"
+                  style={{ '--n': struktur.rw.length } as CSSProperties}
+                >
+                  {struktur.rw.map((w) => (
+                    <div key={w.nomor} className="flex flex-col items-center">
+                      <TiangPanah className="md:hidden" />
+                      <GrupRw wilayah={w} />
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </figure>
+      )}
+    </QueryBoundary>
   );
 }
